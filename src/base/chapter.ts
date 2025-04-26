@@ -1,4 +1,4 @@
-import handlebars, { HelperDeclareSpec, HelperOptions } from "handlebars";
+import Handlebars, { HelperDeclareSpec, HelperOptions } from "handlebars";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 
@@ -113,18 +113,21 @@ const createInputMarkdown = ({ name, type }: MarkdownOptions & { name: string; t
 const useHelper = ({ inputs, sets, navs }: Fields, options: RenderOptions): HelperDeclareSpec => {
   return {
     input(type: ValueType, opt: HelperOptions) {
+      let result = "";
       for (const name in opt.hash) {
         const value = opt.hash[name];
         inputs.push({ name, type, value });
         if (options.format === "html") {
-          return createInputHtml({ name, type, value, ...options });
+          result = createInputHtml({ name, type, value, ...options });
+        } else {
+          result = createInputMarkdown({ name, type });
         }
-        return createInputMarkdown({ name, type });
+        break;
       }
-      return "";
+      return new Handlebars.SafeString(result);
     },
     set(opt: HelperOptions) {
-      return Object.entries(opt.hash as Scope)
+      const result = Object.entries(opt.hash as Scope)
         .map(([name, value]) => {
           const type = valueType(value);
           sets.push({ name, type, value });
@@ -134,17 +137,16 @@ const useHelper = ({ inputs, sets, navs }: Fields, options: RenderOptions): Help
           return "";
         })
         .join("");
+      return new Handlebars.SafeString(result);
     },
     nav(target: string | null, opt: HelperOptions) {
-      const text = opt.fn(target).trim();
+      let result = "";
+      const text = opt.fn(this).trim();
       navs.push({ text, target });
       if (options.format === "html") {
-        return createSubmitButtonHtml({ target: target ?? "", children: text, ...options });
+        result = createSubmitButtonHtml({ target: target ?? "", children: text, ...options });
       }
-      return "";
-    },
-    br(num: number) {
-      return new Array(num ?? 1).fill("<br>").join();
+      return new Handlebars.SafeString(result);
     },
   };
 };
@@ -178,7 +180,7 @@ export class Chapter {
       navs: [],
     };
 
-    const handle = handlebars.create();
+    const handle = Handlebars.create();
     handle.registerHelper(useHelper(fields, options));
 
     let text = handle.compile(this.template)(scope);
