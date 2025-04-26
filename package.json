@@ -4,6 +4,9 @@
   "description": "An interactive story format based on Markdown and Handlebars with JavaScript support",
   "main": "./dist/index.js",
   "type": "module",
+  "files": [
+    "./dist"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "node ./test/index.test.js"
