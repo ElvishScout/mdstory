@@ -5,12 +5,12 @@ import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginTerminal from "markdown-it-terminal";
 
-import { Story } from "../dist/index.js";
+import { Story, StoryPrompt, Scope } from "../src/index.js";
 
 const STORY_PATH = path.resolve(import.meta.dirname, "story.md");
 
 const md = new MarkdownIt().use(pluginAttrs).use(pluginTerminal);
-const prompt = async ({ text, inputs, sets, navs }) => {
+const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
   console.log(md.render(text).trim());
   console.log();
 
@@ -76,7 +76,7 @@ const prompt = async ({ text, inputs, sets, navs }) => {
     ...sets.map(({ name, value }) => {
       return [name, value];
     }),
-  ]);
+  ]) as Scope;
 
   return { target, updates };
 };
