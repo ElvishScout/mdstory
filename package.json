@@ -1,5 +1,5 @@
 {
-  "name": "@focaui/mdstory",
+  "name": "@elvishscout/mdstory",
   "version": "0.1.0",
   "description": "An interactive story format based on Markdown and Handlebars with JavaScript support",
   "main": "./dist/index.js",
