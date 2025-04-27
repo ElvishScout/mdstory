@@ -1,27 +1,16 @@
-import yaml from "js-yaml";
-import MarkdownIt from "markdown-it";
-import pluginFrontMatter from "markdown-it-front-matter";
-import pluginAttrs from "markdown-it-attrs";
-
 import {
-  MetadataSchema,
-  StoryHooksSchema,
+  StoryBody,
   StoryHooks,
   Scope,
   ValueType,
   Value,
   Metadata,
+  Asset,
   ChapterHooksSchema,
-  ChapterHooks,
+  StoryHooksSchema,
 } from "./definitions.js";
 import { Chapter, RenderOptions, RenderResult } from "./chapter.js";
-import {
-  ChapterNotFoundError,
-  DuplicateIdError,
-  EmptyChapterIdError,
-  InvalidInputError,
-  InvalidMetadataError,
-} from "./error.js";
+import { ChapterNotFoundError, InvalidInputError } from "./error.js";
 
 export type StoryPrompt = (
   props: { chapter: Chapter } & RenderResult
@@ -55,107 +44,6 @@ const parseFormData = (formData: FormData, { inputs, sets }: Pick<RenderResult, 
   return { target, updates };
 };
 
-type ChapterBody = {
-  title: string;
-  template: string;
-  hooks: ChapterHooks;
-};
-
-type StoryBody = {
-  metadata: Metadata;
-  chapters: Record<string, ChapterBody>;
-  entry: string | null;
-  hooks: StoryHooks;
-  stylesheet: string;
-};
-
-export const parseStoryContent = (content: string): StoryBody => {
-  type Division = { id: string; title: string; lineno: number; script: string };
-
-  const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
-  const tokens = md.parse(content, {});
-
-  let metadata = MetadataSchema.parse({});
-  let storyScript = "";
-  let stylesheet = "";
-
-  const ignoredRanges: [number, number][] = [];
-  const divisions: Division[] = [];
-
-  tokens.forEach((token, i) => {
-    if (token.type === "front_matter" && token.meta) {
-      try {
-        const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
-        metadata = { ...metadata, ...frontMatter };
-      } catch {
-        throw new InvalidMetadataError(token.meta);
-      }
-    } else if (token.type === "heading_open" && token.tag === "h1" && token.level === 0 && token.map) {
-      const lineno = token.map[0];
-      let id = token.attrs?.find(([key]) => key === "id")?.[1] ?? "";
-      let title = "";
-      const nextToken = tokens[i + 1];
-      if (nextToken && nextToken.type === "inline") {
-        const content = nextToken.content.trim();
-        id ||= content;
-        title = content;
-      }
-      if (!id) {
-        throw new EmptyChapterIdError();
-      }
-      if (divisions.find(({ id: _id }) => id === _id)) {
-        throw new DuplicateIdError(id);
-      }
-      divisions.push({ id, title, lineno, script: "" });
-    } else if (token.type === "html_block" && token.map) {
-      let regres;
-      if ((regres = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content))) {
-        const script = regres[1].trim();
-        if (script) {
-          if (divisions.length === 0) {
-            storyScript = script;
-          } else {
-            divisions[divisions.length - 1].script = script;
-          }
-          ignoredRanges.push(token.map);
-        }
-      } else if ((regres = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content))) {
-        const style = regres[1].trim();
-        stylesheet += style;
-        ignoredRanges.push(token.map)
-      }
-    }
-  });
-
-  const lines = content.split("\n").map((line, i) => {
-    if (ignoredRanges.find(([from, to]) => i >= from && i < to)) {
-      return null;
-    }
-    return line;
-  });
-
-  const chapterEntries = divisions.map(({ id, title, lineno, script }, i): [string, ChapterBody] => {
-    const template = lines
-      .slice(lineno, divisions[i + 1]?.lineno)
-      .filter((line): line is string => line !== null)
-      .join("\n");
-    const hooks = script ? ChapterHooksSchema.parse(new Function(script)()) : {};
-    return [id, { title, template, hooks }];
-  });
-
-  const chapters = Object.fromEntries(chapterEntries);
-  const entry = chapterEntries[0]?.[0] || null;
-  const hooks = storyScript ? StoryHooksSchema.parse(new Function(storyScript)()) : {};
-
-  return {
-    metadata,
-    chapters,
-    entry,
-    hooks,
-    stylesheet,
-  };
-};
-
 export class StoryBase {
   metadata: Metadata;
   globals: Scope;
@@ -163,39 +51,43 @@ export class StoryBase {
   entry: Chapter | null;
   hooks: StoryHooks;
   stylesheet: string;
+  assets: Record<string, Asset>;
 
-  constructor({ metadata, chapters, entry, hooks, stylesheet }: StoryBody) {
+  constructor({ metadata, chapters, entry, script, stylesheet }: StoryBody) {
     const realChapters = Object.fromEntries(
-      Object.entries(chapters).map(([id, options]) => {
-        return [id, new Chapter({ id, ...options })];
+      Object.entries(chapters).map(([id, { title, template, script }]) => {
+        const hooks = (script && ChapterHooksSchema.parse(new Function(script)())) || {};
+        return [id, new Chapter({ id, title, template, hooks })];
       })
     );
 
     this.metadata = metadata;
-    this.globals = metadata.globals;
+    this.globals = metadata.globals ?? {};
     this.chapters = realChapters;
     this.entry = (entry && realChapters[entry]) || null;
-    this.hooks = hooks;
+    this.hooks = (script && StoryHooksSchema.parse(new Function(script)())) || {};
     this.stylesheet = stylesheet;
+    this.assets = metadata.assets ?? {};
   }
 
   async play(prompt: StoryPrompt, options: RenderOptions) {
     if (this.hooks.onStart) {
       this.hooks.onStart(this.globals);
     }
+    const assetsUrl = Object.fromEntries(Object.entries(this.assets).map(([name, { url }]) => [name, url]));
 
     let chapter = this.entry;
     while (chapter) {
-      let modifiedGlobals = this.globals;
-
+      let scope = this.globals;
+      scope = Object.assign(scope, assetsUrl);
       if (chapter.hooks.onEnter) {
         const modified = chapter.hooks.onEnter(this.globals);
         if (modified !== undefined) {
-          modifiedGlobals = Object.assign(modifiedGlobals, modified);
+          scope = Object.assign(scope, modified);
         }
       }
 
-      const renderResult = chapter.render(modifiedGlobals, options);
+      const renderResult = chapter.render(scope, this.assets, options);
       const promptResult = await prompt({ chapter, ...renderResult });
       const { target, updates } =
         promptResult instanceof FormData ? parseFormData(promptResult, renderResult) : promptResult;
