@@ -2,7 +2,7 @@ import Handlebars, { HelperDeclareSpec, HelperOptions } from "handlebars";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 
-import { ValueType, Value, ChapterHooks, Scope } from "./definitions.js";
+import { ValueType, Value, ChapterHooks, Scope, Asset } from "./definitions.js";
 
 type MarkdownOptions = {};
 type HtmlOptions = {
@@ -103,50 +103,57 @@ const createSubmitButtonHtml = ({
   return createElementHtml(tag, buttonAttrs, children);
 };
 
-const createInputMarkdown = ({ name, type }: MarkdownOptions & { name: string; type: ValueType }) => {
-  if (type === "boolean") {
-    return `[ ${name}? ]`;
-  }
-  return `[> ${name} <]`;
-};
-
-const useHelper = ({ inputs, sets, navs }: Fields, options: RenderOptions): HelperDeclareSpec => {
+const useHelper = (
+  { inputs, sets, navs }: Fields,
+  assets: Record<string, Asset>,
+  options: RenderOptions
+): HelperDeclareSpec => {
   return {
     input(type: ValueType, opt: HelperOptions) {
-      let result = "";
       for (const name in opt.hash) {
+        let result;
         const value = opt.hash[name];
         inputs.push({ name, type, value });
         if (options.format === "html") {
           result = createInputHtml({ name, type, value, ...options });
         } else {
-          result = createInputMarkdown({ name, type });
+          if (type === "boolean") {
+            result = `[? _${name}_]`;
+          } else {
+            result = `[> _${name}_]`;
+          }
         }
-        break;
+        return new Handlebars.SafeString(result);
       }
-      return new Handlebars.SafeString(result);
+      return "";
     },
     set(opt: HelperOptions) {
-      const result = Object.entries(opt.hash as Scope)
-        .map(([name, value]) => {
-          const type = valueType(value);
-          sets.push({ name, type, value });
-          if (options.format === "html") {
-            return createInputHtml({ name, type, value, readonly: true, ...options });
-          }
-          return "";
-        })
-        .join("");
-      return new Handlebars.SafeString(result);
+      for (const name in opt.hash) {
+        const value = opt.hash[name];
+        const type = valueType(value);
+        sets.push({ name, type, value });
+      }
+      return "";
     },
     nav(target: string | null, opt: HelperOptions) {
-      let result = "";
+      let result;
       const text = opt.fn(this).trim();
       navs.push({ text, target });
       if (options.format === "html") {
         result = createSubmitButtonHtml({ target: target ?? "", children: text, ...options });
+      } else {
+        result = `[@ __${text}__]`;
       }
       return new Handlebars.SafeString(result);
+    },
+    asset(name: string) {
+      return new Handlebars.SafeString(assets[name]?.url ?? "");
+    },
+    mime(name: string) {
+      return new Handlebars.SafeString(assets[name]?.mime ?? "");
+    },
+    linebreak(n?: number) {
+      return new Handlebars.SafeString("\n".repeat(n ?? 1));
     },
   };
 };
@@ -171,7 +178,7 @@ export class Chapter {
     this.hooks = hooks;
   }
 
-  render(scope: Scope, options: RenderOptions): RenderResult {
+  render(scope: Scope, assets: Record<string, Asset> = {}, options: RenderOptions): RenderResult {
     const md = new MarkdownIt({ html: true }).use(pluginAttrs);
 
     const fields: Fields = {
@@ -180,13 +187,15 @@ export class Chapter {
       navs: [],
     };
 
-    const handle = Handlebars.create();
-    handle.registerHelper(useHelper(fields, options));
+    const helpers = useHelper(fields, assets, options);
 
-    let text = handle.compile(this.template)(scope);
+    let text;
     if (options.format === "html") {
+      text = Handlebars.compile(this.template)(scope, { helpers });
       text = md.render(text);
       text = createElementHtml("input", { type: "submit", disabled: true, hidden: true }) + text;
+    } else {
+      text = Handlebars.compile(this.template, { noEscape: true })(scope, { helpers });
     }
 
     return { text, ...fields };

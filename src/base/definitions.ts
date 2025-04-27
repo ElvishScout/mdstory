@@ -7,9 +7,18 @@ type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 
 export const ValueSchema = z.any().transform((v) => v as JsonValue);
 export const ScopeSchema = z.record(ValueSchema);
+
+export const AssetSchema = z.union([
+  z.string().transform((url) => ({ url, mime: undefined })),
+  z.object({ url: z.string(), mime: z.string().optional() }),
+]);
+export const AssetsSchema = z.record(AssetSchema);
 export const MetadataSchema = z.object({
-  title: z.string().default(""),
-  globals: ScopeSchema.default({}),
+  title: z.string().optional(),
+  author: z.string().optional(),
+  email: z.string().optional(),
+  globals: ScopeSchema.optional(),
+  assets: AssetsSchema.optional(),
 });
 
 const TargetSchema = z.string().or(z.null());
@@ -28,8 +37,25 @@ export const ChapterHooksSchema = z
 
 export type Value = z.infer<typeof ValueSchema>;
 export type Scope = z.infer<typeof ScopeSchema>;
+export type Asset = z.infer<typeof AssetSchema>;
 export type Metadata = z.infer<typeof MetadataSchema>;
 export type StoryHooks = z.infer<typeof StoryHooksSchema>;
 export type ChapterHooks = z.infer<typeof ChapterHooksSchema>;
 
 export type ValueType = "string" | "number" | "boolean" | "object";
+
+export type ChapterBody = {
+  title: string;
+  template: string;
+  script: string;
+};
+
+export type StoryBody = {
+  metadata: Metadata;
+  chapters: Record<string, ChapterBody>;
+  entry: string | null;
+  script: string;
+  stylesheet: string;
+};
+
+export type StoryAssets = Record<string, string>;

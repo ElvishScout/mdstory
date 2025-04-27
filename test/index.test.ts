@@ -9,7 +9,7 @@ import { Story, StoryPrompt, Scope } from "../src/index.js";
 
 const STORY_PATH = path.resolve(import.meta.dirname, "story.md");
 
-const md = new MarkdownIt().use(pluginAttrs).use(pluginTerminal);
+const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal);
 const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
   console.log(md.render(text).trim());
   console.log();
