@@ -1,13 +1,10 @@
 import fs from "node:fs/promises";
-import path from "node:path";
 import inquirer from "inquirer";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginTerminal from "markdown-it-terminal";
 
 import { Story, StoryPrompt, Scope } from "../src/index.js";
-
-const STORY_PATH = path.resolve(import.meta.dirname, "story.md");
 
 const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal);
 const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
@@ -51,14 +48,18 @@ const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
         }
       })
     );
-    targetReplies = await inquirer.prompt([
-      {
-        type: "list",
-        name: "target",
-        message: "Choose target",
-        choices: navs.map(({ text, target }) => ({ name: text, value: target })),
-      },
-    ]);
+    if (navs.length) {
+      targetReplies = await inquirer.prompt([
+        {
+          type: "list",
+          name: "target",
+          message: "Choose target",
+          choices: navs.map(({ text, target }) => ({ name: text, value: target })),
+        },
+      ]);
+    } else {
+      targetReplies = null;
+    }
   } catch (err) {
     if (err instanceof Error && err.name === "ExitPromptError") {
       process.exit(0);
@@ -66,7 +67,7 @@ const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
     throw err;
   }
 
-  const { target } = targetReplies;
+  const { target } = targetReplies ?? { target: null };
   const updates = Object.fromEntries([
     ...inputs.map(({ name, type }) => {
       const answer = inputReplies[name];
@@ -82,7 +83,11 @@ const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
 };
 
 const main = async () => {
-  const content = (await fs.readFile(STORY_PATH)).toString();
+  const storyPath = process.argv[2];
+  if (!storyPath) {
+    return;
+  }
+  const content = (await fs.readFile(storyPath)).toString();
   const story = new Story(content);
 
   story.play(prompt, {

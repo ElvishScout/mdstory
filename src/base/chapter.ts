@@ -4,22 +4,9 @@ import pluginAttrs from "markdown-it-attrs";
 
 import { ValueType, Value, ChapterHooks, Scope, Asset } from "./definitions.js";
 
-type MarkdownOptions = {};
-type HtmlOptions = {
-  tagMap?: Record<string, string>;
-};
-
-export type RenderOptions = ({ format: "markdown" } & MarkdownOptions) | ({ format: "html" } & HtmlOptions);
-
-type Fields = {
-  inputs: { name: string; type: ValueType; value: Value }[];
-  sets: { name: string; type: ValueType; value: Value }[];
-  navs: { text: string; target: string | null }[];
-};
-
-export type RenderResult = { text: string } & Fields;
-
 type HtmlAttrs = Record<string, string | boolean | undefined>;
+
+const escapeHtml = (text: string) => text.replace(/[<>&'"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
 const valueType = (value: Value): ValueType => {
   if (typeof value === "string") {
@@ -34,8 +21,6 @@ const valueType = (value: Value): ValueType => {
   return "object";
 };
 
-const escapeHtml = (text: string) => text.replace(/[<>&'"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
-
 const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => {
   // prettier-ignore
   const voidTags = [
@@ -44,14 +29,21 @@ const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => 
   ];
 
   const attrText = Object.entries(attrs)
-    .filter(([, value]) => value !== undefined)
     .map(([name, value]) => {
       if (typeof value === "boolean") {
         value = value ? "" : undefined;
       }
-      const escapedValue = escapeHtml(value ?? "");
-      return `${name}="${escapedValue}"`;
+      if (value === undefined) {
+        return null;
+      }
+      if (value) {
+        const escapedValue = escapeHtml(value ?? "");
+        return `${name}="${escapedValue}"`;
+      } else {
+        return name;
+      }
     })
+    .filter((attr): attr is string => attr !== null)
     .join(" ");
 
   if (voidTags.includes(tag)) {
@@ -60,69 +52,79 @@ const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => 
   return `<${tag} ${attrText}>${children ?? ""}</${tag}>`;
 };
 
-const createInputHtml = ({
-  tagMap = {},
-  name,
-  type,
-  value,
-  required,
-  readonly,
-}: HtmlOptions & {
-  name: string;
-  type: ValueType;
-  value: Value;
-  required?: boolean;
-  readonly?: boolean;
-}) => {
-  const tag = tagMap["input"] ?? "input";
+const createInputHtml = ({ name, type, value }: { name: string; type: ValueType; value: Value }) => {
   const inputType = type === "boolean" ? "checkbox" : "text";
   const inputAttrs: HtmlAttrs = {
     name,
     type: inputType,
     value: inputType !== "checkbox" ? (type === "object" ? JSON.stringify(value) : String(value)) : undefined,
     checked: inputType === "checkbox" && value ? "" : undefined,
-    required,
-    readonly,
     "aria-label": name,
   };
 
-  return createElementHtml(tag, inputAttrs);
+  return createElementHtml("input", inputAttrs);
 };
 
-const createSubmitButtonHtml = ({
-  tagMap = {},
-  target,
-  children,
-}: HtmlOptions & { target: string; children: string }) => {
-  const tag = tagMap["button"] ?? "button";
+const createSubmitButtonHtml = ({ target, children }: { target: string; children: string }) => {
   const buttonAttrs: HtmlAttrs = {
     name: "@target",
     type: "submit",
     value: target,
   };
-  return createElementHtml(tag, buttonAttrs, children);
+  return createElementHtml("button", buttonAttrs, children);
+};
+
+export type Renderer = {
+  input?: ({ name, type, value }: { name: string; type: ValueType; value: string }) => string;
+  nav?: ({ target, children }: { target: string | null; children: string }) => string;
+};
+
+const markdownRenderer: Renderer = {
+  input({ name, type }) {
+    if (type === "boolean") {
+      return `[? _${name}_]`;
+    } else {
+      return `[> _${name}_]`;
+    }
+  },
+  nav({ children }) {
+    return `[@ __${children}__]`;
+  },
+};
+
+const htmlRenderer: Renderer = {
+  input({ type, name, value }) {
+    return createInputHtml({ name, type, value });
+  },
+  nav({ target, children }) {
+    return createSubmitButtonHtml({ target: target ?? "", children });
+  },
+};
+
+export type RenderOptions = {
+  format: "markdown" | "html" | Renderer;
+  html?: boolean;
+};
+
+export type RenderResult = { text: string } & Fields;
+
+type Fields = {
+  inputs: { name: string; type: ValueType; value: Value }[];
+  sets: { name: string; type: ValueType; value: Value }[];
+  navs: { text: string; target: string | null }[];
 };
 
 const useHelper = (
   { inputs, sets, navs }: Fields,
   assets: Record<string, Asset>,
-  options: RenderOptions
+  renderer: Renderer
 ): HelperDeclareSpec => {
   return {
     input(type: ValueType, opt: HelperOptions) {
       for (const name in opt.hash) {
-        let result;
         const value = opt.hash[name];
         inputs.push({ name, type, value });
-        if (options.format === "html") {
-          result = createInputHtml({ name, type, value, ...options });
-        } else {
-          if (type === "boolean") {
-            result = `[? _${name}_]`;
-          } else {
-            result = `[> _${name}_]`;
-          }
-        }
+        const result = renderer.input ? renderer.input({ name, type, value }) : "";
         return new Handlebars.SafeString(result);
       }
       return "";
@@ -136,14 +138,9 @@ const useHelper = (
       return "";
     },
     nav(target: string | null, opt: HelperOptions) {
-      let result;
       const text = opt.fn(this).trim();
       navs.push({ text, target });
-      if (options.format === "html") {
-        result = createSubmitButtonHtml({ target: target ?? "", children: text, ...options });
-      } else {
-        result = `[@ __${text}__]`;
-      }
+      const result = renderer.nav ? renderer.nav({ target, children: text }) : "";
       return new Handlebars.SafeString(result);
     },
     asset(name: string) {
@@ -153,7 +150,7 @@ const useHelper = (
       return new Handlebars.SafeString(assets[name]?.mime ?? "");
     },
     linebreak(n?: number) {
-      return new Handlebars.SafeString("\n".repeat(n ?? 1));
+      return new Handlebars.SafeString("<br>".repeat(n ?? 1));
     },
   };
 };
@@ -178,8 +175,15 @@ export class Chapter {
     this.hooks = hooks;
   }
 
-  render(scope: Scope, assets: Record<string, Asset> = {}, options: RenderOptions): RenderResult {
-    const md = new MarkdownIt({ html: true }).use(pluginAttrs);
+  render(scope: Scope, assets: Record<string, Asset> = {}, { format, html }: RenderOptions): RenderResult {
+    let renderer: Renderer;
+    if (format === "markdown") {
+      renderer = markdownRenderer;
+    } else if (format === "html") {
+      renderer = htmlRenderer;
+    } else {
+      renderer = format;
+    }
 
     const fields: Fields = {
       inputs: [],
@@ -187,13 +191,13 @@ export class Chapter {
       navs: [],
     };
 
-    const helpers = useHelper(fields, assets, options);
+    const helpers = useHelper(fields, assets, renderer);
 
     let text;
-    if (options.format === "html") {
+    if (html) {
+      const md = new MarkdownIt({ html: true }).use(pluginAttrs);
       text = Handlebars.compile(this.template)(scope, { helpers });
       text = md.render(text);
-      text = createElementHtml("input", { type: "submit", disabled: true, hidden: true }) + text;
     } else {
       text = Handlebars.compile(this.template, { noEscape: true })(scope, { helpers });
     }

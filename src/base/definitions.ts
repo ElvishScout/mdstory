@@ -8,9 +8,11 @@ type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 export const ValueSchema = z.any().transform((v) => v as JsonValue);
 export const ScopeSchema = z.record(ValueSchema);
 
+const AssetObjectSchema = z.object({ url: z.string(), mime: z.string().optional() });
+
 export const AssetSchema = z.union([
-  z.string().transform((url) => ({ url, mime: undefined })),
-  z.object({ url: z.string(), mime: z.string().optional() }),
+  z.string().transform((url) => AssetObjectSchema.parse({ url, mime: undefined })),
+  AssetObjectSchema,
 ]);
 export const AssetsSchema = z.record(AssetSchema);
 export const MetadataSchema = z.object({
