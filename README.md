@@ -6,7 +6,7 @@ Online demo: <https://mdstory.elvish.cc>
 
 ## Features
 
-- Seamless intergration of Markdown, Handlebars and JavaScript.
+- Seamless integration of Markdown, Handlebars and JavaScript.
 - Ease-to-use API, for both Web and command line applications.
 
 ## File Format
@@ -27,7 +27,7 @@ MdStory includes built-in Handlebars helpers for creating interactive components
 
 #### `{{input type name=default}}`
 
-Creates an input of type `type` and assigns the input value (by default `default`) to a global variable named `name`. Supported input types include: `string`, `number`, `boolean`, and `object` (represented in a JSON string).
+Creates an input of type `type` and assigns the input value (by default `default`) to a global variable named `name`. Supported input types include: `string`, `number`, `boolean`, and `object` (represented as a JSON string).
 
 In HTML rendering mode, it generates a corresponding `<input>` element.
 
@@ -47,21 +47,21 @@ Inserts `n` blank lines, where `n` defaults to `1`.
 
 #### `{{asset name}}`
 
-Retrieves the URL of a resource file named `name`. Basically it acts the same way as `{{name}}` except that it supports resource names with special characters.
+Retrieves the URL of a resource file named `name`. Basically it works the same as `{{name}}` except that it supports resource names with special characters.
 
 #### `{{mime name}}`
 
 Retrieves the MIME type of a resource file named `name`.
 
-### JavaScript Scripts
+### JavaScript Integration
 
-JavaScript may be included into the story file using the `<script>` tag. Scripts before any level-one headings are considered global scripts, while those within chapters are considered chapter scripts. Only one `<script>` tag is allowed at the beginning of the story and in each chapter.
+JavaScript may be included into the story source using the `<script>` tag. Scripts before any level-one headings are considered global scripts, while those within chapters are considered chapter scripts. Only one `<script>` tag is allowed at the beginning of the story and in each chapter.
 
 Scripts are evaluated during runtime using the `Function()` constructor, therefore you may use top-level `return` statements to return objects of type [StoryHooks](#type-storyhooks) or [ChapterHooks](#type-chapterhooks).
 
 ### Stylesheets
 
-CSS stylesheets may be included using the `<style>` tag, they will be extracted and gathered into the `stylesheet` property of [StoryBody](#type-storybody) during parsing.
+CSS stylesheets may be included using the `<style>` tag, which are extracted and gathered into the `stylesheet` property of [StoryBody](#type-storybody) during parsing.
 
 ## Examples
 
@@ -71,13 +71,37 @@ Here are some [examples](./examples/) of story files.
 
 ### `type Value`
 
+```typescript
+type JsonPrimitive = number | string | boolean | null;
+type JsonArray = JsonValue[];
+type JsonObject = { [key: string]: JsonValue };
+type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+type Value = JsonValue;
+```
+
 The type of variables in MdStory, basically all types allowed in JSON, including primitive values (`string`, `number`, `boolean`, `null`) and nested `array`s and `object`s. Functions and `undefined` are not supported.
 
+### `type ValueType`
+
+```typescript
+type ValueType = "string" | "number" | "boolean" | "object";
+```
+
+The type indicator for input fields.
+
 ### `type Scope`
+
+```typescript
+type Scope = JsonObject;
+```
 
 An object of variable values by their names, used to store global variables or input fields.
 
 ### `type Asset`
+
+```typescript
+type Asset = { url: string; mime?: string };
+```
 
 A referenceable resource file.
 
@@ -88,6 +112,15 @@ A referenceable resource file.
 
 ### `type Metadata`
 
+```typescript
+type Metadata = {
+  title?: string;
+  author?: string;
+  email?: string;
+  assets?: Record<string, Asset>;
+};
+```
+
 The Metadata of the story.
 
 #### Properties
@@ -95,10 +128,18 @@ The Metadata of the story.
 - `title (optional)`: The story title.
 - `author (optional)`: The author's name.
 - `email (optional)`: The author's email address.
-- `globals (optional)`: An object of type [Scope](#type-scope) containing initial values of global variables.
-- `assets (optional)`: An object of resource names and [Asset](#type-asset) objects, containing all assets used in the story.
+- `globals (optional)`: A [Scope](#type-scope) containing initial values of global variables.
+- `assets (optional)`: An object of all [Asset](#type-asset) objects used in the story by their names.
 
 ### `type ChapterBody`
+
+```typescript
+type ChapterBody = {
+  title: string;
+  template: string;
+  script: string;
+};
+```
 
 The structured representation of chapter content.
 
@@ -109,6 +150,16 @@ The structured representation of chapter content.
 - `script`: The JavaScript script for the chapter.
 
 ### `type StoryBody`
+
+```typescript
+type StoryBody = {
+  metadata: Metadata;
+  chapters: Record<string, ChapterBody>;
+  entry: string | null;
+  script: string;
+  stylesheet: string;
+};
+```
 
 The structured representation of story content.
 
@@ -122,58 +173,91 @@ The structured representation of story content.
 
 ### `type StoryHooks`
 
+```typescript
+type StoryHooks = {
+  onStart?: (globals: Scope) => Scope | void;
+};
+```
+
 Defines the global lifecycle hooks of the story.
 
-#### Properties
+#### Methods
 
 - `onStart (optional)`: Called when the story starts.
   - Parameters:
-    - `globals`: The initial values of global variables.
-  - Return value: Updated `globals` or `void`.
+    - `globals`: A [Scope](#type-scope) of initial global variables.
+  - Return value:
+    - Updated [Scope](#type-scope) of global variables or `void`.
 
 ### `type ChapterHooks`
 
+```typescript
+type ChapterHooks = {
+  onEnter?: (globals: Scope) => Scope | void;
+  onLeave?: (globals: Scope, fields: Scope) => Scope | void;
+  onNavigate?: (target: string | null, globals: Scope, fields: Scope) => string | null;
+};
+```
+
 Defines the lifecycle hooks of a chapter.
 
-#### Properties
+#### Methods
 
 - `onEnter (optional)`: Called when entering a chapter.
   - Parameters:
-    - `globals`: Current global variables.
-  - Return value: Updated `globals` or `void`, effective only during the lifecycle of current chapter.
+    - `globals`: A [Scope](#type-scope) of current global variables.
+  - Return value:
+    - Updated [Scope](#type-scope) of global variables or `void`. Such update only applies to the current lifecycle of the chapter.
 - `onLeave (optional)`: Called when leaving a chapter.
   - Parameters:
-    - `globals`: Current global variables.
-    - `fields`: Input fields from current chapter.
-  - Return value: Updated `globals` or `void`.
+    - `globals`: A [Scope](#type-scope) of current global variables.
+    - `fields`: A [Scope](#type-scope) of input fields from current chapter.
+  - Return value:
+    - Updated [Scope](#type-scope) of global variables or `void`.
 - `onNavigate (optional)`: Called during chapter navigation.
   - Parameters:
-    - `target` : `id` of target chapter.
-    - `globals`: Current global variables.
-    - `fields`: Input fields from current chapter.
-  - Return value: Updated `target` or `void`.
+    - `target` : `id` of the target chapter.
+    - `globals`: A [Scope](#type-scope) of current global variables.
+    - `fields`: A [Scope](#type-scope) of input fields from current chapter.
+  - Return value:
+    - Updated `target` or `void`.
 
 ### `type Renderer`
+
+```typescript
+type Renderer = {
+  input?: (options: { name: string; type: ValueType; value: Value }) => string;
+  nav?: (options: { target: string; children: string }) => string;
+};
+```
 
 Defines the renderer interface for generating outputs in different formats.
 
 #### Methods
 
-- `input({ name, type, value }) (optional)`: Generates the rendering result of an input field.
-
+- `input (optional)`: Generates the rendering result of an input field.
   - Parameters:
     - `name`: The name of the variable.
-    - `type`: The type of the variable.
-    - `value`: The default value of the variable.
-  - Return value: The rendered input field.
+    - `type`: The [ValueType](#type-valuetype) of the variable.
+    - `value`: The default [Value](#type-value) of the variable.
+  - Return value:
+    - The rendered input field.
 
-- `nav({ target, children }) (optional)`: Generates the rendering result of chapter navigation.
+- `nav (optional)`: Generates the rendering result of chapter navigation.
   - Parameters:
     - `target`: The `id` of the target chapter.
     - `children`: The text content of the navigation button.
-  - Return value: The rendered navigation button.
+  - Return value:
+    - The rendered navigation button.
 
 ### `type RenderOptions`
+
+```typescript
+type RenderOptions = {
+  format: "markdown" | "html" | Renderer;
+  html?: boolean;
+};
+```
 
 Defines rendering options.
 
@@ -184,6 +268,14 @@ Defines rendering options.
 
 ### `type RenderResult`
 
+```typescript
+type RenderResult = {
+  text: string;
+  inputs: { name: string; type: ValueType; value: Value }[];
+  navs: { text: string; target: string | null }[];
+};
+```
+
 The rendering result, containing the rendered text and extracted fields.
 
 #### Properties
@@ -191,17 +283,22 @@ The rendering result, containing the rendered text and extracted fields.
 - `text`: The rendered text content.
 - `inputs`: An array of input fields, each containing:
   - `name`: The name of the variable.
-  - `type`: The type of the variable.
-  - `value`: The default value of the variable.
-- `sets`: An array of set fields, each containing:
-  - `name`: The name of the variable.
-  - `type`: The type of the variable.
-  - `value`: The value of the variable.
+  - `type`: The [ValueType](#type-valuetype) of the variable.
+  - `value`: The default [Value](#type-value) of the variable.
 - `navs`: An array of navigation fields, each containing:
   - `text`: The text content of the navigation button.
   - `target`: The `id` of the target chapter.
 
 ### `type ChapterOptions`
+
+```typescript
+type ChapterOptions = {
+  id: string;
+  title: string;
+  template: string;
+  hooks: ChapterHooks;
+};
+```
 
 Defines the initialization options of a chapter.
 
@@ -214,6 +311,18 @@ Defines the initialization options of a chapter.
 
 ### `class Chapter`
 
+```typescript
+class Chapter {
+  id: string;
+  title: string;
+  template: string;
+  hooks: ChapterHooks;
+
+  constructor(options: ChapterOptions);
+  render(scope: Scope, assets: Record<string, Asset>, options: RenderOptions): string;
+}
+```
+
 Defines a chapter.
 
 #### Properties
@@ -225,62 +334,88 @@ Defines a chapter.
 
 #### Methods
 
-- `constructor(options)`: Initializes the chapter instance.
+- `constructor`: Initializes the chapter instance.
   - Parameters:
-    - `options`: The chapter options of type [ChapterOptions](#type-chapteroptions).
-- `render(scope, assets, options)`: Renders the story content.
+    - `options`: An object of type [ChapterOptions](#type-chapteroptions).
+- `render`: Renders the chapter content.
   - Parameters:
-    - `scope`: The rendering context.
-    - `assets`: The story assets.
-    - `options`: The rendering options of type [RenderOptions](#type-renderoptions).
-  - Return value: The rendering result of type [RenderResult](#type-renderresult).
+    - `scope`: An object of type [Scope](#type-scope) for template rendering.
+    - `assets`: An object of [Asset](#type-asset) objects by their names.
+    - `options`: An object of type [RenderOptions](#type-renderoptions).
+  - Return value:
+    - An object of type [RenderResult](#type-renderresult).
 
 ### `type StoryPrompt`
+
+```typescript
+type StoryPrompt = (props: { chapter: Chapter } & RenderResult) => Promise<{ target: string | null; updates: Scope } | FormData>;
+```
 
 Defines the prompt function of the story, used to handle user input.
 
 #### Parameters
 
 - `props`: An object containing the current chapter and rendering result.
-  - `chapter`: Current chapter.
+  - `chapter`: Current [Chapter](#class-chapter).
   - `text`: The rendered chapter content.
-  - `inputs`, `sets`, `navs`: Fields from the rendering result.
+  - `inputs`, `navs`: Fields from [RenderResult](#type-renderresult).
 
 #### Return value
 
 - A `Promise` resolving to one of the following forms:
-  - `{ target, updates }`: The `id` of the target chapter and updated global variables.
-  - `FormData`: Contains the form data of user input.
+  - `{ target, updates }`: The `id` of the target chapter and updated [Scope](#type-scope) of global variables.
+  - `FormData`: Contains the form data of user input, typically from a Web app.
 
 ### `class StoryBase`
+
+```typescript
+class StoryBase {
+  metadata: Metadata;
+  globals: Scope;
+  chapters: Record<string, Chapter>;
+  entry: Chapter | null;
+  hooks: StoryHooks;
+  stylesheet: string;
+  assets: Record<string, Asset>;
+
+  constructor(storyBody: StoryBody);
+  play(prompt: StoryPrompt, options: RenderOptions): Promise<void>;
+}
+```
 
 Defines the base class of the story, containing the core logic of the story.
 
 #### Properties
 
 - `metadata`: Story [Metadata](#type-metadata).
-- `globals`: Global variables.
-- `chapters`: An object of chapters by their `id`s.
-- `entry`: The entry chapter of the story.
+- `globals`: A [Scope](#type-scope) of global variables.
+- `chapters`: An object of [Chapter](#class-chapter) objects by their `id`s.
+- `entry`: The entry [Chapter](#class-chapter) of the story.
 - `hooks`: An object of type [StoryHooks](#type-storyhooks).
 - `stylesheet`: The global stylesheet of the story.
-- `assets`: An object of asset files by their alias names.
+- `assets`: An object of [Asset](#type-asset) objects by their names.
 
 #### Methods
 
-- `constructor({ metadata, chapters, entry, script, stylesheet })`: Initializes the story instance.
-- `play(prompt, options)`: Starts playing the story.
+- `constructor`: Initializes the story instance.
+- `play`: Starts playing the story.
   - Parameters:
     - `prompt`: A function of type [StoryPrompt](#type-storyprompt).
     - `options`: An object of type [RenderOptions](#type-renderoptions).
+  - Return value:
+    - A `Promise` resolving to `void`.
 
-### `function parseStoryContent`
+### `function parseStorySource`
 
-Parses the story content in Markdown format.
+```typescript
+function parseStorySource(source: string): StoryBody;
+```
+
+Parses the story source in Markdown format.
 
 #### Parameters
 
-- `content`: The story content in Markdown format.
+- `source`: The story source in Markdown format.
 
 #### Return value
 
@@ -288,8 +423,16 @@ Parses the story content in Markdown format.
 
 ### `class Story`
 
-Inherits from [StoryBase](#class-storybase), creating a story instance from the story content in Markdown format.
+```typescript
+class Story extends StoryBase {
+  constructor(source: string);
+}
+```
+
+Inherits from [StoryBase](#class-storybase), creating a story instance from the story source in Markdown format.
 
 #### Methods
 
-- `constructor(content: string)`: Initializes the story instance.
+- `constructor`: Initializes the story instance.
+  - Parameters:
+    - `source`: The story source in Markdown format.

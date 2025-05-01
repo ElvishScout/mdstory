@@ -106,7 +106,7 @@ export type RenderOptions = {
   html?: boolean;
 };
 
-export type RenderResult = { text: string } & Fields;
+export type RenderResult = { text: string } & Omit<Fields, "sets">;
 
 type Fields = {
   inputs: { name: string; type: ValueType; value: Value }[];

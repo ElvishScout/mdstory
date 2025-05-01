@@ -29,10 +29,10 @@ const parstInput = (type: ValueType, text: string | null) => {
   return text;
 };
 
-const parseFormData = (formData: FormData, { inputs, sets }: Pick<RenderResult, "inputs" | "sets">) => {
+const parseFormData = (formData: FormData, { inputs }: Pick<RenderResult, "inputs">) => {
   const target = (formData.get("@target") as string) || null;
   const updates = Object.fromEntries(
-    [...inputs, ...sets].map(({ name, type }) => {
+    inputs.map(({ name, type }) => {
       const value = formData.get(name) as string | null;
       try {
         return [name, parstInput(type, value)];
