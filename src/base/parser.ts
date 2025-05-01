@@ -6,11 +6,11 @@ import pluginAttrs from "markdown-it-attrs";
 import { StoryBody, ChapterBody, MetadataSchema } from "./definitions.js";
 import { DuplicateIdError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
 
-export const parseStoryContent = (content: string): StoryBody => {
+export const parseStorySource = (source: string): StoryBody => {
   type Division = { id: string; title: string; lineno: number; script: string };
 
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
-  const tokens = md.parse(content, {});
+  const tokens = md.parse(source, {});
 
   let metadata = MetadataSchema.parse({});
   let storyScript = "";
@@ -64,7 +64,7 @@ export const parseStoryContent = (content: string): StoryBody => {
     }
   });
 
-  const lines = content.split("\n").map((line, i) => {
+  const lines = source.split("\n").map((line, i) => {
     if (ignoredRanges.find(([from, to]) => i >= from && i < to)) {
       return null;
     }
