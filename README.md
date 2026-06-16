@@ -6,63 +6,274 @@ An interactive fiction scripting format based on Markdown and Handlebars.
 
 Online demo: <https://mdstory.elvish.cc>
 
-## Features
+## Quick Start
 
-- Seamless integration of Markdown, Handlebars and JavaScript.
-- Easy-to-use API, for both Web and command line applications.
+A MdStory file is a Markdown document with three levels of headings:
 
-## File Format
+```markdown
+---
+title: My Story
+globals:
+  name: Alice
+---
 
-### Metadata
+# My Story
 
-The story file header may include YAML-formatted metadata. Metadata defines the basic information and global configuration of the story.
+<script>
+  export default {
+    globals() {
+      return { gold: 100 };
+    },
+  };
+</script>
 
-### Chapters
+## Chapter One {#chap1}
 
-Story files are divided into chapters by level-one headings. The `id` attribute of the heading serves as the unique identifier for the chapter. If omitted, the heading content is used as the chapter id instead.
+### A Dark Forest {#forest}
 
-Handlebars template language is supported in the chapter content. During rendering, globals and assets are added to the context for direct access by the template.
+You wake up in a dark forest. Your name is {{name}} and you have {{gold}} gold.
 
-### Helpers
+{{{input "string" weapon="stick"}}}
 
-MdStory includes built-in Handlebars helpers:
+{{#nav "chap2.cave"}}Walk forward{{/nav}}
+```
 
-#### `{{input type name=default}}`
+### Structure
 
-Creates an input of the given type (`string`, `number`, or `boolean`) and assigns the value to a global variable.
-#### `{{#nav target}}`
+| Level | Heading | Purpose |
+|-------|---------|---------|
+| `#` | Story title | One per file. `<script>` exports story hooks. |
+| `##` | Chapter | Groups scenes. Has its own hooks and `locals`. |
+| `###` | Scene | Renderable unit with a Handlebars template. |
 
-Creates an entry to navigate to another chapter.
+Scenes placed before any `##` are grouped into an implicit default chapter.
 
-#### `{{linebreak [n]}}`
+### Navigation
 
-Inserts `n` blank lines (default `1`).
+Use `{{#nav target}}label{{/nav}}` to let the reader move between scenes:
 
-#### `{{asset name}}`
+```markdown
+{{#nav "forest"}}     Go back to the forest        {{/nav}}   ← same chapter
+{{#nav "chap2.cave"}} Enter the cave (other chapter){{/nav}}   ← cross-chapter
+{{#nav "chap2"}}      Go to chapter 2              {{/nav}}   ← chapter entry scene
+{{#nav null}}         The end                      {{/nav}}   ← end story
+```
 
-Retrieves the URL of a resource file.
+### Input
 
-#### `{{mime name}}`
+Let the reader provide values. These persist as global variables.
 
-Retrieves the MIME type of a resource file.
+```markdown
+{{{input "string"  name="Alice"}}}    ← text input, defaults to "Alice"
+{{{input "number"  age=30}}}          ← number input
+{{{input "boolean" brave=true}}}      ← checkbox
+```
 
-### JavaScript Integration
+Use the value later anywhere in the story:
 
-JavaScript may be included using `<script>` tags. Scripts before any level-one headings are global scripts, while those within chapters are chapter scripts. Scripts are evaluated as ES modules using dynamic `import()`, so use `export default` to export hooks.
+```markdown
+Your name is {{name}} and you are {{age}} years old.
+{{#if brave}}You feel courageous.{{/if}}
+```
+
+### Logic & Variables
+
+Handlebars `{{#if}}` works with boolean globals and locals:
+
+```markdown
+{{#if hasKey}}
+You unlock the door.
+{{else}}
+The door is locked.
+{{/if}}
+```
+
+Globals persist across the whole story. Chapter `locals` are re-computed each time the chapter is entered. Scene `data()` provides per-render overrides.
+
+### Images & Resources
+
+Reference assets defined in YAML metadata:
+
+```yaml
+assets:
+  map: "https://example.com/map.png"
+  bgm: { url: "https://example.com/audio.mp3", mime: "audio/mpeg" }
+```
+
+```markdown
+![]({asset "map"})
+{{asset "bgm"}}  →  outputs the URL
+{{mime "bgm"}}   →  outputs "audio/mpeg"
+```
 
 ### Stylesheets
 
-CSS may be included using `<style>` tags, extracted into the `stylesheet` property during parsing.
+Include CSS via `<style>` tags under the story heading:
+
+```html
+<style>
+  .clue { color: #ffd700; }
+</style>
+```
+
+### Hooks
+
+Hooks are JavaScript functions that run at specific points. Export them from `<script>` tags.
+
+| Level | Position | Hook | Purpose |
+|-------|----------|------|---------|
+| Story | Under `#` | `globals()` | Return initial global variables |
+| | | `onStart()` | Side effect when story begins |
+| Chapter | Under `##` | `locals()` | Return chapter-local variables |
+| | | `onEnter()` | Side effect when entering the chapter |
+| | | `onLeave()` | Side effect when leaving the chapter |
+| Scene | Under `###` | `data()` | Return per-render data for the scene |
+| | | `onEnter()` | Side effect on scene enter |
+| | | `onLeave()` | Side effect on scene exit |
+
+All hooks receive `{ globals, locals }` (context-dependent). Hooks with return values support both sync and `async`.
+
+### Line Breaks
+
+```markdown
+{{linebreak}}     ← one blank line
+{{linebreak 3}}   ← three blank lines
+```
+
+### Example: Branching Scene
+
+```markdown
+### Crossroads {#crossroads}
+
+A fork in the road. Which way?
+
+{{#nav "chap1.forest"}}🌲 Into the woods{{/nav}}
+{{#nav "chap1.mountain"}}⛰️ Up the mountain{{/nav}}
+```
 
 ## Examples
 
-See [examples](./examples/) for sample story files.
+Full working stories in [examples/](./examples/).
 
-## API
+### Chapter with Locals and Branching
 
-Full API documentation with TypeScript type definitions is available in the source code:
+```markdown
+## The Dungeon {#dungeon}
 
-- **Types**: `Variable`, `InputType`, `Scope`, `Asset`, `Metadata`, `StoryHooks`, `ChapterHooks`, `ChapterInit`, `StoryInit` — defined in [src/core/definitions.ts](./src/core/definitions.ts)
-- **Renderer**: `Renderer`, `RenderOptions`, `RenderResult`, `ChapterOptions` — defined in [src/core/chapter.ts](./src/core/chapter.ts)
-- **Classes**: `Chapter`, `Story` — defined in [src/core/chapter.ts](./src/core/chapter.ts) and [src/core/story.ts](./src/core/story.ts)
-- **Functions**: `parseStorySource` — defined in [src/core/parser.ts](./src/core/parser.ts)
+<script>
+  let attempts = 0;
+  export default {
+    locals() {
+      attempts++;
+      return { attempt: attempts };
+    },
+  };
+</script>
+
+### First Room {#room}
+
+You enter the dungeon. This is your {{attempt}}th attempt.
+
+{{{input "boolean" ready=false}}}
+
+{{#if ready}}
+The passage splits in two.
+{{#nav "dungeon.left"}}Go left{{/nav}}
+{{#nav "dungeon.right"}}Go right{{/nav}}
+{{else}}
+You're not ready yet.
+{{#nav "dungeon.room"}}Take a breath{{/nav}}
+{{/if}}
+```
+
+### Scene with Data Hook
+
+```markdown
+### Treasure Chest {#chest}
+
+<script>
+  export default {
+    data({ globals }) {
+      const opened = globals.chestOpened || false;
+      return {
+        alreadyOpened: opened,
+        coins: opened ? 0 : 50,
+      };
+    },
+    onLeave({ globals }) {
+      globals.chestOpened = true;
+    },
+  };
+</script>
+
+{{#if alreadyOpened}}
+The chest is empty.
+{{else}}
+You found {{coins}} gold pieces!
+{{/if}}
+```
+
+### Cross-Chapter Navigation
+
+```markdown
+### Escape {#escape}
+
+{{#nav "dungeon.room"}}Go back inside{{/nav}}
+{{#nav "overworld.village"}}Run to the village{{/nav}}
+{{#nav null}}Give up{{/nav}}
+```
+
+### Full Story: Simple Choice
+
+```markdown
+---
+title: The Crossing
+---
+
+# The Crossing
+
+### Crossroads {#start}
+
+A stranger approaches you.
+
+{{{input "string" name="traveler"}}}
+
+{{#nav "forest.path"}}Enter the forest{{/nav}}
+{{#nav "river.bridge"}}Cross the bridge{{/nav}}
+
+## Forest {#forest}
+
+### Deep Woods {#path}
+
+You walk among ancient trees, {{name}}.
+
+The forest whispers your name.
+
+{{#nav "start"}}Turn back{{/nav}}
+{{#nav null}}Rest here forever{{/nav}}
+
+## River {#river}
+
+### Old Bridge {#bridge}
+
+The wooden bridge creaks under your weight, {{name}}.
+
+On the far side, you see a light.
+
+{{#nav "start"}}Go back{{/nav}}
+{{#nav null}}Cross into the light{{/nav}}
+```
+
+- `simple.md` — basic branching
+- `rickroll.md` — animated single-scene loop
+- `abyss.md` — Chinese sci-fi thriller with branching
+- `time-loop.md` — detective time-loop with multi-scene chapters
+
+## CLI
+
+Run stories in the terminal:
+
+```bash
+npm run cli examples/simple.md
+npm run cli examples/time-loop.md -- --debug   # show globals/locals per scene
+```

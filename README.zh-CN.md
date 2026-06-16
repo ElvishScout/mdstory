@@ -6,63 +6,274 @@
 
 在线演示：<https://mdstory.elvish.cc>
 
-## 特性
+## 快速开始
 
-- 无缝集成 Markdown、Handlebars 和 JavaScript。
-- 易于使用的 API，同时支持 Web 和命令行应用。
+MdStory 文件是一个 Markdown 文档，使用三级标题结构：
 
-## 文件格式
+```markdown
+---
+title: 我的故事
+globals:
+  name: 小明
+---
 
-### 元数据
+# 我的故事
 
-故事文件头部可包含 YAML 格式的元数据，用于定义故事的基本信息和全局配置。
+<script>
+  export default {
+    globals() {
+      return { 金币: 100 };
+    },
+  };
+</script>
 
-### 章节
+## 第一章 {#chap1}
 
-故事文件通过一级标题划分为章节。标题的 `id` 属性作为章节的唯一标识符。如果省略，标题内容将用作章节 id。
+### 黑暗森林 {#forest}
 
-章节内容支持 Handlebars 模板语言。渲染时，globals 和 assets 中的属性会添加到模板上下文中，供模板直接访问。
+你在一个黑暗的森林中醒来。你的名字是 {{name}}，你有 {{金币}} 枚金币。
 
-### 助手
+{{{input "string" 武器="木棍"}}}
 
-MdStory 包含以下内置 Handlebars 助手：
+{{#nav "chap2.cave"}}向前走{{/nav}}
+```
 
-#### `{{input type name=default}}`
+### 文档结构
 
-创建指定类型（`string`、`number` 或 `boolean`）的输入字段，并将值赋给全局变量。
-#### `{{#nav target}}`
+| 层级 | 标题 | 作用 |
+|------|------|------|
+| `#` | 故事标题 | 全文唯一。`<script>` 输出故事级钩子。 |
+| `##` | 章节 | 将场景分组。可拥有自己的钩子和 `locals`。 |
+| `###` | 场景 | 可渲染单元，包含 Handlebars 模板。 |
 
-创建跳转到其他章节的导航入口。
+任何 `##` 之前的 `###` 会自动归入一个隐式默认章节。
 
-#### `{{linebreak [n]}}`
+### 导航
 
-插入 `n` 个空行（默认为 `1`）。
+用 `{{#nav target}}标签{{/nav}}` 让读者在不同场景间移动：
 
-#### `{{asset name}}`
+```markdown
+{{#nav "forest"}}     回到森林（同一章节）        {{/nav}}
+{{#nav "chap2.cave"}} 进入洞穴（跨章节）          {{/nav}}
+{{#nav "chap2"}}      前往第二章                  {{/nav}}
+{{#nav null}}         故事结束                    {{/nav}}
+```
 
-获取资源文件的 URL。
+### 输入
 
-#### `{{mime name}}`
+让读者提供值，这些值会作为全局变量持久化。
 
-获取资源文件的 MIME 类型。
+```markdown
+{{{input "string"  名字="小明"}}}   ← 文本输入，默认"小明"
+{{{input "number"  年龄=30}}}       ← 数字输入
+{{{input "boolean" 勇敢=true}}}     ← 复选框
+```
 
-### JavaScript 集成
+在故事中任意位置使用这些值：
 
-可使用 `<script>` 标签引入 JavaScript。一级标题之前的脚本为全局脚本，章节内的脚本为章节脚本。脚本作为 ES 模块通过动态 `import()` 执行，使用 `export default` 导出钩子对象。
+```markdown
+你的名字是 {{名字}}，今年 {{年龄}} 岁。
+{{#if 勇敢}}你感到充满勇气。{{/if}}
+```
+
+### 逻辑与变量
+
+用 `{{#if}}` 实现分支：
+
+```markdown
+{{#if 有钥匙}}
+你打开了门。
+{{else}}
+门锁着。
+{{/if}}
+```
+
+全局变量（globals）在整个故事中持久存在。章节局部变量（`locals`）在每次进入章节时重新计算。场景 `data()` 提供每次渲染的覆盖数据。
+
+### 图片与资源
+
+引用 YAML 元数据中定义的资源：
+
+```yaml
+assets:
+  map: "https://example.com/map.png"
+  bgm: { url: "https://example.com/audio.mp3", mime: "audio/mpeg" }
+```
+
+```markdown
+![]({asset "map"})
+{{asset "bgm"}}  → 输出 URL
+{{mime "bgm"}}   → 输出 "audio/mpeg"
+```
 
 ### 样式表
 
-可使用 `<style>` 标签引入 CSS，解析时会提取到 `stylesheet` 属性中。
+在故事标题下用 `<style>` 标签引入 CSS：
+
+```html
+<style>
+  .clue { color: #ffd700; }
+</style>
+```
+
+### 钩子
+
+钩子是在特定时机执行的 JavaScript 函数，从 `<script>` 标签中导出。
+
+| 层级 | 位置 | 钩子 | 作用 |
+|------|------|------|------|
+| Story | `#` 下 | `globals()` | 返回初始全局变量 |
+| | | `onStart()` | 故事开始时的副作用 |
+| Chapter | `##` 下 | `locals()` | 返回章节局部变量 |
+| | | `onEnter()` | 进入章节时的副作用 |
+| | | `onLeave()` | 离开章节时的副作用 |
+| Scene | `###` 下 | `data()` | 返回每次渲染的数据 |
+| | | `onEnter()` | 进入场景时的副作用 |
+| | | `onLeave()` | 离开场景时的副作用 |
+
+所有钩子接收 `{ globals, locals }`（依层级而定）。有返回值的钩子支持同步和 `async`。
+
+### 空行
+
+```markdown
+{{linebreak}}     ← 一个空行
+{{linebreak 3}}   ← 三个空行
+```
+
+### 分支场景示例
+
+```markdown
+### 十字路口 {#crossroads}
+
+眼前出现了岔路。你选择哪条？
+
+{{#nav "chap1.forest"}}🌲 走进森林{{/nav}}
+{{#nav "chap1.mountain"}}⛰️ 爬上山顶{{/nav}}
+```
 
 ## 示例
 
-示例故事文件见 [examples](./examples/)。
+完整故事见 [examples/](./examples/)。
 
-## API
+### 带章节变量和分支的场景
 
-完整的 API 文档及 TypeScript 类型定义请参阅源码：
+```markdown
+## 地下城 {#dungeon}
 
-- **类型定义**：`Variable`、`InputType`、`Scope`、`Asset`、`Metadata`、`StoryHooks`、`ChapterHooks`、`ChapterInit`、`StoryInit` — 定义于 [src/core/definitions.ts](./src/core/definitions.ts)
-- **渲染相关**：`Renderer`、`RenderOptions`、`RenderResult`、`ChapterOptions` — 定义于 [src/core/chapter.ts](./src/core/chapter.ts)
-- **类**：`Chapter`、`Story` — 定义于 [src/core/chapter.ts](./src/core/chapter.ts) 和 [src/core/story.ts](./src/core/story.ts)
-- **函数**：`parseStorySource` — 定义于 [src/core/parser.ts](./src/core/parser.ts)
+<script>
+  let attempts = 0;
+  export default {
+    locals() {
+      attempts++;
+      return { 第几次: attempts };
+    },
+  };
+</script>
+
+### 第一间房 {#room}
+
+你进入了地下城。这是你第 {{第几次}} 次尝试。
+
+{{{input "boolean" 准备好了=false}}}
+
+{{#if 准备好了}}
+前方出现了岔路。
+{{#nav "dungeon.left"}}向左走{{/nav}}
+{{#nav "dungeon.right"}}向右走{{/nav}}
+{{else}}
+你还没准备好。
+{{#nav "dungeon.room"}}深呼吸{{/nav}}
+{{/if}}
+```
+
+### 带 Data 钩子的场景
+
+```markdown
+### 宝箱 {#chest}
+
+<script>
+  export default {
+    data({ globals }) {
+      const opened = globals.已开过 || false;
+      return {
+        已空: opened,
+        金币数: opened ? 0 : 50,
+      };
+    },
+    onLeave({ globals }) {
+      globals.已开过 = true;
+    },
+  };
+</script>
+
+{{#if 已空}}
+宝箱是空的。
+{{else}}
+你找到了 {{金币数}} 枚金币！
+{{/if}}
+```
+
+### 跨章节导航
+
+```markdown
+### 出口 {#escape}
+
+{{#nav "dungeon.room"}}返回地下城{{/nav}}
+{{#nav "overworld.village"}}逃往村庄{{/nav}}
+{{#nav null}}放弃{{/nav}}
+```
+
+### 完整小故事
+
+```markdown
+---
+title: 岔路口
+---
+
+# 岔路口
+
+### 十字路口 {#start}
+
+一个陌生人朝你走来。
+
+{{{input "string" name="旅人"}}}
+
+{{#nav "forest.path"}}走进森林{{/nav}}
+{{#nav "river.bridge"}}过桥{{/nav}}
+
+## 森林 {#forest}
+
+### 密林深处 {#path}
+
+你在古树间穿行，{{旅人}}。
+
+森林低语着你的名字。
+
+{{#nav "start"}}原路返回{{/nav}}
+{{#nav null}}在此长眠{{/nav}}
+
+## 河流 {#river}
+
+### 老桥 {#bridge}
+
+木桥在你脚下吱嘎作响，{{旅人}}。
+
+对岸有一点光亮。
+
+{{#nav "start"}}往回走{{/nav}}
+{{#nav null}}走向光明{{/nav}}
+```
+
+- `simple.md` — 基础分支
+- `rickroll.md` — 单场景循环动画
+- `abyss.md` — 科幻心理惊悚，多分支
+- `time-loop.md` — 侦探时间循环，多章节多场景
+
+## CLI
+
+在终端中运行故事：
+
+```bash
+npm run cli examples/simple.md
+npm run cli examples/time-loop.md -- --debug   # 显示每场景的 globals/locals
+```
