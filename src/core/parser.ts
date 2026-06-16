@@ -20,6 +20,11 @@ async function parseChapterScript(script: string) {
   return script.trim() ? ChapterHooksSchema.parse(await importScriptModule(script)) : {};
 }
 
+/**
+ * Parses a Markdown-formatted story source string into a structured StoryInit.
+ * Supports YAML front-matter, level-one heading chapters, Handlebars templates,
+ * `<script>` tags for hooks, and `<style>` tags for stylesheets.
+ */
 export async function parseStorySource(source: string): Promise<StoryInit> {
   type Division = { id: string; title: string; lineno: number; script: string };
 

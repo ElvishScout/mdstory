@@ -70,8 +70,11 @@ const createSubmitButtonHtml = ({ target, children }: { target: string; children
   return createElementHtml("button", buttonAttrs, children);
 };
 
+/** Custom renderer interface for generating output in different formats. */
 export type Renderer = {
+  /** Renders an input field. */
   input?: ({ name, type, value }: { name: string; type: InputType; value: string }) => string;
+  /** Renders a navigation button. */
   nav?: ({ target, children }: { target: string | null; children: string }) => string;
 };
 
@@ -97,11 +100,15 @@ const htmlRenderer: Renderer = {
   },
 };
 
+/** Rendering options. */
 export type RenderOptions = {
+  /** The rendering format: "markdown", "html", or a custom Renderer. */
   format: "markdown" | "html" | Renderer;
+  /** Whether to parse Markdown into HTML (defaults to false). */
   html?: boolean;
 };
 
+/** The rendering result containing rendered text and extracted fields. */
 export type RenderResult = { text: string } & Omit<Fields, "sets">;
 
 type Fields = {
@@ -151,13 +158,21 @@ const useHelper = (
   };
 };
 
+/** Initialization options for a Chapter. */
 export type ChapterOptions = {
+  /** Unique identifier for the chapter. */
   id: string;
+  /** The chapter title. */
   title: string;
+  /** The Handlebars template. */
   template: string;
+  /** Lifecycle hooks for the chapter. */
   hooks: ChapterHooks;
 };
 
+/**
+ * Defines a chapter with a Handlebars template and lifecycle hooks.
+ */
 export class Chapter {
   id: string;
   title: string;
@@ -171,6 +186,12 @@ export class Chapter {
     this.hooks = hooks;
   }
 
+  /**
+   * Renders the chapter content using the given scope and render options.
+   * @param scope - Variables available to the Handlebars template.
+   * @param assets - Asset objects keyed by name.
+   * @param options - Rendering options (format, html).
+   */
   render(scope: Scope, assets: Record<string, Asset> = {}, { format, html }: RenderOptions): RenderResult {
     let renderer: Renderer;
     if (format === "markdown") {

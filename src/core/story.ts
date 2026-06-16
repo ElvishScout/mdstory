@@ -3,6 +3,10 @@ import { Chapter, RenderOptions, RenderResult } from "./chapter.js";
 import { ChapterNotFoundError, InvalidInputError } from "./error.js";
 import { parseStorySource } from "./parser.js";
 
+/**
+ * Prompt function for handling user input during story playback.
+ * Receives the current chapter and render result, returns navigation target and variable updates.
+ */
 export type StoryPrompt = (
   props: { chapter: Chapter } & RenderResult,
 ) => Promise<{ target: string | null; updates: Scope } | FormData>;
@@ -36,6 +40,10 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
   return { target, updates };
 }
 
+/**
+ * Story runtime containing core playback logic.
+ * Initialize via constructor with a parsed StoryInit, or use `Story.fromSource()`.
+ */
 export class Story {
   metadata: Metadata;
   globals: Scope;
@@ -45,6 +53,7 @@ export class Story {
   chapters: Record<string, Chapter>;
   entry: Chapter | null;
 
+  /** Creates a Story instance from a parsed StoryInit. */
   constructor(init: StoryInit) {
     const chapters = Object.fromEntries(
       Object.entries(init.chapters).map(([id, { title, template, hooks }]) => {
@@ -61,10 +70,12 @@ export class Story {
     this.entry = (init.entry && chapters[init.entry]) || null;
   }
 
+  /** Parses a story source string and creates a Story instance. */
   static async fromSource(source: string) {
     return new Story(await parseStorySource(source));
   }
 
+  /** Starts playing the story, looping through chapters until navigation ends. */
   async play(prompt: StoryPrompt, options: RenderOptions) {
     if (this.hooks.onStart) {
       this.hooks.onStart({ globals: this.globals });
