@@ -23,6 +23,10 @@ md.renderer.rules.heading_close = (tokens, idx, options, env, self) => {
 };
 md.renderer.rules.mark_open = () => "\x1b[7m";
 md.renderer.rules.mark_close = () => "\x1b[27m";
+
+// markdown-it-terminal has a bug: blockquote_open/close don't declare (tokens, idx) params
+md.renderer.rules.blockquote_open = (tokens, idx, options, env, self) => "";
+md.renderer.rules.blockquote_close = (tokens, idx, options, env, self) => "\n";
 const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
   console.log(md.render(text).trim());
   console.log();

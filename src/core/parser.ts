@@ -69,7 +69,7 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
       if (nextToken && nextToken.type === "inline") {
         const content = nextToken.content.trim();
         id ||= content;
-        title = content.replace(/\s*\{[^}]*\}\s*/g, "").trim();
+        title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
       }
       if (!id) {
         throw new EmptyChapterIdError();
