@@ -9,20 +9,20 @@ globals:
 <script>
   let counter = 0;
 
-  return {
-    onEnter(globals) {
+  export default {
+    onEnter({ globals }) {
       counter++;    
       const order = String(counter) + (["st", "nd", "rd"][(counter + 9) % 10] ?? "th");
       
       return {
-        alive: counter <= 5,
-        counter,
-        order,
-        showIntro: counter === 1,
+        data: {
+          alive: counter <= 5,
+          counter,
+          order,
+          showIntro: counter === 1,
+        }
       };
     },
-    onNavigate() {
-    }
   };
 </script>
 

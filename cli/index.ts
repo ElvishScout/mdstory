@@ -4,7 +4,7 @@ import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginTerminal from "markdown-it-terminal";
 
-import { Story, StoryPrompt, Scope } from "../src/index.js";
+import { Story, StoryPrompt, Scope } from "../src/index";
 
 const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal);
 const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
