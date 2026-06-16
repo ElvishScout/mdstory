@@ -34,7 +34,7 @@ title: Never gonna give you up
   ];
   let index = 0;
 
-  return {
+  export default {
     onEnter() {
       const line = lyrics[index++];
       const target = index < lyrics.length ? "chapter1" : null;

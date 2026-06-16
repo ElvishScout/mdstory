@@ -6,12 +6,18 @@ import pluginAttrs from "markdown-it-attrs";
 import { StoryInit, ChapterInit, MetadataSchema, StoryHooksSchema, ChapterHooksSchema } from "./definitions.js";
 import { DuplicateIdError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
 
-function parseStoryScript(script: string) {
-  return script ? StoryHooksSchema.parse(new Function(script)()) : {};
+async function importScriptModule(script: string) {
+  const url = "data:text/javascript;base64," + btoa(script);
+  const module = await import(url);
+  return module.default ?? {};
 }
 
-function parseChapterScript(script: string) {
-  return script ? ChapterHooksSchema.parse(new Function(script)()) : {};
+async function parseStoryScript(script: string) {
+  return script.trim() ? StoryHooksSchema.parse(await importScriptModule(script)) : {};
+}
+
+async function parseChapterScript(script: string) {
+  return script.trim() ? ChapterHooksSchema.parse(await importScriptModule(script)) : {};
 }
 
 export async function parseStorySource(source: string): Promise<StoryInit> {
@@ -80,18 +86,20 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
   });
 
   const chapters = Object.fromEntries(
-    divisions.map(({ id, title, lineno, script }, i): [string, ChapterInit] => {
-      const template = lines
-        .slice(lineno, divisions[i + 1]?.lineno)
-        .filter((line): line is string => line !== null)
-        .join("\n");
-      const hooks = parseChapterScript(script);
-      return [id, { title, template, hooks }];
-    }),
+    await Promise.all(
+      divisions.map(async ({ id, title, lineno, script }, i): Promise<[string, ChapterInit]> => {
+        const template = lines
+          .slice(lineno, divisions[i + 1]?.lineno)
+          .filter((line): line is string => line !== null)
+          .join("\n");
+        const hooks = await parseChapterScript(script);
+        return [id, { title, template, hooks }];
+      }),
+    ),
   );
   const entry = divisions[0].id ?? null;
 
-  const hooks = parseStoryScript(storyScript);
+  const hooks = await parseStoryScript(storyScript);
 
   return {
     metadata,
