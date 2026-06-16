@@ -90,7 +90,9 @@ const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
 };
 
 const main = async () => {
-  const storyPath = process.argv[2];
+  const args = process.argv.slice(2);
+  const debug = args.includes("--debug");
+  const storyPath = args.find((a) => !a.startsWith("--"));
   if (!storyPath) {
     return;
   }
@@ -99,6 +101,7 @@ const main = async () => {
 
   story.play(prompt, {
     format: "markdown",
+    debug,
   });
 };
 

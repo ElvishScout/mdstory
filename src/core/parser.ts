@@ -69,7 +69,7 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
       if (nextToken && nextToken.type === "inline") {
         const content = nextToken.content.trim();
         id ||= content;
-        title = content;
+        title = content.replace(/\s*\{[^}]*\}\s*/g, "").trim();
       }
       if (!id) {
         throw new EmptyChapterIdError();
@@ -138,10 +138,12 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
       const scScript = getScriptBetween(scriptRanges, sh.lineno, seEnd, lines);
       const scHooks = await parseScript(scScript, SceneHooksSchema);
 
+      const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
-        .slice(sh.lineno, seEnd)
-        .filter((_, i) => !ignoredLines.has(sh.lineno + i))
-        .join("\n");
+        .slice(templateStart, seEnd)
+        .filter((_, i) => !ignoredLines.has(templateStart + i))
+        .join("\n")
+        .replace(/^\n+/, "");
 
       const scene = new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks });
       scenes[sh.id] = scene;
@@ -161,11 +163,11 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
   for (let ci = 0; ci < chapterHeadings.length; ci++) {
     const ch = chapterHeadings[ci];
     const chEnd = chapterHeadings[ci + 1]?.lineno ?? lines.length;
-    const chScript = getScriptBetween(scriptRanges, ch.lineno, chEnd, lines);
-    const chHooks = await parseScript(chScript, ChapterHooksSchema);
-
-    // Collect scenes within this chapter
     const chapterScenes = sceneHeadings.filter((sh) => sh.lineno > ch.lineno && sh.lineno < chEnd);
+    // Chapter script ends before the first scene heading
+    const chScriptEnd = chapterScenes[0]?.lineno ?? chEnd;
+    const chScript = getScriptBetween(scriptRanges, ch.lineno, chScriptEnd, lines);
+    const chHooks = await parseScript(chScript, ChapterHooksSchema);
     const scenes: Record<string, Scene> = {};
     let entryScene: string | null = null;
 
@@ -175,10 +177,12 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
       const scScript = getScriptBetween(scriptRanges, sh.lineno, seEnd, lines);
       const scHooks = await parseScript(scScript, SceneHooksSchema);
 
+      const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
-        .slice(sh.lineno, seEnd)
-        .filter((_, i) => !ignoredLines.has(sh.lineno + i))
-        .join("\n");
+        .slice(templateStart, seEnd)
+        .filter((_, i) => !ignoredLines.has(templateStart + i))
+        .join("\n")
+        .replace(/^\n+/, "");
 
       const scene = new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks });
       scenes[sh.id] = scene;
@@ -202,6 +206,7 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
 
   return {
     metadata,
+    title: storyHeading.title,
     chapters,
     entry,
     hooks: storyHooks,

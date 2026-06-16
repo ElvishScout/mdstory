@@ -30,11 +30,6 @@ MdStory 包含以下内置 Handlebars 助手：
 #### `{{input type name=default}}`
 
 创建指定类型（`string`、`number` 或 `boolean`）的输入字段，并将值赋给全局变量。
-
-#### `{{set name=value}}`
-
-将值赋给全局变量。
-
 #### `{{#nav target}}`
 
 创建跳转到其他章节的导航入口。

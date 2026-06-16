@@ -49,6 +49,7 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
  */
 export class Story {
   metadata: Metadata;
+  title: string;
   globals: Scope;
   assets: Record<string, Asset>;
   hooks: StoryHooks;
@@ -75,6 +76,13 @@ export class Story {
     // Local scene in current chapter
     const local = currentChapter.scenes[target];
     if (local) return { chapter: currentChapter, scene: local };
+    // Global scene lookup across all chapters
+    const allChKeys = Reflect.ownKeys(this.chapters) as (string | symbol)[];
+    for (const chKey of allChKeys) {
+      const ch = this.chapters[chKey]!;
+      const sc = ch.scenes[target];
+      if (sc) return { chapter: ch, scene: sc };
+    }
     // Chapter id → entry scene
     const ch = this.chapters[target];
     if (ch?.entry) return { chapter: ch, scene: ch.entry };
@@ -82,6 +90,7 @@ export class Story {
   }
 
   constructor(init: StoryInit) {
+    this.title = init.title ?? init.metadata?.title ?? "";
     this.chapters = init.chapters;
     this.metadata = init.metadata ?? {};
     this.globals = this.metadata.globals ?? {};
@@ -93,7 +102,7 @@ export class Story {
 
   /** Renders the story title with Handlebars using the current globals. */
   renderTitle(): string {
-    return this.metadata.title ? Handlebars.compile(this.metadata.title)(this.globals) : "";
+    return this.title ? Handlebars.compile(this.title)(this.globals) : "";
   }
 
   /** Parses a story source string and creates a Story instance. */
@@ -153,6 +162,12 @@ export class Story {
       }
       if (scene.hooks.onEnter) {
         await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
+      }
+
+      if (options.debug) {
+        console.log("--- [debug] scene:", scene.id);
+        console.log("--- [debug] globals:", JSON.stringify(this.globals, null, 2));
+        console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
       }
 
       const renderContext = { ...this.globals, ...assetUrlMap, ...chapter.locals, ...sceneOverrides };

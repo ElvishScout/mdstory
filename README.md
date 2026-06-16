@@ -30,11 +30,6 @@ MdStory includes built-in Handlebars helpers:
 #### `{{input type name=default}}`
 
 Creates an input of the given type (`string`, `number`, or `boolean`) and assigns the value to a global variable.
-
-#### `{{set name=value}}`
-
-Assigns a value to a global variable.
-
 #### `{{#nav target}}`
 
 Creates an entry to navigate to another chapter.

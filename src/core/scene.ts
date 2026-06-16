@@ -8,16 +8,6 @@ import { escapeHtml } from "./utils.js";
 
 type HtmlAttrs = Record<string, string | boolean | undefined>;
 
-const valueType = (value: Variable): InputType => {
-  if (typeof value === "number" || value === null) {
-    return "number";
-  }
-  if (typeof value === "boolean") {
-    return "boolean";
-  }
-  return "string";
-};
-
 const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => {
   // prettier-ignore
   const voidTags = [
@@ -103,19 +93,19 @@ const htmlRenderer: Renderer = {
 export type RenderOptions = {
   format: "markdown" | "html" | Renderer;
   html?: boolean;
+  debug?: boolean;
 };
 
 /** The rendering result containing rendered text and extracted fields. */
-export type RenderResult = { text: string } & Omit<Fields, "sets">;
+export type RenderResult = { text: string } & Fields;
 
 type Fields = {
   inputs: { name: string; type: InputType; value: Variable }[];
-  sets: { name: string; type: InputType; value: Variable }[];
   navs: { text: string; target: string | null }[];
 };
 
 const useHelper = (
-  { inputs, sets, navs }: Fields,
+  { inputs, navs }: Fields,
   assets: Record<string, Asset>,
   renderer: Renderer,
 ): HelperDeclareSpec => {
@@ -126,14 +116,6 @@ const useHelper = (
         inputs.push({ name, type, value });
         const result = renderer.input ? renderer.input({ name, type, value }) : "";
         return new Handlebars.SafeString(result);
-      }
-      return "";
-    },
-    set(opt: HelperOptions) {
-      for (const name in opt.hash) {
-        const value = opt.hash[name];
-        const type = valueType(value);
-        sets.push({ name, type, value });
       }
       return "";
     },
@@ -187,7 +169,6 @@ export class Scene {
 
     const fields: Fields = {
       inputs: [],
-      sets: [],
       navs: [],
     };
 

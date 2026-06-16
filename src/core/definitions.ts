@@ -29,44 +29,29 @@ export const MetadataSchema = z.object({
   assets: AssetsSchema.optional(),
 });
 
-const TargetSchema = z.string().or(z.null());
-
 /** Story-level lifecycle hooks. */
 export const StoryHooksSchema = z
   .object({
-    globals: z
-      .function()
-      .args(z.object({ globals: ScopeSchema }))
-      .returns(PromiseLikeSchema(ScopeSchema.optional())),
-    onStart: z.function().args(z.object({ globals: ScopeSchema })),
+    globals: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
+    onStart: z.function(),
   })
   .partial();
 
 /** Chapter-level lifecycle hooks. */
 export const ChapterHooksSchema = z
   .object({
-    locals: z
-      .function()
-      .args(z.object({ globals: ScopeSchema }))
-      .returns(PromiseLikeSchema(ScopeSchema.optional())),
-    onEnter: z.function().args(z.object({ globals: ScopeSchema })),
-    onLeave: z
-      .function()
-      .args(z.object({ globals: ScopeSchema, locals: ScopeSchema, updates: ScopeSchema, target: TargetSchema })),
+    locals: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
+    onEnter: z.function(),
+    onLeave: z.function(),
   })
   .partial();
 
 /** Scene-level lifecycle hooks. */
 export const SceneHooksSchema = z
   .object({
-    data: z
-      .function()
-      .args(z.object({ globals: ScopeSchema, locals: ScopeSchema }))
-      .returns(PromiseLikeSchema(ScopeSchema.optional())),
-    onEnter: z.function().args(z.object({ globals: ScopeSchema, locals: ScopeSchema })),
-    onLeave: z
-      .function()
-      .args(z.object({ globals: ScopeSchema, locals: ScopeSchema, updates: ScopeSchema, target: TargetSchema })),
+    data: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
+    onEnter: z.function(),
+    onLeave: z.function(),
   })
   .partial();
 
@@ -112,6 +97,7 @@ export type ChapterInit = {
 /** Structured representation of the full story. */
 export type StoryInit = {
   metadata?: Metadata;
+  title?: string;
   chapters: Record<string | symbol, Chapter>;
   entry?: string | symbol | null;
   stylesheet?: string;
