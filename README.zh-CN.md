@@ -33,7 +33,7 @@ globals:
 
 你在一个黑暗的森林中醒来。你的名字是 {{name}}，你有 {{金币}} 枚金币。
 
-{{{input "string" 武器="木棍"}}}
+{{input "string" 武器="木棍"}}
 
 {{#nav "chap2.cave"}}向前走{{/nav}}
 ```
@@ -64,9 +64,9 @@ globals:
 让读者提供值，这些值会作为全局变量持久化。
 
 ```markdown
-{{{input "string"  名字="小明"}}}   ← 文本输入，默认"小明"
-{{{input "number"  年龄=30}}}       ← 数字输入
-{{{input "boolean" 勇敢=true}}}     ← 复选框
+{{input "string"  名字="小明"}}   ← 文本输入，默认"小明"
+{{input "number"  年龄=30}}       ← 数字输入
+{{input "boolean" 勇敢=true}}     ← 复选框
 ```
 
 在故事中任意位置使用这些值：
@@ -174,7 +174,7 @@ assets:
 
 你进入了地下城。这是你第 {{第几次}} 次尝试。
 
-{{{input "boolean" 准备好了=false}}}
+{{input "boolean" 准备好了=false}}
 
 {{#if 准备好了}}
 前方出现了岔路。
@@ -236,7 +236,7 @@ title: 岔路口
 
 一个陌生人朝你走来。
 
-{{{input "string" name="旅人"}}}
+{{input "string" name="旅人"}}
 
 {{#nav "forest.path"}}走进森林{{/nav}}
 {{#nav "river.bridge"}}过桥{{/nav}}

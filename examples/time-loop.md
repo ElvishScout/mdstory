@@ -33,9 +33,9 @@ assets:
 
 你推开警局大门，阳光透过旋转门折射出刺眼的光芒。你的工牌上写着编号。
 
-{{{input "number" 编号=42}}}
+{{input "number" 编号=42}}
 
-{{{input "string" 探员代号="侦探"}}}
+{{input "string" 探员代号="侦探"}}
 
 你深吸一口气，走进这个熟悉的早晨。
 
@@ -58,11 +58,11 @@ assets:
   };
 </script>
 
-{{{linebreak 2}}}
+{{linebreak 2}}
 
 **第 {{时间循环次数}} 次抵达现场。**
 
-{{{linebreak}}}
+{{linebreak}}
 
 白发警官带你穿过走廊，来到一间审讯室。墙上贴满了照片和文件，中央的桌子上放着一份敞开的档案。
 
@@ -72,7 +72,7 @@ assets:
 
 "你看起来不像第一次来。你以前处理过==凶杀案==吗？"
 
-{{{input "boolean" 有经验=false}}}
+{{input "boolean" 有经验=false}}
 
 {{#nav "arrival_cont"}}继续{{/nav}}
 
@@ -344,7 +344,7 @@ assets:
 
 ✦✦✦ 真结局——意识觉醒 ✦✦✦
 
-{{{linebreak 2}}}
+{{linebreak 2}}
 
 ✦ 特性验证清单：
 - ✔ YAML 元数据（title、author、globals、assets）

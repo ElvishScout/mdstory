@@ -33,7 +33,7 @@ globals:
 
 You wake up in a dark forest. Your name is {{name}} and you have {{gold}} gold.
 
-{{{input "string" weapon="stick"}}}
+{{input "string" weapon="stick"}}
 
 {{#nav "chap2.cave"}}Walk forward{{/nav}}
 ```
@@ -64,9 +64,9 @@ Use `{{#nav target}}label{{/nav}}` to let the reader move between scenes:
 Let the reader provide values. These persist as global variables.
 
 ```markdown
-{{{input "string"  name="Alice"}}}    ← text input, defaults to "Alice"
-{{{input "number"  age=30}}}          ← number input
-{{{input "boolean" brave=true}}}      ← checkbox
+{{input "string"  name="Alice"}}    ← text input, defaults to "Alice"
+{{input "number"  age=30}}          ← number input
+{{input "boolean" brave=true}}      ← checkbox
 ```
 
 Use the value later anywhere in the story:
@@ -174,7 +174,7 @@ Full working stories in [examples/](./examples/).
 
 You enter the dungeon. This is your {{attempt}}th attempt.
 
-{{{input "boolean" ready=false}}}
+{{input "boolean" ready=false}}
 
 {{#if ready}}
 The passage splits in two.
@@ -236,7 +236,7 @@ title: The Crossing
 
 A stranger approaches you.
 
-{{{input "string" name="traveler"}}}
+{{input "string" name="traveler"}}
 
 {{#nav "forest.path"}}Enter the forest{{/nav}}
 {{#nav "river.bridge"}}Cross the bridge{{/nav}}
