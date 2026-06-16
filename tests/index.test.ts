@@ -7,7 +7,7 @@ import pluginTerminal from "markdown-it-terminal";
 import { Story, StoryPrompt, Scope } from "../src/index.js";
 
 const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal);
-const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
+const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
   console.log(md.render(text).trim());
   console.log();
 
@@ -31,13 +31,6 @@ const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
             message: name,
             default: Boolean(value),
           };
-        } else if (type === "object") {
-          return {
-            type: "input",
-            name,
-            message: name,
-            default: JSON.stringify(value),
-          };
         } else {
           return {
             type: "input",
@@ -46,8 +39,9 @@ const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
             default: String(value),
           };
         }
-      })
+      }),
     );
+
     if (navs.length) {
       targetReplies = await inquirer.prompt([
         {
@@ -71,10 +65,7 @@ const prompt: StoryPrompt = async ({ text, inputs, sets, navs }) => {
   const updates = Object.fromEntries([
     ...inputs.map(({ name, type }) => {
       const answer = inputReplies[name];
-      const value = type === "object" ? JSON.parse(answer) : answer;
-      return [name, value];
-    }),
-    ...sets.map(({ name, value }) => {
+      const value = answer;
       return [name, value];
     }),
   ]) as Scope;
@@ -88,7 +79,7 @@ const main = async () => {
     return;
   }
   const content = (await fs.readFile(storyPath)).toString();
-  const story = new Story(content);
+  const story = await Story.fromSource(content);
 
   story.play(prompt, {
     format: "markdown",

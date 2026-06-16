@@ -5,10 +5,14 @@ type JsonArray = JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 type JsonValue = JsonPrimitive | JsonArray | JsonObject;
 
-export const ValueSchema = z.any().transform((v) => v as JsonValue);
-export const ScopeSchema = z.record(ValueSchema);
+function PromiseLikeSchema<T extends z.ZodType>(schema: T) {
+  return schema.or(schema.promise());
+}
 
-const AssetObjectSchema = z.object({ url: z.string(), mime: z.string().optional() });
+export const VariableSchema = z.any().transform((v) => v as JsonValue);
+export const ScopeSchema = z.record(VariableSchema);
+
+const AssetObjectSchema = z.object({ url: z.string(), mime: z.string().optional(), alt: z.string().optional() });
 
 export const AssetSchema = z.union([
   z.string().transform((url) => AssetObjectSchema.parse({ url, mime: undefined })),
@@ -26,38 +30,43 @@ export const MetadataSchema = z.object({
 const TargetSchema = z.string().or(z.null());
 export const StoryHooksSchema = z
   .object({
-    onStart: z.function().args(ScopeSchema).returns(ScopeSchema.or(z.void())),
+    onStart: z.function().args(z.object({ globals: ScopeSchema })),
   })
   .partial();
 export const ChapterHooksSchema = z
   .object({
-    onEnter: z.function().args(ScopeSchema).returns(ScopeSchema.or(z.void())),
-    onLeave: z.function().args(ScopeSchema, ScopeSchema).returns(ScopeSchema.or(z.void())),
-    onNavigate: z.function().args(TargetSchema, ScopeSchema, ScopeSchema).returns(TargetSchema.or(z.void())),
+    onEnter: z
+      .function()
+      .args(z.object({ globals: ScopeSchema }))
+      .returns(PromiseLikeSchema(z.object({ data: ScopeSchema }).partial().optional())),
+    onLeave: z
+      .function()
+      .args(z.object({ globals: ScopeSchema, updates: ScopeSchema, target: TargetSchema }))
+      .returns(PromiseLikeSchema(z.object({ target: TargetSchema }).partial().optional())),
   })
   .partial();
 
-export type Value = z.infer<typeof ValueSchema>;
+export type Variable = z.infer<typeof VariableSchema>;
 export type Scope = z.infer<typeof ScopeSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 export type Metadata = z.infer<typeof MetadataSchema>;
 export type StoryHooks = z.infer<typeof StoryHooksSchema>;
 export type ChapterHooks = z.infer<typeof ChapterHooksSchema>;
 
-export type ValueType = "string" | "number" | "boolean" | "object";
+export type InputType = "string" | "number" | "boolean";
 
-export type ChapterBody = {
+export type ChapterInit = {
   title: string;
   template: string;
-  script: string;
+  hooks: ChapterHooks;
 };
 
-export type StoryBody = {
+export type StoryInit = {
   metadata: Metadata;
-  chapters: Record<string, ChapterBody>;
+  chapters: Record<string, ChapterInit>;
   entry: string | null;
-  script: string;
   stylesheet: string;
+  hooks: StoryHooks;
 };
 
 export type StoryAssets = Record<string, string>;

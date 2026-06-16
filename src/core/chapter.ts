@@ -2,23 +2,19 @@ import Handlebars, { HelperDeclareSpec, HelperOptions } from "handlebars";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 
-import { ValueType, Value, ChapterHooks, Scope, Asset } from "./definitions.js";
+import { InputType, Variable, ChapterHooks, Scope, Asset } from "./definitions.js";
+import { escapeHtml } from "./utils.js";
 
 type HtmlAttrs = Record<string, string | boolean | undefined>;
 
-const escapeHtml = (text: string) => text.replace(/[<>&'"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
-
-const valueType = (value: Value): ValueType => {
-  if (typeof value === "string") {
-    return "string";
-  }
+const valueType = (value: Variable): InputType => {
   if (typeof value === "number" || value === null) {
     return "number";
   }
   if (typeof value === "boolean") {
     return "boolean";
   }
-  return "object";
+  return "string";
 };
 
 const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => {
@@ -52,12 +48,12 @@ const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => 
   return `<${tag} ${attrText}>${children ?? ""}</${tag}>`;
 };
 
-const createInputHtml = ({ name, type, value }: { name: string; type: ValueType; value: Value }) => {
+const createInputHtml = ({ name, type, value }: { name: string; type: InputType; value: Variable }) => {
   const inputType = type === "boolean" ? "checkbox" : "text";
   const inputAttrs: HtmlAttrs = {
     name,
     type: inputType,
-    value: inputType !== "checkbox" ? (type === "object" ? JSON.stringify(value) : String(value)) : undefined,
+    value: inputType !== "checkbox" ? String(value) : undefined,
     checked: inputType === "checkbox" && value ? "" : undefined,
     "aria-label": name,
   };
@@ -75,7 +71,7 @@ const createSubmitButtonHtml = ({ target, children }: { target: string; children
 };
 
 export type Renderer = {
-  input?: ({ name, type, value }: { name: string; type: ValueType; value: string }) => string;
+  input?: ({ name, type, value }: { name: string; type: InputType; value: string }) => string;
   nav?: ({ target, children }: { target: string | null; children: string }) => string;
 };
 
@@ -109,18 +105,18 @@ export type RenderOptions = {
 export type RenderResult = { text: string } & Omit<Fields, "sets">;
 
 type Fields = {
-  inputs: { name: string; type: ValueType; value: Value }[];
-  sets: { name: string; type: ValueType; value: Value }[];
+  inputs: { name: string; type: InputType; value: Variable }[];
+  sets: { name: string; type: InputType; value: Variable }[];
   navs: { text: string; target: string | null }[];
 };
 
 const useHelper = (
   { inputs, sets, navs }: Fields,
   assets: Record<string, Asset>,
-  renderer: Renderer
+  renderer: Renderer,
 ): HelperDeclareSpec => {
   return {
-    input(type: ValueType, opt: HelperOptions) {
+    input(type: InputType, opt: HelperOptions) {
       for (const name in opt.hash) {
         const value = opt.hash[name];
         inputs.push({ name, type, value });

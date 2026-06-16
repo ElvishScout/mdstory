@@ -137,3 +137,6 @@ dist
 
 # typescript declarations
 types/
+
+# .DS_Store
+.DS_Store

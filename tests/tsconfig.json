@@ -2,14 +2,9 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": [
-      "DOM",
-      "ES2020"
-    ],
-    "rootDirs": [
-      "./",
-      "../src"
-    ],
+    "lib": ["DOM", "ES2020"],
+    "types": ["node"],
+    "rootDirs": ["./", "../src"],
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -22,8 +17,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": [
-    "./**/*.ts",
-    "../src/**/*.ts"
-  ],
+  "include": ["./**/*.ts", "../src/**/*.ts"]
 }

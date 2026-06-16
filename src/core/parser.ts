@@ -3,10 +3,18 @@ import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
 
-import { StoryBody, ChapterBody, MetadataSchema } from "./definitions.js";
+import { StoryInit, ChapterInit, MetadataSchema, StoryHooksSchema, ChapterHooksSchema } from "./definitions.js";
 import { DuplicateIdError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
 
-export const parseStorySource = (source: string): StoryBody => {
+function parseStoryScript(script: string) {
+  return script ? StoryHooksSchema.parse(new Function(script)()) : {};
+}
+
+function parseChapterScript(script: string) {
+  return script ? ChapterHooksSchema.parse(new Function(script)()) : {};
+}
+
+export async function parseStorySource(source: string): Promise<StoryInit> {
   type Division = { id: string; title: string; lineno: number; script: string };
 
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
@@ -71,22 +79,25 @@ export const parseStorySource = (source: string): StoryBody => {
     return line;
   });
 
-  const chapterEntries = divisions.map(({ id, title, lineno, script }, i): [string, ChapterBody] => {
-    const template = lines
-      .slice(lineno, divisions[i + 1]?.lineno)
-      .filter((line): line is string => line !== null)
-      .join("\n");
-    return [id, { title, template, script }];
-  });
+  const chapters = Object.fromEntries(
+    divisions.map(({ id, title, lineno, script }, i): [string, ChapterInit] => {
+      const template = lines
+        .slice(lineno, divisions[i + 1]?.lineno)
+        .filter((line): line is string => line !== null)
+        .join("\n");
+      const hooks = parseChapterScript(script);
+      return [id, { title, template, hooks }];
+    }),
+  );
+  const entry = divisions[0].id ?? null;
 
-  const chapters = Object.fromEntries(chapterEntries);
-  const entry = chapterEntries[0]?.[0] || null;
+  const hooks = parseStoryScript(storyScript);
 
   return {
     metadata,
     chapters,
     entry,
-    script: storyScript,
+    hooks,
     stylesheet,
   };
-};
+}

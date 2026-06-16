@@ -2,10 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": [
-      "DOM",
-      "ES2020"
-    ],
+    "lib": ["DOM", "ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
     "moduleResolution": "bundler",
@@ -19,9 +16,7 @@
     "noUncheckedSideEffectImports": true,
     "skipLibCheck": true,
     "declaration": true,
-    "declarationDir": "./types",
+    "declarationDir": "./types"
   },
-  "include": [
-    "./src/**/*.ts",
-  ],
+  "include": ["./src/**/*.ts"]
 }
