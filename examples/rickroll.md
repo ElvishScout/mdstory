@@ -2,7 +2,9 @@
 title: Never gonna give you up
 ---
 
-# {{#nav target}} {{line}} {{/nav}} {#chapter1}
+# Rickroll
+
+## Lyrics {#lyrics}
 
 <script>
   const lyrics = [
@@ -35,13 +37,15 @@ title: Never gonna give you up
   let index = 0;
 
   export default {
-    onEnter() {
+    locals() {
       const line = lyrics[index++];
-      const target = index < lyrics.length ? "chapter1" : null;
+      const target = index < lyrics.length ? "verse" : null;
 
-      return {
-        data: { line, target }
-      }
+      return { line, target }
     }
   }
 </script>
+
+### Verse {#verse}
+
+{{#nav target}}{{line}}{{/nav}}

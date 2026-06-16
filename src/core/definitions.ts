@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { Chapter } from "./chapter.js";
+import type { Scene } from "./scene.js";
 
 type JsonPrimitive = number | string | boolean | null;
 type JsonArray = JsonValue[];
@@ -28,79 +30,90 @@ export const MetadataSchema = z.object({
 });
 
 const TargetSchema = z.string().or(z.null());
-/**
- * Story-level lifecycle hooks.
- * - `onStart`: Called when the story starts, receives initial globals.
- */
+
+/** Story-level lifecycle hooks. */
 export const StoryHooksSchema = z
   .object({
+    globals: z
+      .function()
+      .args(z.object({ globals: ScopeSchema }))
+      .returns(PromiseLikeSchema(ScopeSchema.optional())),
     onStart: z.function().args(z.object({ globals: ScopeSchema })),
   })
   .partial();
-/**
- * Chapter-level lifecycle hooks.
- * - `onEnter`: Called when entering a chapter. Return `{ data }` to merge into the render context.
- * - `onLeave`: Called when leaving a chapter. Return `{ target }` to override navigation.
- */
+
+/** Chapter-level lifecycle hooks. */
 export const ChapterHooksSchema = z
   .object({
-    onEnter: z
+    locals: z
       .function()
       .args(z.object({ globals: ScopeSchema }))
-      .returns(PromiseLikeSchema(z.object({ data: ScopeSchema }).partial().optional())),
+      .returns(PromiseLikeSchema(ScopeSchema.optional())),
+    onEnter: z.function().args(z.object({ globals: ScopeSchema })),
     onLeave: z
       .function()
-      .args(z.object({ globals: ScopeSchema, updates: ScopeSchema, target: TargetSchema }))
-      .returns(PromiseLikeSchema(z.object({ target: TargetSchema }).partial().optional())),
+      .args(z.object({ globals: ScopeSchema, locals: ScopeSchema, updates: ScopeSchema, target: TargetSchema })),
   })
   .partial();
 
-/** All JSON-compatible values: primitives, arrays, and objects. */
+/** Scene-level lifecycle hooks. */
+export const SceneHooksSchema = z
+  .object({
+    data: z
+      .function()
+      .args(z.object({ globals: ScopeSchema, locals: ScopeSchema }))
+      .returns(PromiseLikeSchema(ScopeSchema.optional())),
+    onEnter: z.function().args(z.object({ globals: ScopeSchema, locals: ScopeSchema })),
+    onLeave: z
+      .function()
+      .args(z.object({ globals: ScopeSchema, locals: ScopeSchema, updates: ScopeSchema, target: TargetSchema })),
+  })
+  .partial();
+
+/** All JSON-compatible values. */
 export type Variable = z.infer<typeof VariableSchema>;
-
-/** An object of variable values by their names, used for globals or input fields. */
+/** An object of variable values by their names. */
 export type Scope = z.infer<typeof ScopeSchema>;
-
-/**
- * A referenceable resource file.
- * @property url - The URL of the resource.
- * @property mime - The MIME type of the resource.
- * @property alt - The alternative text of the resource.
- */
+/** A referenceable resource file. */
 export type Asset = z.infer<typeof AssetSchema>;
-
-/** Story metadata including title, author, globals, and assets. */
+/** Story metadata. */
 export type Metadata = z.infer<typeof MetadataSchema>;
-
-/** Global lifecycle hooks for the story. */
+/** Story-level lifecycle hooks. */
 export type StoryHooks = z.infer<typeof StoryHooksSchema>;
-
-/** Lifecycle hooks for a chapter: onEnter and onLeave. */
+/** Chapter-level lifecycle hooks. */
 export type ChapterHooks = z.infer<typeof ChapterHooksSchema>;
+/** Scene-level lifecycle hooks. */
+export type SceneHooks = z.infer<typeof SceneHooksSchema>;
 
-/** Type indicator for input fields: "string", "number", or "boolean". */
+/** Symbol key for the implicit default chapter holding orphan scenes. */
+export const DEFAULT_CHAPTER = Symbol("default");
+
+/** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";
 
-/** Structured representation of a chapter's content. */
-export type ChapterInit = {
-  /** The chapter title. */
-  title: string;
-  /** The Handlebars template for rendering. */
+/** Structured representation of a scene's content. */
+export type SceneInit = {
+  id: string;
+  title?: string;
   template: string;
-  /** Lifecycle hooks for the chapter. */
-  hooks: ChapterHooks;
+  hooks?: SceneHooks;
 };
 
-/** Structured representation of the full story content. */
+/** Structured representation of a chapter. */
+export type ChapterInit = {
+  id: string | symbol;
+  title?: string;
+  hooks?: ChapterHooks;
+  locals?: Scope;
+  scenes: Record<string, Scene>;
+  entry?: string | null;
+};
+
+/** Structured representation of the full story. */
 export type StoryInit = {
-  /** Story metadata (title, author, assets, etc.). */
-  metadata: Metadata;
-  /** Chapters keyed by their id. */
-  chapters: Record<string, ChapterInit>;
-  /** The id of the entry chapter, or null. */
-  entry: string | null;
-  /** Global CSS stylesheet content. */
-  stylesheet: string;
-  /** Global story lifecycle hooks. */
-  hooks: StoryHooks;
+  metadata?: Metadata;
+  chapters: Record<string | symbol, Chapter>;
+  entry?: string | symbol | null;
+  stylesheet?: string;
+  hooks?: StoryHooks;
 };

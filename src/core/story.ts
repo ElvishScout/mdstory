@@ -1,14 +1,17 @@
+import Handlebars from "handlebars";
 import { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset } from "./definitions.js";
-import { Chapter, RenderOptions, RenderResult } from "./chapter.js";
+import { Scene } from "./scene.js";
+import { Chapter } from "./chapter.js";
+import { RenderOptions, RenderResult } from "./scene.js";
 import { ChapterNotFoundError, InvalidInputError } from "./error.js";
 import { parseStorySource } from "./parser.js";
 
 /**
  * Prompt function for handling user input during story playback.
- * Receives the current chapter and render result, returns navigation target and variable updates.
+ * Receives the current scene and render result, returns navigation target and variable updates.
  */
 export type StoryPrompt = (
-  props: { chapter: Chapter } & RenderResult,
+  props: { scene: Scene } & RenderResult,
 ) => Promise<{ target: string | null; updates: Scope } | FormData>;
 
 function parstInput(type: InputType, text: string | null) {
@@ -42,7 +45,7 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
 
 /**
  * Story runtime containing core playback logic.
- * Initialize via constructor with a parsed StoryInit, or use `Story.fromSource()`.
+ * Parse via `Story.fromSource()`, or construct manually with a parsed StoryInit.
  */
 export class Story {
   metadata: Metadata;
@@ -50,24 +53,47 @@ export class Story {
   assets: Record<string, Asset>;
   hooks: StoryHooks;
   stylesheet: string;
-  chapters: Record<string, Chapter>;
+  chapters: Record<string | symbol, Chapter>;
   entry: Chapter | null;
+  /** @internal */ _storyTitleShown = false;
 
-  /** Creates a Story instance from a parsed StoryInit. */
+  resolveTarget(target: string, currentChapter: Chapter): { chapter: Chapter; scene: Scene } | null {
+    const dot = target.indexOf(".");
+    if (dot !== -1) {
+      // Cross-chapter scene: "chapterId.sceneId"
+      const chId = target.slice(0, dot);
+      const scId = target.slice(dot + 1);
+      const ch = this.chapters[chId];
+      if (ch) {
+        const sc = ch.scenes[scId];
+        if (sc) {
+          return { chapter: ch, scene: sc };
+        }
+      }
+      return null;
+    }
+    // Local scene in current chapter
+    const local = currentChapter.scenes[target];
+    if (local) return { chapter: currentChapter, scene: local };
+    // Chapter id → entry scene
+    const ch = this.chapters[target];
+    if (ch?.entry) return { chapter: ch, scene: ch.entry };
+    return null;
+  }
+
   constructor(init: StoryInit) {
-    const chapters = Object.fromEntries(
-      Object.entries(init.chapters).map(([id, { title, template, hooks }]) => {
-        return [id, new Chapter({ id, title, template, hooks })];
-      }),
-    );
+    this.chapters = init.chapters;
+    this.metadata = init.metadata ?? {};
+    this.globals = this.metadata.globals ?? {};
+    this.assets = this.metadata.assets ?? {};
+    this.hooks = init.hooks ?? {};
+    this.stylesheet = init.stylesheet ?? "";
+    this.entry = init.entry ? (init.chapters[init.entry as string | symbol] ?? null) : null;
+  }
 
-    this.metadata = init.metadata;
-    this.globals = init.metadata.globals ?? {};
-    this.assets = init.metadata.assets ?? {};
-    this.hooks = init.hooks;
-    this.stylesheet = init.stylesheet;
-    this.chapters = chapters;
-    this.entry = (init.entry && chapters[init.entry]) || null;
+  /** Renders the story title with Handlebars using the current globals. */
+  renderTitle(): string {
+    return this.metadata.title ? Handlebars.compile(this.metadata.title)(this.globals) : "";
   }
 
   /** Parses a story source string and creates a Story instance. */
@@ -75,51 +101,129 @@ export class Story {
     return new Story(await parseStorySource(source));
   }
 
-  /** Starts playing the story, looping through chapters until navigation ends. */
+  /** Starts playing the story, looping through chapters and scenes until navigation ends. */
   async play(prompt: StoryPrompt, options: RenderOptions) {
+    if (this.hooks.globals) {
+      const result = await this.hooks.globals({ globals: this.globals });
+      if (result) {
+        Object.assign(this.globals, result);
+      }
+    }
     if (this.hooks.onStart) {
-      this.hooks.onStart({ globals: this.globals });
+      await this.hooks.onStart({ globals: this.globals });
     }
     const assetUrlMap = Object.fromEntries(Object.entries(this.assets).map(([name, { url }]) => [name, url]));
 
-    let chapter = this.entry;
-    while (chapter) {
-      let overrideData = {};
-      if (chapter.hooks.onEnter) {
-        const result = await chapter.hooks.onEnter({ globals: this.globals });
-        if (result?.data) {
-          Object.assign(overrideData, result.data);
+    const entryChapter = this.entry;
+    const entryScene = entryChapter?.entry;
+    if (!entryChapter || !entryScene) {
+      return;
+    }
+
+    let chapter: Chapter = entryChapter;
+    let scene: Scene = entryScene;
+    let currentChapterId: string | symbol | null = null;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      // Chapter locals + onEnter if first scene in this chapter
+      if (!chapter._entered) {
+        if (chapter.hooks.locals) {
+          const result = await chapter.hooks.locals({ globals: this.globals });
+          if (result) {
+            Object.assign(chapter.locals, result);
+          }
         }
+        if (chapter.hooks.onEnter) {
+          await chapter.hooks.onEnter({ globals: this.globals });
+        }
+        chapter._entered = true;
       }
 
-      const renderContext = { ...this.globals, ...assetUrlMap, ...overrideData };
+      // Scene data + onEnter
+      let sceneOverrides: Record<string, never> = {};
+      if (scene.hooks.data) {
+        const result = await scene.hooks.data({
+          globals: this.globals,
+          locals: chapter.locals,
+        });
+        if (result) {
+          Object.assign(sceneOverrides, result);
+        }
+      }
+      if (scene.hooks.onEnter) {
+        await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
+      }
 
-      const renderResult = chapter.render(renderContext, this.assets, options);
+      const renderContext = { ...this.globals, ...assetUrlMap, ...chapter.locals, ...sceneOverrides };
+      const renderResult = scene.render(renderContext, this.assets, options);
 
-      const promptResult = await prompt({ chapter, ...renderResult });
+      // Prepend chapter and story titles to rendered text
+      let { text } = renderResult;
+      let prefix = "";
+
+      if (chapter.title && chapter.id !== currentChapterId) {
+        const rendered = chapter.renderTitle(renderContext);
+        if (rendered) {
+          prefix += `## ${rendered}\n\n`;
+        }
+        currentChapterId = chapter.id;
+      }
+
+      if (!this._storyTitleShown) {
+        const rendered = this.renderTitle();
+        if (rendered) {
+          prefix = `# ${rendered}\n\n${prefix}`;
+        }
+        this._storyTitleShown = true;
+      }
+
+      if (prefix) {
+        text = prefix + text;
+      }
+
+      const promptResult = await prompt({ scene, ...renderResult, text });
       const normalizedPromptResult =
         promptResult instanceof FormData ? parseFormData(promptResult, renderResult) : promptResult;
 
       this.globals = { ...this.globals, ...normalizedPromptResult.updates };
 
-      let overrideTarget = undefined;
-      if (chapter.hooks.onLeave) {
-        const result = await chapter.hooks.onLeave({
+      // Scene onLeave (side effect only)
+      if (scene.hooks.onLeave) {
+        await scene.hooks.onLeave({
           globals: this.globals,
+          locals: chapter.locals,
           updates: normalizedPromptResult.updates,
           target: normalizedPromptResult.target,
         });
-        if (result?.target !== undefined) {
-          overrideTarget = result.target;
+      }
+
+      const finalTarget = normalizedPromptResult.target;
+
+      if (finalTarget === null) {
+        break;
+      }
+
+      // Resolve target
+      const resolved = this.resolveTarget(finalTarget, chapter);
+      if (!resolved) {
+        throw new ChapterNotFoundError(finalTarget);
+      }
+
+      // Chapter transition
+      if (resolved.chapter !== chapter) {
+        if (chapter.hooks.onLeave) {
+          await chapter.hooks.onLeave({
+            globals: this.globals,
+            locals: chapter.locals,
+            updates: normalizedPromptResult.updates,
+            target: finalTarget,
+          });
         }
       }
 
-      const finalTarget = overrideTarget !== undefined ? overrideTarget : normalizedPromptResult.target;
-
-      if (finalTarget !== null && !(finalTarget in this.chapters)) {
-        throw new ChapterNotFoundError(finalTarget);
-      }
-      chapter = finalTarget !== null ? this.chapters[finalTarget] : null;
+      chapter = resolved.chapter;
+      scene = resolved.scene;
     }
   }
 }

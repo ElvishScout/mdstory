@@ -3,7 +3,16 @@ import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
 
-import { StoryInit, ChapterInit, MetadataSchema, StoryHooksSchema, ChapterHooksSchema } from "./definitions.js";
+import {
+  StoryInit,
+  MetadataSchema,
+  StoryHooksSchema,
+  ChapterHooksSchema,
+  SceneHooksSchema,
+  DEFAULT_CHAPTER,
+} from "./definitions.js";
+import { Scene } from "./scene.js";
+import { Chapter } from "./chapter.js";
 import { DuplicateIdError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
 
 async function importScriptModule(script: string) {
@@ -14,31 +23,31 @@ async function importScriptModule(script: string) {
   return module.default ?? {};
 }
 
-async function parseStoryScript(script: string) {
-  return script.trim() ? StoryHooksSchema.parse(await importScriptModule(script)) : {};
+async function parseScript<T>(script: string, schema: Zod.ZodType<T>): Promise<T> {
+  return script.trim() ? schema.parse(await importScriptModule(script)) : ({} as T);
 }
 
-async function parseChapterScript(script: string) {
-  return script.trim() ? ChapterHooksSchema.parse(await importScriptModule(script)) : {};
-}
+type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
 
 /**
  * Parses a Markdown-formatted story source string into a structured StoryInit.
- * Supports YAML front-matter, level-one heading chapters, Handlebars templates,
- * `<script>` tags for hooks, and `<style>` tags for stylesheets.
+ *
+ * Document structure:
+ * - `#` (h1): Story title — single heading, its `<script>` is story hooks
+ * - `##` (h2): Chapters — with chapter hooks, contain scenes
+ * - `###` (h3): Scenes — with scene hooks and Handlebars templates
  */
 export async function parseStorySource(source: string): Promise<StoryInit> {
-  type Division = { id: string; title: string; lineno: number; script: string };
-
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
   const tokens = md.parse(source, {});
 
   let metadata = MetadataSchema.parse({});
-  let storyScript = "";
   let stylesheet = "";
+  let storyScript = "";
 
-  const ignoredRanges: [number, number][] = [];
-  const divisions: Division[] = [];
+  const headings: Heading[] = [];
+  const scriptRanges: [number, number][] = [];
+  const styleRanges: [number, number][] = [];
 
   tokens.forEach((token, i) => {
     if (token.type === "front_matter" && token.meta) {
@@ -48,8 +57,12 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
       } catch {
         throw new InvalidMetadataError(token.meta);
       }
-    } else if (token.type === "heading_open" && token.tag === "h1" && token.level === 0 && token.map) {
-      const lineno = token.map[0];
+    } else if (
+      token.type === "heading_open" &&
+      ["h1", "h2", "h3"].includes(token.tag) &&
+      token.level === 0 &&
+      token.map
+    ) {
       let id = token.attrs?.find(([key]) => key === "id")?.[1] ?? "";
       let title = "";
       const nextToken = tokens[i + 1];
@@ -61,58 +74,158 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
       if (!id) {
         throw new EmptyChapterIdError();
       }
-      if (divisions.find(({ id: _id }) => id === _id)) {
+      if (headings.find((h) => h.id === id)) {
         throw new DuplicateIdError(id);
       }
-      divisions.push({ id, title, lineno, script: "" });
+      headings.push({ tag: token.tag as "h1" | "h2" | "h3", id, title, lineno: token.map[0] });
     } else if (token.type === "html_block" && token.map) {
-      let regres;
-      if ((regres = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content))) {
-        const script = regres[1].trim();
+      let match;
+      if ((match = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content))) {
+        const script = match[1].trim();
         if (script) {
-          if (divisions.length === 0) {
+          scriptRanges.push(token.map);
+          const parent = getCurrentParent(headings);
+          if (parent?.tag === "h1") {
             storyScript = script;
-          } else {
-            divisions[divisions.length - 1].script = script;
+          } else if (parent?.tag === "h2") {
+            // Will be handled in chapter processing
+          } else if (parent?.tag === "h3") {
+            // Will be handled in scene processing
           }
-          ignoredRanges.push(token.map);
         }
-      } else if ((regres = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content))) {
-        const style = regres[1].trim();
-        stylesheet += style;
-        ignoredRanges.push(token.map);
+      } else if ((match = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content))) {
+        const style = match[1].trim();
+        if (style) {
+          stylesheet += style;
+          styleRanges.push(token.map);
+        }
       }
     }
   });
 
-  const lines = source.split("\n").map((line, i) => {
-    if (ignoredRanges.find(([from, to]) => i >= from && i < to)) {
-      return null;
+  // Filter to only h1-h3
+  const storyHeading = headings.find((h) => h.tag === "h1");
+  if (!storyHeading) {
+    throw new Error("Story must have a single h1 heading.");
+  }
+
+  const chapterHeadings = headings.filter((h) => h.tag === "h2");
+  const sceneHeadings = headings.filter((h) => h.tag === "h3");
+
+  // Collect all script ranges and style ranges into a set for filtering
+  const ignoredLines = new Set<number>();
+  for (const [from, to] of [...scriptRanges, ...styleRanges]) {
+    for (let i = from; i < to; i++) ignoredLines.add(i);
+  }
+
+  const lines = source.split("\n");
+
+  // Orphan h3s before the first h2 get a default chapter
+  const firstChapterLine = chapterHeadings[0]?.lineno ?? Infinity;
+  const defaultScenes = sceneHeadings.filter((sh) => sh.lineno < firstChapterLine);
+
+  // Build all chapters (default first, then parsed ones)
+  const chapters: Record<string | symbol, Chapter> = {};
+  let chapterOrder: Heading[] = [];
+
+  if (defaultScenes.length > 0) {
+    const scenes: Record<string, Scene> = {};
+    let entryScene: string | null = null;
+
+    for (let si = 0; si < defaultScenes.length; si++) {
+      const sh = defaultScenes[si];
+      const seEnd = defaultScenes[si + 1]?.lineno ?? firstChapterLine;
+      const scScript = getScriptBetween(scriptRanges, sh.lineno, seEnd, lines);
+      const scHooks = await parseScript(scScript, SceneHooksSchema);
+
+      const template = lines
+        .slice(sh.lineno, seEnd)
+        .filter((_, i) => !ignoredLines.has(sh.lineno + i))
+        .join("\n");
+
+      const scene = new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks });
+      scenes[sh.id] = scene;
+      if (entryScene === null) {
+        entryScene = sh.id;
+      }
     }
-    return line;
-  });
 
-  const chapters = Object.fromEntries(
-    await Promise.all(
-      divisions.map(async ({ id, title, lineno, script }, i): Promise<[string, ChapterInit]> => {
-        const template = lines
-          .slice(lineno, divisions[i + 1]?.lineno)
-          .filter((line): line is string => line !== null)
-          .join("\n");
-        const hooks = await parseChapterScript(script);
-        return [id, { title, template, hooks }];
-      }),
-    ),
-  );
-  const entry = divisions[0].id ?? null;
+    chapters[DEFAULT_CHAPTER] = new Chapter({
+      id: DEFAULT_CHAPTER,
+      title: "",
+      scenes,
+      entry: entryScene,
+    });
+  }
 
-  const hooks = await parseStoryScript(storyScript);
+  for (let ci = 0; ci < chapterHeadings.length; ci++) {
+    const ch = chapterHeadings[ci];
+    const chEnd = chapterHeadings[ci + 1]?.lineno ?? lines.length;
+    const chScript = getScriptBetween(scriptRanges, ch.lineno, chEnd, lines);
+    const chHooks = await parseScript(chScript, ChapterHooksSchema);
+
+    // Collect scenes within this chapter
+    const chapterScenes = sceneHeadings.filter((sh) => sh.lineno > ch.lineno && sh.lineno < chEnd);
+    const scenes: Record<string, Scene> = {};
+    let entryScene: string | null = null;
+
+    for (let si = 0; si < chapterScenes.length; si++) {
+      const sh = chapterScenes[si];
+      const seEnd = chapterScenes[si + 1]?.lineno ?? chEnd;
+      const scScript = getScriptBetween(scriptRanges, sh.lineno, seEnd, lines);
+      const scHooks = await parseScript(scScript, SceneHooksSchema);
+
+      const template = lines
+        .slice(sh.lineno, seEnd)
+        .filter((_, i) => !ignoredLines.has(sh.lineno + i))
+        .join("\n");
+
+      const scene = new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks });
+      scenes[sh.id] = scene;
+      if (entryScene === null) {
+        entryScene = sh.id;
+      }
+    }
+
+    chapters[ch.id] = new Chapter({
+      id: ch.id,
+      title: ch.title,
+      hooks: chHooks,
+      scenes,
+      entry: entryScene,
+    });
+    chapterOrder.push(ch);
+  }
+
+  const storyHooks = await parseScript(storyScript, StoryHooksSchema);
+  const entry = DEFAULT_CHAPTER in chapters ? DEFAULT_CHAPTER : (chapterOrder[0]?.id ?? null);
 
   return {
     metadata,
     chapters,
     entry,
-    hooks,
+    hooks: storyHooks,
     stylesheet,
   };
+}
+
+function getCurrentParent(headings: Heading[]): Heading | null {
+  for (let i = headings.length - 1; i >= 0; i--) {
+    return headings[i];
+  }
+  return null;
+}
+
+function getScriptBetween(ranges: [number, number][], from: number, to: number, lines: string[]): string {
+  const scripts: string[] = [];
+  for (const [start, end] of ranges) {
+    if (start >= from && end <= to) {
+      const block = lines.slice(start, end).join("\n");
+      const match = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(block);
+      if (match) {
+        scripts.push(match[1].trim());
+      }
+    }
+  }
+  return scripts.join("\n");
 }

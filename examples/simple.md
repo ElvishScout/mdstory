@@ -4,27 +4,29 @@ globals:
   name: Elvish
 ---
 
-# Beginning
+# Sole Survivor
+
+## Survival {#survival}
 
 <script>
   let counter = 0;
 
   export default {
-    onEnter({ globals }) {
-      counter++;    
+    locals() {
+      counter++;
       const order = String(counter) + (["st", "nd", "rd"][(counter + 9) % 10] ?? "th");
-      
+
       return {
-        data: {
-          alive: counter <= 5,
-          counter,
-          order,
-          showIntro: counter === 1,
-        }
+        alive: counter <= 5,
+        counter,
+        order,
+        showIntro: counter === 1,
       };
     },
   };
 </script>
+
+### Desert {#desert}
 
 {{#if alive}}
 
@@ -47,7 +49,7 @@ You find yourself in a vast desert, near a crashed plane. It's the {{order}} tim
 
 You look around and decide to
 
-{{#nav "Beginning"}} Walk forward {{/nav}}
+{{#nav "desert"}} Walk forward {{/nav}}
 
 {{else}}
 
