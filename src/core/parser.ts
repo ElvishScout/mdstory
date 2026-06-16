@@ -7,7 +7,9 @@ import { StoryInit, ChapterInit, MetadataSchema, StoryHooksSchema, ChapterHooksS
 import { DuplicateIdError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
 
 async function importScriptModule(script: string) {
-  const url = "data:text/javascript;base64," + btoa(script);
+  const uint8 = new TextEncoder().encode(script);
+  const binary = String.fromCharCode(...uint8);
+  const url = "data:text/javascript;base64," + btoa(binary);
   const module = await import(url);
   return module.default ?? {};
 }

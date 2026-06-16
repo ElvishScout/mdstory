@@ -100,6 +100,8 @@ export class Story {
       const normalizedPromptResult =
         promptResult instanceof FormData ? parseFormData(promptResult, renderResult) : promptResult;
 
+      this.globals = { ...this.globals, ...normalizedPromptResult.updates };
+
       let overrideTarget = undefined;
       if (chapter.hooks.onLeave) {
         const result = await chapter.hooks.onLeave({

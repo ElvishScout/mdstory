@@ -9,7 +9,18 @@ import { Story, StoryPrompt, Scope } from "../src/index";
 
 const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal).use(pluginMark);
 
-// markdown-it-terminal doesn't support the mark token from markdown-it-mark
+// markdown-it-terminal doesn't support mark or <u> tags
+const defaultHtmlInline = md.renderer.rules.html_inline!;
+md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
+  const tag = tokens[idx].content;
+  if (tag === "<u>") return "\x1b[4m";
+  if (tag === "</u>") return "\x1b[24m";
+  return defaultHtmlInline(tokens, idx, options, env, self);
+};
+const defaultHeadingClose = md.renderer.rules.heading_close;
+md.renderer.rules.heading_close = (tokens, idx, options, env, self) => {
+  return (defaultHeadingClose?.(tokens, idx, options, env, self) ?? "") + "\n";
+};
 md.renderer.rules.mark_open = () => "\x1b[7m";
 md.renderer.rules.mark_close = () => "\x1b[27m";
 const prompt: StoryPrompt = async ({ text, inputs, navs }) => {

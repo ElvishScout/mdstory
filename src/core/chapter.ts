@@ -82,13 +82,13 @@ export type Renderer = {
 const markdownRenderer: Renderer = {
   input({ name, type }) {
     if (type === "boolean") {
-      return `==[? __${name}__]==`;
+      return `<u>[? ${name}]</u>`;
     } else {
-      return `==[> __${name}__]==`;
+      return `<u>[> ${name}]</u>`;
     }
   },
   nav({ children }) {
-    return `==[@ __${children}__]==`;
+    return `<u>[@ ${children}]</u>`;
   },
 };
 
