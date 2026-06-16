@@ -104,5 +104,3 @@ export type StoryInit = {
   /** Global story lifecycle hooks. */
   hooks: StoryHooks;
 };
-
-export type StoryAssets = Record<string, string>;

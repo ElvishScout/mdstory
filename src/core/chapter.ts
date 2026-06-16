@@ -1,6 +1,7 @@
 import Handlebars, { HelperDeclareSpec, HelperOptions } from "handlebars";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
+import pluginMark from "markdown-it-mark";
 
 import { InputType, Variable, ChapterHooks, Scope, Asset } from "./definitions.js";
 import { escapeHtml } from "./utils.js";
@@ -81,13 +82,13 @@ export type Renderer = {
 const markdownRenderer: Renderer = {
   input({ name, type }) {
     if (type === "boolean") {
-      return `[? _${name}_]`;
+      return `==[? __${name}__]==`;
     } else {
-      return `[> _${name}_]`;
+      return `==[> __${name}__]==`;
     }
   },
   nav({ children }) {
-    return `[@ __${children}__]`;
+    return `==[@ __${children}__]==`;
   },
 };
 
@@ -212,7 +213,7 @@ export class Chapter {
 
     let text;
     if (html) {
-      const md = new MarkdownIt({ html: true }).use(pluginAttrs);
+      const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginMark);
       text = Handlebars.compile(this.template)(scope, { helpers });
       text = md.render(text);
     } else {

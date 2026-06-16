@@ -29,6 +29,7 @@
     "markdown-it": "^14.1.0",
     "markdown-it-attrs": "^4.3.1",
     "markdown-it-front-matter": "^0.2.4",
+    "markdown-it-mark": "^4.0.0",
     "zod": "^3.24.3"
   },
   "types": "./types",

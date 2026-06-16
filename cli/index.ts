@@ -3,10 +3,15 @@ import inquirer from "inquirer";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginTerminal from "markdown-it-terminal";
+import pluginMark from "markdown-it-mark";
 
 import { Story, StoryPrompt, Scope } from "../src/index";
 
-const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal);
+const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal).use(pluginMark);
+
+// markdown-it-terminal doesn't support the mark token from markdown-it-mark
+md.renderer.rules.mark_open = () => "\x1b[7m";
+md.renderer.rules.mark_close = () => "\x1b[27m";
 const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
   console.log(md.render(text).trim());
   console.log();
