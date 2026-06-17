@@ -8,12 +8,18 @@ globals:
 
 ## Survival {#survival}
 
+### Desert {#desert}
+
 <script>
   let counter = 0;
 
   export default {
-    locals() {
+    onEnter({ locals }) {
       counter++;
+      locals.counter = counter;
+    },
+    view({ locals }) {
+      const counter = locals.counter;
       const order = String(counter) + (["st", "nd", "rd"][(counter + 9) % 10] ?? "th");
 
       return {
@@ -26,13 +32,11 @@ globals:
   };
 </script>
 
-### Desert {#desert}
-
 {{#if alive}}
 
 {{#if showIntro}}
 
-Are you OK? {{input "boolean" ok=""}}
+Are you OK? {{input "boolean" ok=false}}
 
 You are the only survivor of an air disaster. I known this is an old-fashioned story, but we are just doing a test. You
 wake up, and barely remember your name is {{input "string" name=name}} .

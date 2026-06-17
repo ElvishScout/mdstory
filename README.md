@@ -1,4 +1,4 @@
-**English** | [中文](README.zh-CN.md)
+**English** | [中文](README.zh-CN.md) | [Writing Guide](WRITING_GUIDE.zh-CN.md)
 
 # MdStory
 
@@ -61,7 +61,7 @@ Use `{{#nav target}}label{{/nav}}` to let the reader move between scenes:
 
 ### Input
 
-Let the reader provide values. These persist as global variables.
+Let the reader provide values. These persist as global variables. `input` does not pause the story where it appears; when the reader leaves the current scene, all inputs in that scene are submitted together with the selected navigation target.
 
 ```markdown
 {{input "string"  name="Alice"}}    ← text input, defaults to "Alice"
@@ -88,7 +88,7 @@ The door is locked.
 {{/if}}
 ```
 
-Globals persist across the whole story. Chapter `locals` are re-computed each time the chapter is entered. Scene `data()` provides per-render overrides.
+Globals persist across the whole story. Chapter `locals` are reset and re-computed each time the chapter is entered. Scene `view()` provides render-only values for the current scene.
 
 ### Images & Resources
 
@@ -119,19 +119,20 @@ Include CSS via `<style>` tags under the story heading:
 ### Hooks
 
 Hooks are JavaScript functions that run at specific points. Export them from `<script>` tags.
+Each story, chapter, or scene scope may contain at most one `<script>` tag.
 
 | Level | Position | Hook | Purpose |
 |-------|----------|------|---------|
 | Story | Under `#` | `globals()` | Return initial global variables |
-| | | `onStart()` | Side effect when story begins |
-| Chapter | Under `##` | `locals()` | Return chapter-local variables |
-| | | `onEnter()` | Side effect when entering the chapter |
-| | | `onLeave()` | Side effect when leaving the chapter |
-| Scene | Under `###` | `data()` | Return per-render data for the scene |
-| | | `onEnter()` | Side effect on scene enter |
-| | | `onLeave()` | Side effect on scene exit |
+| | | `onStart({ globals })` | Side effect when story begins |
+| Chapter | Under `##` | `locals({ globals })` | Return chapter-local variables |
+| | | `onEnter({ globals, locals })` | Side effect when entering the chapter |
+| | | `onLeave({ globals, locals, updates, target })` | Side effect when leaving the chapter, including story end |
+| Scene | Under `###` | `view({ globals, locals })` | Return render-only values for the scene |
+| | | `onEnter({ globals, locals })` | Side effect on scene enter |
+| | | `onLeave({ globals, locals, updates, target })` | Side effect on scene exit |
 
-All hooks receive `{ globals, locals }` (context-dependent). Hooks with return values support both sync and `async`.
+Hooks with return values support both sync and `async`. `globals()` receives no arguments. `view()` receives the current runtime scopes, but its return value is only used for the current render.
 
 ### Line Breaks
 
@@ -186,14 +187,14 @@ You're not ready yet.
 {{/if}}
 ```
 
-### Scene with Data Hook
+### Scene with View Hook
 
 ```markdown
 ### Treasure Chest {#chest}
 
 <script>
   export default {
-    data({ globals }) {
+    view({ globals }) {
       const opened = globals.chestOpened || false;
       return {
         alreadyOpened: opened,

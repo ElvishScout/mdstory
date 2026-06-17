@@ -10,7 +10,6 @@ export class Chapter {
   locals: Scope;
   scenes: Record<string, Scene>;
   entry: Scene | null;
-  /** @internal */ _entered = false;
 
   constructor({ id, title, hooks, locals, scenes, entry }: ChapterInit) {
     this.id = id;

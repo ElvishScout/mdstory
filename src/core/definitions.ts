@@ -6,6 +6,7 @@ type JsonPrimitive = number | string | boolean | null;
 type JsonArray = JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+type HookResult<T = void> = T | Promise<T>;
 
 function PromiseLikeSchema<T extends z.ZodType>(schema: T) {
   return schema.or(schema.promise());
@@ -29,13 +30,44 @@ export const MetadataSchema = z.object({
   assets: AssetsSchema.optional(),
 });
 
+export type HookContext = {
+  globals: Scope;
+  locals: Scope;
+};
+
+export type StoryHookContext = Pick<HookContext, "globals">;
+export type LeaveHookContext = HookContext & {
+  updates: Scope;
+  target: string | null;
+};
+
+/** Story-level lifecycle hooks. */
+export type StoryHooks = {
+  globals?: () => HookResult<Scope | undefined>;
+  onStart?: (context: StoryHookContext) => HookResult;
+};
+
+/** Chapter-level lifecycle hooks. */
+export type ChapterHooks = {
+  locals?: (context: StoryHookContext) => HookResult<Scope | undefined>;
+  onEnter?: (context: HookContext) => HookResult;
+  onLeave?: (context: LeaveHookContext) => HookResult;
+};
+
+/** Scene-level lifecycle hooks. */
+export type SceneHooks = {
+  view?: (context: HookContext) => HookResult<Scope | undefined>;
+  onEnter?: (context: HookContext) => HookResult;
+  onLeave?: (context: LeaveHookContext) => HookResult;
+};
+
 /** Story-level lifecycle hooks. */
 export const StoryHooksSchema = z
   .object({
     globals: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
     onStart: z.function(),
   })
-  .partial();
+  .partial() as z.ZodType<StoryHooks>;
 
 /** Chapter-level lifecycle hooks. */
 export const ChapterHooksSchema = z
@@ -44,16 +76,16 @@ export const ChapterHooksSchema = z
     onEnter: z.function(),
     onLeave: z.function(),
   })
-  .partial();
+  .partial() as z.ZodType<ChapterHooks>;
 
 /** Scene-level lifecycle hooks. */
 export const SceneHooksSchema = z
   .object({
-    data: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
+    view: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
     onEnter: z.function(),
     onLeave: z.function(),
   })
-  .partial();
+  .partial() as z.ZodType<SceneHooks>;
 
 /** All JSON-compatible values. */
 export type Variable = z.infer<typeof VariableSchema>;
@@ -63,12 +95,6 @@ export type Scope = z.infer<typeof ScopeSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 /** Story metadata. */
 export type Metadata = z.infer<typeof MetadataSchema>;
-/** Story-level lifecycle hooks. */
-export type StoryHooks = z.infer<typeof StoryHooksSchema>;
-/** Chapter-level lifecycle hooks. */
-export type ChapterHooks = z.infer<typeof ChapterHooksSchema>;
-/** Scene-level lifecycle hooks. */
-export type SceneHooks = z.infer<typeof SceneHooksSchema>;
 
 /** Symbol key for the implicit default chapter holding orphan scenes. */
 export const DEFAULT_CHAPTER = Symbol("default");

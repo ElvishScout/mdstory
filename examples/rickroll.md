@@ -6,6 +6,8 @@ title: Never gonna give you up
 
 ## Lyrics {#lyrics}
 
+### Verse {#verse}
+
 <script>
   const lyrics = [
     "Never gonna give you up",
@@ -37,15 +39,14 @@ title: Never gonna give you up
   let index = 0;
 
   export default {
-    locals() {
+    onEnter({ locals }) {
       const line = lyrics[index++];
       const target = index < lyrics.length ? "verse" : null;
 
-      return { line, target }
-    }
-  }
+      locals.line = line;
+      locals.target = target;
+    },
+  };
 </script>
-
-### Verse {#verse}
 
 {{#nav target}}{{line}}{{/nav}}

@@ -20,6 +20,19 @@ export class EmptyChapterIdError extends Error {
   }
 }
 
+export class DuplicateScriptError extends Error {
+  scope: string;
+  lines: number[];
+  constructor(scope: string, lines: number[], message?: string) {
+    super(
+      message ??
+        `Multiple <script> tags found in ${scope}. Use exactly one <script> tag per story, chapter, or scene scope. Lines: ${lines.join(", ")}.`,
+    );
+    this.scope = scope;
+    this.lines = lines;
+  }
+}
+
 export class ChapterNotFoundError extends Error {
   target: string | null;
   constructor(target: string | null, message?: string) {

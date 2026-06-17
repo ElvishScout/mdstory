@@ -110,10 +110,34 @@ export class Story {
     return new Story(await parseStorySource(source));
   }
 
+  private async enterChapter(chapter: Chapter) {
+    chapter.locals = {};
+    if (chapter.hooks.locals) {
+      const result = await chapter.hooks.locals({ globals: this.globals });
+      if (result) {
+        Object.assign(chapter.locals, result);
+      }
+    }
+    if (chapter.hooks.onEnter) {
+      await chapter.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
+    }
+  }
+
+  private async leaveChapter(chapter: Chapter, updates: Scope, target: string | null) {
+    if (chapter.hooks.onLeave) {
+      await chapter.hooks.onLeave({
+        globals: this.globals,
+        locals: chapter.locals,
+        updates,
+        target,
+      });
+    }
+  }
+
   /** Starts playing the story, looping through chapters and scenes until navigation ends. */
   async play(prompt: StoryPrompt, options: RenderOptions) {
     if (this.hooks.globals) {
-      const result = await this.hooks.globals({ globals: this.globals });
+      const result = await this.hooks.globals();
       if (result) {
         Object.assign(this.globals, result);
       }
@@ -132,36 +156,23 @@ export class Story {
     let chapter: Chapter = entryChapter;
     let scene: Scene = entryScene;
     let currentChapterId: string | symbol | null = null;
+    await this.enterChapter(chapter);
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      // Chapter locals + onEnter if first scene in this chapter
-      if (!chapter._entered) {
-        if (chapter.hooks.locals) {
-          const result = await chapter.hooks.locals({ globals: this.globals });
-          if (result) {
-            Object.assign(chapter.locals, result);
-          }
-        }
-        if (chapter.hooks.onEnter) {
-          await chapter.hooks.onEnter({ globals: this.globals });
-        }
-        chapter._entered = true;
+      // Scene onEnter + render-only view data
+      if (scene.hooks.onEnter) {
+        await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
       }
-
-      // Scene data + onEnter
-      let sceneOverrides: Record<string, never> = {};
-      if (scene.hooks.data) {
-        const result = await scene.hooks.data({
+      let sceneOverrides: Scope = {};
+      if (scene.hooks.view) {
+        const result = await scene.hooks.view({
           globals: this.globals,
           locals: chapter.locals,
         });
         if (result) {
           Object.assign(sceneOverrides, result);
         }
-      }
-      if (scene.hooks.onEnter) {
-        await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
       }
 
       if (options.debug) {
@@ -216,6 +227,7 @@ export class Story {
       const finalTarget = normalizedPromptResult.target;
 
       if (finalTarget === null) {
+        await this.leaveChapter(chapter, normalizedPromptResult.updates, finalTarget);
         break;
       }
 
@@ -227,14 +239,8 @@ export class Story {
 
       // Chapter transition
       if (resolved.chapter !== chapter) {
-        if (chapter.hooks.onLeave) {
-          await chapter.hooks.onLeave({
-            globals: this.globals,
-            locals: chapter.locals,
-            updates: normalizedPromptResult.updates,
-            target: finalTarget,
-          });
-        }
+        await this.leaveChapter(chapter, normalizedPromptResult.updates, finalTarget);
+        await this.enterChapter(resolved.chapter);
       }
 
       chapter = resolved.chapter;

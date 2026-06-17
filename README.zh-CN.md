@@ -1,4 +1,4 @@
-[English](README.md) | **中文**
+[English](README.md) | **中文** | [写作规范](WRITING_GUIDE.zh-CN.md)
 
 # MdStory
 
@@ -61,7 +61,7 @@ globals:
 
 ### 输入
 
-让读者提供值，这些值会作为全局变量持久化。
+让读者提供值，这些值会作为全局变量持久化。`input` 不会在出现的位置暂停故事；读者离开当前场景时，场景里的所有输入会和选择的导航目标一并提交。
 
 ```markdown
 {{input "string"  名字="小明"}}   ← 文本输入，默认"小明"
@@ -88,7 +88,7 @@ globals:
 {{/if}}
 ```
 
-全局变量（globals）在整个故事中持久存在。章节局部变量（`locals`）在每次进入章节时重新计算。场景 `data()` 提供每次渲染的覆盖数据。
+全局变量（globals）在整个故事中持久存在。章节局部变量（`locals`）在每次进入章节时重置并重新计算。场景 `view()` 提供当前场景本次渲染使用的临时值。
 
 ### 图片与资源
 
@@ -119,19 +119,20 @@ assets:
 ### 钩子
 
 钩子是在特定时机执行的 JavaScript 函数，从 `<script>` 标签中导出。
+每个 story、chapter 或 scene 作用域最多只能包含一个 `<script>` 标签。
 
 | 层级 | 位置 | 钩子 | 作用 |
 |------|------|------|------|
 | Story | `#` 下 | `globals()` | 返回初始全局变量 |
-| | | `onStart()` | 故事开始时的副作用 |
-| Chapter | `##` 下 | `locals()` | 返回章节局部变量 |
-| | | `onEnter()` | 进入章节时的副作用 |
-| | | `onLeave()` | 离开章节时的副作用 |
-| Scene | `###` 下 | `data()` | 返回每次渲染的数据 |
-| | | `onEnter()` | 进入场景时的副作用 |
-| | | `onLeave()` | 离开场景时的副作用 |
+| | | `onStart({ globals })` | 故事开始时的副作用 |
+| Chapter | `##` 下 | `locals({ globals })` | 返回章节局部变量 |
+| | | `onEnter({ globals, locals })` | 进入章节时的副作用 |
+| | | `onLeave({ globals, locals, updates, target })` | 离开章节时的副作用，包括故事结束 |
+| Scene | `###` 下 | `view({ globals, locals })` | 返回场景本次渲染使用的临时值 |
+| | | `onEnter({ globals, locals })` | 进入场景时的副作用 |
+| | | `onLeave({ globals, locals, updates, target })` | 离开场景时的副作用 |
 
-所有钩子接收 `{ globals, locals }`（依层级而定）。有返回值的钩子支持同步和 `async`。
+有返回值的钩子支持同步和 `async`。`globals()` 不接收参数。`view()` 接收当前运行时作用域，但返回值只用于当前这次渲染。
 
 ### 空行
 
@@ -186,14 +187,14 @@ assets:
 {{/if}}
 ```
 
-### 带 Data 钩子的场景
+### 带 View 钩子的场景
 
 ```markdown
 ### 宝箱 {#chest}
 
 <script>
   export default {
-    data({ globals }) {
+    view({ globals }) {
       const opened = globals.已开过 || false;
       return {
         已空: opened,

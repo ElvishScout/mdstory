@@ -52,8 +52,11 @@ assets:
 
 <script>
   export default {
-    data({ globals }) {
+    onEnter({ globals }) {
       globals.时间循环次数 = (globals.时间循环次数 || 0) + 1;
+    },
+    view({ globals }) {
+      return { 时间循环次数: globals.时间循环次数 };
     },
   };
 </script>
@@ -80,7 +83,7 @@ assets:
 
 <script>
   export default {
-    data({ globals }) {
+    view({ globals }) {
       const clues = JSON.parse(globals.已收集线索 || "[]");
       return {
         已有法医: clues.includes("法医"),
@@ -111,12 +114,15 @@ assets:
 
 <script>
   export default {
-    data({ globals }) {
+    onEnter({ globals }) {
       const clues = JSON.parse(globals.已收集线索 || "[]");
       if (!clues.includes("法医")) {
         clues.push("法医");
       }
       globals.已收集线索 = JSON.stringify(clues);
+    },
+    view({ globals }) {
+      const clues = JSON.parse(globals.已收集线索 || "[]");
       return { 新线索: clues.length };
     },
   };
@@ -146,12 +152,15 @@ assets:
 
 <script>
   export default {
-    data({ globals }) {
+    onEnter({ globals }) {
       const clues = JSON.parse(globals.已收集线索 || "[]");
       if (!clues.includes("证人")) {
         clues.push("证人");
       }
       globals.已收集线索 = JSON.stringify(clues);
+    },
+    view({ globals }) {
+      const clues = JSON.parse(globals.已收集线索 || "[]");
       return { 新线索: clues.length };
     },
   };
@@ -175,12 +184,15 @@ assets:
 
 <script>
   export default {
-    data({ globals }) {
+    onEnter({ globals }) {
       const clues = JSON.parse(globals.已收集线索 || "[]");
       if (!clues.includes("异常")) {
         clues.push("异常");
       }
       globals.已收集线索 = JSON.stringify(clues);
+    },
+    view({ globals }) {
+      const clues = JSON.parse(globals.已收集线索 || "[]");
       return { 新线索: clues.length };
     },
   };
@@ -350,7 +362,7 @@ assets:
 - ✔ YAML 元数据（title、author、globals、assets）
 - ✔ 故事钩子（globals、onStart）
 - ✔ 章节钩子（locals、onEnter、onLeave）
-- ✔ 场景钩子（data）
+- ✔ 场景钩子（view）
 - ✔ 高亮标记（==text==）
 - ✔ CSS 样式表（style）
 - ✔ 资源引用（asset、mime）
