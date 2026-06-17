@@ -8,11 +8,11 @@ import { parseStorySource } from "./parser.js";
 
 /**
  * Prompt function for handling user input during story playback.
- * Receives the current scene and render result, returns navigation target and variable updates.
+ * Receives the current scene and render result, returns navigation target and submitted input values.
  */
 export type StoryPrompt = (
   props: { scene: Scene } & RenderResult,
-) => Promise<{ target: string | null; updates: Scope } | FormData>;
+) => Promise<{ target: string | null; inputs: Scope } | FormData>;
 
 function parstInput(type: InputType, text: string | null) {
   switch (type) {
@@ -30,7 +30,7 @@ function parstInput(type: InputType, text: string | null) {
 
 function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "inputs">) {
   const target = (formData.get("@target") as string) || null;
-  const updates = Object.fromEntries(
+  const parsedInputs = Object.fromEntries(
     inputs.map(({ name, type }) => {
       const value = formData.get(name) as string | null;
       try {
@@ -40,7 +40,17 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
       }
     }),
   );
-  return { target, updates };
+  return { target, inputs: parsedInputs };
+}
+
+function applyInputScopes(targets: { globals: Scope; locals: Scope }, inputs: Scope) {
+  for (const [name, value] of Object.entries(inputs)) {
+    if (name.startsWith("$")) {
+      targets.globals[name.slice(1)] = value;
+    } else {
+      targets.locals[name] = value;
+    }
+  }
 }
 
 /**
@@ -123,12 +133,11 @@ export class Story {
     }
   }
 
-  private async leaveChapter(chapter: Chapter, updates: Scope, target: string | null) {
+  private async leaveChapter(chapter: Chapter, target: string | null) {
     if (chapter.hooks.onLeave) {
       await chapter.hooks.onLeave({
         globals: this.globals,
         locals: chapter.locals,
-        updates,
         target,
       });
     }
@@ -212,14 +221,19 @@ export class Story {
       const normalizedPromptResult =
         promptResult instanceof FormData ? parseFormData(promptResult, renderResult) : promptResult;
 
-      this.globals = { ...this.globals, ...normalizedPromptResult.updates };
+      applyInputScopes(
+        {
+          globals: this.globals,
+          locals: chapter.locals,
+        },
+        normalizedPromptResult.inputs,
+      );
 
       // Scene onLeave (side effect only)
       if (scene.hooks.onLeave) {
         await scene.hooks.onLeave({
           globals: this.globals,
           locals: chapter.locals,
-          updates: normalizedPromptResult.updates,
           target: normalizedPromptResult.target,
         });
       }
@@ -227,7 +241,7 @@ export class Story {
       const finalTarget = normalizedPromptResult.target;
 
       if (finalTarget === null) {
-        await this.leaveChapter(chapter, normalizedPromptResult.updates, finalTarget);
+        await this.leaveChapter(chapter, finalTarget);
         break;
       }
 
@@ -239,7 +253,7 @@ export class Story {
 
       // Chapter transition
       if (resolved.chapter !== chapter) {
-        await this.leaveChapter(chapter, normalizedPromptResult.updates, finalTarget);
+        await this.leaveChapter(chapter, finalTarget);
         await this.enterChapter(resolved.chapter);
       }
 

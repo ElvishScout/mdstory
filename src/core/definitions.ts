@@ -37,7 +37,6 @@ export type HookContext = {
 
 export type StoryHookContext = Pick<HookContext, "globals">;
 export type LeaveHookContext = HookContext & {
-  updates: Scope;
   target: string | null;
 };
 

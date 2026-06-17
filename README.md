@@ -33,7 +33,7 @@ globals:
 
 You wake up in a dark forest. Your name is {{name}} and you have {{gold}} gold.
 
-{{input "string" weapon="stick"}}
+{{input "string" $weapon="stick"}}
 
 {{#nav "chap2.cave"}}Walk forward{{/nav}}
 ```
@@ -61,19 +61,21 @@ Use `{{#nav target}}label{{/nav}}` to let the reader move between scenes:
 
 ### Input
 
-Let the reader provide values. These persist as global variables. `input` does not pause the story where it appears; when the reader leaves the current scene, all inputs in that scene are submitted together with the selected navigation target.
+Let the reader provide values. `input` does not pause the story where it appears; when the reader leaves the current scene, all inputs in that scene are submitted together with the selected navigation target.
+
+Inputs write to chapter `locals` by default. Prefix the variable name with `$` to write to `globals`.
 
 ```markdown
-{{input "string"  name="Alice"}}    ← text input, defaults to "Alice"
-{{input "number"  age=30}}          ← number input
-{{input "boolean" brave=true}}      ← checkbox
+{{input "string"  name="Alice"}}     ← local text input
+{{input "number"  age=30}}           ← local number input
+{{input "boolean" brave=true}}       ← local checkbox
+{{input "string"  $name="Alice"}}    ← global text input
 ```
 
-Use the value later anywhere in the story:
+Use global values later anywhere in the story:
 
 ```markdown
-Your name is {{name}} and you are {{age}} years old.
-{{#if brave}}You feel courageous.{{/if}}
+Your name is {{name}}.
 ```
 
 ### Logic & Variables
@@ -127,10 +129,10 @@ Each story, chapter, or scene scope may contain at most one `<script>` tag.
 | | | `onStart({ globals })` | Side effect when story begins |
 | Chapter | Under `##` | `locals({ globals })` | Return chapter-local variables |
 | | | `onEnter({ globals, locals })` | Side effect when entering the chapter |
-| | | `onLeave({ globals, locals, updates, target })` | Side effect when leaving the chapter, including story end |
+| | | `onLeave({ globals, locals, target })` | Side effect when leaving the chapter, including story end |
 | Scene | Under `###` | `view({ globals, locals })` | Return render-only values for the scene |
 | | | `onEnter({ globals, locals })` | Side effect on scene enter |
-| | | `onLeave({ globals, locals, updates, target })` | Side effect on scene exit |
+| | | `onLeave({ globals, locals, target })` | Side effect on scene exit |
 
 Hooks with return values support both sync and `async`. `globals()` receives no arguments. `view()` receives the current runtime scopes, but its return value is only used for the current render.
 
@@ -237,7 +239,7 @@ title: The Crossing
 
 A stranger approaches you.
 
-{{input "string" name="traveler"}}
+{{input "string" $name="traveler"}}
 
 {{#nav "forest.path"}}Enter the forest{{/nav}}
 {{#nav "river.bridge"}}Cross the bridge{{/nav}}

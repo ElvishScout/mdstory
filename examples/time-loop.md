@@ -33,9 +33,9 @@ assets:
 
 你推开警局大门，阳光透过旋转门折射出刺眼的光芒。你的工牌上写着编号。
 
-{{input "number" 编号=42}}
+{{input "number" $编号=42}}
 
-{{input "string" 探员代号="侦探"}}
+{{input "string" $探员代号="侦探"}}
 
 你深吸一口气，走进这个熟悉的早晨。
 
@@ -239,7 +239,7 @@ assets:
         已有异常: clues.includes("异常"),
       };
     },
-    onLeave({ globals, locals, updates, target }) {
+    onLeave({ globals }) {
       globals.时间循环次数 = (globals.时间循环次数 || 0) + 1;
     },
   };

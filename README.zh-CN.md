@@ -33,7 +33,7 @@ globals:
 
 你在一个黑暗的森林中醒来。你的名字是 {{name}}，你有 {{金币}} 枚金币。
 
-{{input "string" 武器="木棍"}}
+{{input "string" $武器="木棍"}}
 
 {{#nav "chap2.cave"}}向前走{{/nav}}
 ```
@@ -61,19 +61,21 @@ globals:
 
 ### 输入
 
-让读者提供值，这些值会作为全局变量持久化。`input` 不会在出现的位置暂停故事；读者离开当前场景时，场景里的所有输入会和选择的导航目标一并提交。
+让读者提供值。`input` 不会在出现的位置暂停故事；读者离开当前场景时，场景里的所有输入会和选择的导航目标一并提交。
+
+输入默认写入章节 `locals`。变量名前加 `$` 时写入 `globals`。
 
 ```markdown
-{{input "string"  名字="小明"}}   ← 文本输入，默认"小明"
-{{input "number"  年龄=30}}       ← 数字输入
-{{input "boolean" 勇敢=true}}     ← 复选框
+{{input "string"  名字="小明"}}    ← 局部文本输入
+{{input "number"  年龄=30}}        ← 局部数字输入
+{{input "boolean" 勇敢=true}}      ← 局部复选框
+{{input "string"  $名字="小明"}}   ← 全局文本输入
 ```
 
-在故事中任意位置使用这些值：
+全局值可在故事中任意位置使用：
 
 ```markdown
-你的名字是 {{名字}}，今年 {{年龄}} 岁。
-{{#if 勇敢}}你感到充满勇气。{{/if}}
+你的名字是 {{名字}}。
 ```
 
 ### 逻辑与变量
@@ -127,10 +129,10 @@ assets:
 | | | `onStart({ globals })` | 故事开始时的副作用 |
 | Chapter | `##` 下 | `locals({ globals })` | 返回章节局部变量 |
 | | | `onEnter({ globals, locals })` | 进入章节时的副作用 |
-| | | `onLeave({ globals, locals, updates, target })` | 离开章节时的副作用，包括故事结束 |
+| | | `onLeave({ globals, locals, target })` | 离开章节时的副作用，包括故事结束 |
 | Scene | `###` 下 | `view({ globals, locals })` | 返回场景本次渲染使用的临时值 |
 | | | `onEnter({ globals, locals })` | 进入场景时的副作用 |
-| | | `onLeave({ globals, locals, updates, target })` | 离开场景时的副作用 |
+| | | `onLeave({ globals, locals, target })` | 离开场景时的副作用 |
 
 有返回值的钩子支持同步和 `async`。`globals()` 不接收参数。`view()` 接收当前运行时作用域，但返回值只用于当前这次渲染。
 
@@ -237,7 +239,7 @@ title: 岔路口
 
 一个陌生人朝你走来。
 
-{{input "string" name="旅人"}}
+{{input "string" $name="旅人"}}
 
 {{#nav "forest.path"}}走进森林{{/nav}}
 {{#nav "river.bridge"}}过桥{{/nav}}

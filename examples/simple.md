@@ -39,7 +39,7 @@ globals:
 Are you OK? {{input "boolean" ok=false}}
 
 You are the only survivor of an air disaster. I known this is an old-fashioned story, but we are just doing a test. You
-wake up, and barely remember your name is {{input "string" name=name}} .
+wake up, and barely remember your name is {{input "string" $name=name}} .
 
 You struggle to climbed out of the wreckage of the crashed plane and find yourself in a vast desert.
 

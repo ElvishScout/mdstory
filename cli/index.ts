@@ -25,9 +25,9 @@ md.renderer.rules.mark_open = () => "\x1b[7m";
 md.renderer.rules.mark_close = () => "\x1b[27m";
 
 // markdown-it-terminal has a bug: blockquote_open/close don't declare (tokens, idx) params
-md.renderer.rules.blockquote_open = (tokens, idx, options, env, self) => "";
-md.renderer.rules.blockquote_close = (tokens, idx, options, env, self) => "\n";
-const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
+md.renderer.rules.blockquote_open = () => "";
+md.renderer.rules.blockquote_close = () => "\n";
+const prompt: StoryPrompt = async ({ text, inputs: fields, navs }) => {
   console.log(md.render(text).trim());
   console.log();
 
@@ -36,7 +36,7 @@ const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
 
   try {
     inputReplies = await inquirer.prompt(
-      inputs.map(({ name, type, value }) => {
+      fields.map(({ name, type, value }) => {
         if (type === "number") {
           return {
             type: "number",
@@ -82,15 +82,15 @@ const prompt: StoryPrompt = async ({ text, inputs, navs }) => {
   }
 
   const { target } = targetReplies ?? { target: null };
-  const updates = Object.fromEntries([
-    ...inputs.map(({ name, type }) => {
+  const submittedInputs = Object.fromEntries([
+    ...fields.map(({ name }) => {
       const answer = inputReplies[name];
       const value = answer;
       return [name, value];
     }),
   ]) as Scope;
 
-  return { target, updates };
+  return { target, inputs: submittedInputs };
 };
 
 const main = async () => {

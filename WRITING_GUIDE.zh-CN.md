@@ -109,10 +109,10 @@ globals:
 | Story | `onStart({ globals })` | 故事开始时 | 初始化外部状态、修正全局状态、记录启动事件 |
 | Chapter | `locals({ globals })` | 每次进入章节时，`onEnter()` 之前 | 返回本次进入章节的局部变量 |
 | Chapter | `onEnter({ globals, locals })` | 每次进入章节时 | 修改状态、记录进入章节 |
-| Chapter | `onLeave({ globals, locals, updates, target })` | 离开章节或故事结束时 | 结算章节状态、记录目标 |
+| Chapter | `onLeave({ globals, locals, target })` | 离开章节或故事结束时 | 结算章节状态、记录目标 |
 | Scene | `onEnter({ globals, locals })` | 每次进入场景时，`view()` 之前 | 修改状态、发放物品、记录访问 |
 | Scene | `view({ globals, locals })` | 场景渲染前 | 返回只用于本次渲染的临时值 |
-| Scene | `onLeave({ globals, locals, updates, target })` | 读者提交输入并离开场景后 | 根据输入或目标更新状态 |
+| Scene | `onLeave({ globals, locals, target })` | 读者提交输入并离开场景后 | 根据当前状态或目标更新状态 |
 
 所有 hook 都可以是同步函数或 `async` 函数。`globals()` 不接收参数。
 
@@ -120,7 +120,7 @@ globals:
 
 ### globals
 
-`globals` 是整个故事共享的持久状态。输入控件提交的值也会写入 `globals`。
+`globals` 是整个故事共享的持久状态。变量名前带 `$` 的输入会写入 `globals`。
 
 适合放：
 
@@ -254,8 +254,8 @@ globals:
 ```html
 <script>
   export default {
-    onLeave({ globals, updates, target }) {
-      if (updates.acceptedQuest && target === "village.gate") {
+    onLeave({ globals, locals, target }) {
+      if (locals.acceptedQuest && target === "village.gate") {
         globals.questStarted = true;
       }
     },
@@ -337,10 +337,13 @@ export default {
 
 `{{input}}` 用来在当前场景声明输入字段。它不会在出现的位置暂停故事，也不会逐个提交；读者离开当前场景时，当前场景里的所有输入会和选择的 `nav target` 一并提交。
 
+输入默认写入当前章节的 `locals`。如果变量名前加 `$`，则写入 `globals`，并在写入时去掉 `$` 前缀。
+
 ```markdown
-{{input "string" name="旅人"}}
-{{input "number" age=18}}
-{{input "boolean" brave=false}}
+{{input "string" name="旅人"}}      ← 写入 locals.name
+{{input "number" age=18}}          ← 写入 locals.age
+{{input "boolean" brave=false}}    ← 写入 locals.brave
+{{input "string" $name="旅人"}}     ← 写入 globals.name
 ```
 
 推荐：
@@ -348,21 +351,22 @@ export default {
 - 输入名使用稳定变量名。
 - 默认值和类型匹配。
 - 同一场景里避免多个输入写入同一个变量名。
+- 需要跨章节或跨场景长期保留的输入使用 `$` 前缀。
+- 只服务于当前章节流程的输入保持默认 locals。
 
 一次场景提交的顺序是：
 
 1. 读者填写当前场景里的所有 `input`。
 2. 读者选择一个 `nav`，提交目标 `target`。
-3. 运行时把所有输入整理成 `updates`。
-4. `updates` 先合并到 `globals`。
-5. 当前场景的 `onLeave({ globals, locals, updates, target })` 执行。
-6. 如果发生章节切换，当前章节的 `onLeave({ globals, locals, updates, target })` 执行。
+3. 运行时根据变量名前缀把输入写入 `locals` 或 `globals`。
+4. 当前场景的 `onLeave({ globals, locals, target })` 执行。
+5. 如果发生章节切换，当前章节的 `onLeave({ globals, locals, target })` 执行。
 
-因此 `onLeave()` 可以读取最新输入，也可以通过 `updates` 判断这次提交具体改了哪些字段：
+因此 `onLeave()` 可以直接从 `locals` 或 `globals` 读取最新输入：
 
 ```js
-onLeave({ globals, updates }) {
-  if (updates.name) {
+onLeave({ globals, locals }) {
+  if (locals.name) {
     globals.nameConfirmed = true;
   }
 }
