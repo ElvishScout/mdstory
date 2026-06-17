@@ -42,10 +42,11 @@ globals:
 
 | 层级 | 标题 | 作用 |
 |------|------|------|
-| `#` | 故事标题 | 全文唯一。`<script>` 输出故事级钩子。 |
+| `#` | 故事标题 | 可选。章节/场景之前的 `<script>` 输出故事级钩子。 |
 | `##` | 章节 | 将场景分组。可拥有自己的钩子和 `locals`。 |
 | `###` | 场景 | 可渲染单元，包含 Handlebars 模板。 |
 
+如果没有 `#` 标题，故事标题会使用 metadata 中的 `title`；如果 metadata 也没有设置，则为空。
 任何 `##` 之前的 `###` 会自动归入一个隐式默认章节。
 
 ### 导航
@@ -117,6 +118,18 @@ assets:
   .clue { color: #ffd700; }
 </style>
 ```
+
+### Include
+
+使用 `!include("target")` 在解析前插入另一段 Markdown 源码：
+
+```markdown
+!include("./chapter-1.md")
+!include("/stories/common.md")
+!include("https://example.com/shared.md")
+```
+
+使用 `Story.fromPath(pathOrUrl)` 可以通过一个入口路径或 URL 加载完整故事及其 includes。Node.js 中，相对入口路径基于 `cwd` 转成绝对文件路径，绝对路径从文件系统读取，URL 通过网络读取。浏览器中，相对入口路径基于当前页面 URL 解析，绝对路径基于当前域名解析，URL 保持不变。include 会按包含它的文件或 URL 继续解析相对路径。需要自定义 include 加载方式时，可以向 `Story.fromPath()`、`Story.fromSource()` 或底层的 `parseStorySource()` 传入 `base` 或 `resolveInclude`。
 
 ### 钩子
 
@@ -271,6 +284,7 @@ title: 岔路口
 - `rickroll.md` — 单场景循环动画
 - `abyss.md` — 科幻心理惊悚，多分支
 - `time-loop.md` — 侦探时间循环，多章节多场景
+- `include/main.md` — 多重 `!include()` 示例
 
 ## CLI
 
@@ -278,5 +292,6 @@ title: 岔路口
 
 ```bash
 npm run cli examples/simple.md
+npm run cli examples/include/main.md
 npm run cli examples/time-loop.md -- --debug   # 显示每场景的 globals/locals
 ```

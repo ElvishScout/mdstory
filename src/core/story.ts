@@ -4,7 +4,8 @@ import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
 import { RenderOptions, RenderResult } from "./scene.js";
 import { ChapterNotFoundError, InvalidInputError } from "./error.js";
-import { parseStorySource } from "./parser.js";
+import { ParseStoryOptions, parseStorySource } from "./parser.js";
+import { loadSource, normalizePath } from "./utils.js";
 
 /**
  * Prompt function for handling user input during story playback.
@@ -51,6 +52,16 @@ function applyInputScopes(targets: { globals: Scope; locals: Scope }, inputs: Sc
       targets.locals[name] = value;
     }
   }
+}
+
+async function resolveParseOptions(
+  options: Partial<ParseStoryOptions> | undefined,
+  defaultBase: string,
+): Promise<ParseStoryOptions> {
+  return {
+    base: options?.base ?? defaultBase,
+    resolveInclude: options?.resolveInclude ?? ((path) => loadSource(path)),
+  };
 }
 
 /**
@@ -116,8 +127,17 @@ export class Story {
   }
 
   /** Parses a story source string and creates a Story instance. */
-  static async fromSource(source: string) {
-    return new Story(await parseStorySource(source));
+  static async fromSource(source: string, options?: Partial<ParseStoryOptions>) {
+    return new Story(await parseStorySource(source, await resolveParseOptions(options, await normalizePath("./"))));
+  }
+
+  /** Loads a story from a path or URL and resolves includes relative to each containing resource. */
+  static async fromPath(path: string, options?: Partial<ParseStoryOptions>) {
+    const normalizedPath = await normalizePath(path, options?.base);
+    const parseOptions = await resolveParseOptions(options, normalizedPath);
+    const source = await parseOptions.resolveInclude(normalizedPath);
+
+    return new Story(await parseStorySource(source, parseOptions));
   }
 
   private async enterChapter(chapter: Chapter) {

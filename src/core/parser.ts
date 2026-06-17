@@ -14,6 +14,15 @@ import {
 import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
 import { DuplicateIdError, DuplicateScriptError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
+import { normalizePath } from "./utils.js";
+
+type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
+type ScriptBlock = { from: number; to: number; content: string };
+export type IncludeResolver = (path: string) => string | Promise<string>;
+export type ParseStoryOptions = {
+  base: string;
+  resolveInclude: IncludeResolver;
+};
 
 async function importScriptModule(script: string) {
   const uint8 = new TextEncoder().encode(script);
@@ -27,18 +36,42 @@ async function parseScript<T>(script: string, schema: Zod.ZodType<T>): Promise<T
   return script.trim() ? schema.parse(await importScriptModule(script)) : ({} as T);
 }
 
-type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
-type ScriptBlock = { from: number; to: number; content: string };
+async function expandIncludes(source: string, options: ParseStoryOptions, stack: string[] = []): Promise<string> {
+  const lines = source.split("\n");
+  const expanded: string[] = [];
+
+  for (const line of lines) {
+    const match = /^!include\(\s*(?:"([^"]+)"|'([^']+)')\s*\)\s*$/.exec(line.trim());
+    if (!match) {
+      expanded.push(line);
+      continue;
+    }
+
+    const target = match[1] ?? match[2]!;
+    const normalizedPath = await normalizePath(target, options.base);
+
+    if (stack.includes(normalizedPath)) {
+      throw new Error(`Circular include detected: ${[...stack, normalizedPath].join(" -> ")}`);
+    }
+
+    const source = await options.resolveInclude(normalizedPath);
+    expanded.push(await expandIncludes(source, { ...options, base: normalizedPath }, [...stack, normalizedPath]));
+  }
+
+  return expanded.join("\n");
+}
 
 /**
  * Parses a Markdown-formatted story source string into a structured StoryInit.
  *
  * Document structure:
- * - `#` (h1): Story title — single heading, its `<script>` is story hooks
+ * - `#` (h1): Optional story title — its `<script>` is story hooks
  * - `##` (h2): Chapters — with chapter hooks, contain scenes
  * - `###` (h3): Scenes — with scene hooks and Handlebars templates
  */
-export async function parseStorySource(source: string): Promise<StoryInit> {
+export async function parseStorySource(source: string, options: ParseStoryOptions): Promise<StoryInit> {
+  source = await expandIncludes(source, options);
+
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
   const tokens = md.parse(source, {});
 
@@ -95,12 +128,7 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
     }
   });
 
-  // Filter to only h1-h3
   const storyHeading = headings.find((h) => h.tag === "h1");
-  if (!storyHeading) {
-    throw new Error("Story must have a single h1 heading.");
-  }
-
   const chapterHeadings = headings.filter((h) => h.tag === "h2");
   const sceneHeadings = headings.filter((h) => h.tag === "h3");
 
@@ -194,13 +222,13 @@ export async function parseStorySource(source: string): Promise<StoryInit> {
     chapterOrder.push(ch);
   }
 
-  const storyScript = getScriptInScope(scripts, storyHeading.lineno, storyEnd, "story");
+  const storyScript = getScriptInScope(scripts, storyHeading?.lineno ?? 0, storyEnd, "story");
   const storyHooks = await parseScript(storyScript, StoryHooksSchema);
   const entry = DEFAULT_CHAPTER in chapters ? DEFAULT_CHAPTER : (chapterOrder[0]?.id ?? null);
 
   return {
     metadata,
-    title: storyHeading.title,
+    title: storyHeading?.title,
     chapters,
     entry,
     hooks: storyHooks,

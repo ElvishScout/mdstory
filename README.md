@@ -42,10 +42,11 @@ You wake up in a dark forest. Your name is {{name}} and you have {{gold}} gold.
 
 | Level | Heading | Purpose |
 |-------|---------|---------|
-| `#` | Story title | One per file. `<script>` exports story hooks. |
+| `#` | Story title | Optional. `<script>` before chapters/scenes exports story hooks. |
 | `##` | Chapter | Groups scenes. Has its own hooks and `locals`. |
 | `###` | Scene | Renderable unit with a Handlebars template. |
 
+If no `#` heading is present, the story title comes from metadata `title`, or is empty.
 Scenes placed before any `##` are grouped into an implicit default chapter.
 
 ### Navigation
@@ -117,6 +118,18 @@ Include CSS via `<style>` tags under the story heading:
   .clue { color: #ffd700; }
 </style>
 ```
+
+### Include
+
+Use `!include("target")` to splice another Markdown source before parsing:
+
+```markdown
+!include("./chapter-1.md")
+!include("/stories/common.md")
+!include("https://example.com/shared.md")
+```
+
+Use `Story.fromPath(pathOrUrl)` to load an entry story and its includes through one path or URL. In Node, relative entry paths are resolved from `cwd`, absolute paths load from the file system, and URLs load over the network. In browsers, relative entry paths resolve from the current page URL, absolute paths resolve from the current origin, and URLs stay unchanged. Includes follow the same rule relative to the file or URL that contains the `!include`. Pass `base` or `resolveInclude` to `Story.fromPath()`, `Story.fromSource()`, or lower-level `parseStorySource()` when you need custom include loading.
 
 ### Hooks
 
@@ -271,6 +284,7 @@ On the far side, you see a light.
 - `rickroll.md` — animated single-scene loop
 - `abyss.md` — Chinese sci-fi thriller with branching
 - `time-loop.md` — detective time-loop with multi-scene chapters
+- `include/main.md` — nested `!include()` example
 
 ## CLI
 
@@ -278,5 +292,6 @@ Run stories in the terminal:
 
 ```bash
 npm run cli examples/simple.md
+npm run cli examples/include/main.md
 npm run cli examples/time-loop.md -- --debug   # show globals/locals per scene
 ```

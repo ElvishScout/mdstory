@@ -1,4 +1,3 @@
-import fs from "node:fs/promises";
 import inquirer from "inquirer";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
@@ -100,8 +99,7 @@ const main = async () => {
   if (!storyPath) {
     return;
   }
-  const content = (await fs.readFile(storyPath)).toString();
-  const story = await Story.fromSource(content);
+  const story = await Story.fromPath(storyPath);
 
   story.play(prompt, {
     format: "markdown",
