@@ -40,11 +40,11 @@ You wake up in a dark forest. Your name is {{name}} and you have {{gold}} gold.
 
 ### Structure
 
-| Level | Heading | Purpose |
-|-------|---------|---------|
-| `#` | Story title | Optional. `<script>` before chapters/scenes exports story hooks. |
-| `##` | Chapter | Groups scenes. Has its own hooks and `locals`. |
-| `###` | Scene | Renderable unit with a Handlebars template. |
+| Level | Heading     | Purpose                                                          |
+| ----- | ----------- | ---------------------------------------------------------------- |
+| `#`   | Story title | Optional. `<script>` before chapters/scenes exports story hooks. |
+| `##`  | Chapter     | Groups scenes. Has its own hooks and `locals`.                   |
+| `###` | Scene       | Renderable unit with a Handlebars template.                      |
 
 If no `#` heading is present, the story title comes from metadata `title`, or is empty.
 Scenes placed before any `##` are grouped into an implicit default chapter.
@@ -54,10 +54,10 @@ Scenes placed before any `##` are grouped into an implicit default chapter.
 Use `{{#nav target}}label{{/nav}}` to let the reader move between scenes:
 
 ```markdown
-{{#nav "forest"}}     Go back to the forest        {{/nav}}   ← same chapter
-{{#nav "chap2.cave"}} Enter the cave (other chapter){{/nav}}   ← cross-chapter
-{{#nav "chap2"}}      Go to chapter 2              {{/nav}}   ← chapter entry scene
-{{#nav null}}         The end                      {{/nav}}   ← end story
+{{#nav "forest"}} Go back to the forest {{/nav}} ← same chapter
+{{#nav "chap2.cave"}} Enter the cave (other chapter){{/nav}} ← cross-chapter
+{{#nav "chap2"}} Go to chapter 2 {{/nav}} ← chapter entry scene
+{{#nav null}} The end {{/nav}} ← end story
 ```
 
 ### Input
@@ -67,10 +67,10 @@ Let the reader provide values. `input` does not pause the story where it appears
 Inputs write to chapter `locals` by default. Prefix the variable name with `$` to write to `globals`.
 
 ```markdown
-{{input "string"  name="Alice"}}     ← local text input
-{{input "number"  age=30}}           ← local number input
-{{input "boolean" brave=true}}       ← local checkbox
-{{input "string"  $name="Alice"}}    ← global text input
+{{input "string"  name="Alice"}} ← local text input
+{{input "number"  age=30}} ← local number input
+{{input "boolean" brave=true}} ← local checkbox
+{{input "string"  $name="Alice"}} ← global text input
 ```
 
 Use global values later anywhere in the story:
@@ -105,8 +105,8 @@ assets:
 
 ```markdown
 ![]({asset "map"})
-{{asset "bgm"}}  →  outputs the URL
-{{mime "bgm"}}   →  outputs "audio/mpeg"
+{{asset "bgm"}} → outputs the URL
+{{mime "bgm"}} → outputs "audio/mpeg"
 ```
 
 ### Stylesheets
@@ -115,7 +115,9 @@ Include CSS via `<style>` tags under the story heading:
 
 ```html
 <style>
-  .clue { color: #ffd700; }
+  .clue {
+    color: #ffd700;
+  }
 </style>
 ```
 
@@ -136,24 +138,24 @@ Use `Story.fromPath(pathOrUrl)` to load an entry story and its includes through 
 Hooks are JavaScript functions that run at specific points. Export them from `<script>` tags.
 Each story, chapter, or scene scope may contain at most one `<script>` tag.
 
-| Level | Position | Hook | Purpose |
-|-------|----------|------|---------|
-| Story | Under `#` | `globals()` | Return initial global variables |
-| | | `onStart({ globals })` | Side effect when story begins |
-| Chapter | Under `##` | `locals({ globals })` | Return chapter-local variables |
-| | | `onEnter({ globals, locals })` | Side effect when entering the chapter |
-| | | `onLeave({ globals, locals, target })` | Side effect when leaving the chapter, including story end |
-| Scene | Under `###` | `view({ globals, locals })` | Return render-only values for the scene |
-| | | `onEnter({ globals, locals })` | Side effect on scene enter |
-| | | `onLeave({ globals, locals, target })` | Side effect on scene exit |
+| Level   | Position    | Hook                                   | Purpose                                                   |
+| ------- | ----------- | -------------------------------------- | --------------------------------------------------------- |
+| Story   | Under `#`   | `globals()`                            | Return initial global variables                           |
+|         |             | `onStart({ globals })`                 | Side effect when story begins                             |
+| Chapter | Under `##`  | `locals({ globals })`                  | Return chapter-local variables                            |
+|         |             | `onEnter({ globals, locals })`         | Side effect when entering the chapter                     |
+|         |             | `onLeave({ globals, locals, target })` | Side effect when leaving the chapter, including story end |
+| Scene   | Under `###` | `view({ globals, locals })`            | Return render-only values for the scene                   |
+|         |             | `onEnter({ globals, locals })`         | Side effect on scene enter                                |
+|         |             | `onLeave({ globals, locals, target })` | Side effect on scene exit                                 |
 
 Hooks with return values support both sync and `async`. `globals()` receives no arguments. `view()` receives the current runtime scopes, but its return value is only used for the current render.
 
 ### Line Breaks
 
 ```markdown
-{{linebreak}}     ← one blank line
-{{linebreak 3}}   ← three blank lines
+{{linebreak}} ← one blank line
+{{linebreak 3}} ← three blank lines
 ```
 
 ### Example: Branching Scene
@@ -278,20 +280,4 @@ On the far side, you see a light.
 
 {{#nav "start"}}Go back{{/nav}}
 {{#nav null}}Cross into the light{{/nav}}
-```
-
-- `simple.md` — basic branching
-- `rickroll.md` — animated single-scene loop
-- `abyss.md` — Chinese sci-fi thriller with branching
-- `time-loop.md` — detective time-loop with multi-scene chapters
-- `include/main.md` — nested `!include()` example
-
-## CLI
-
-Run stories in the terminal:
-
-```bash
-npm run cli examples/simple.md
-npm run cli examples/include/main.md
-npm run cli examples/time-loop.md -- --debug   # show globals/locals per scene
 ```

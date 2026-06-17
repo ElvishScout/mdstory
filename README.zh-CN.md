@@ -40,11 +40,11 @@ globals:
 
 ### 文档结构
 
-| 层级 | 标题 | 作用 |
-|------|------|------|
-| `#` | 故事标题 | 可选。章节/场景之前的 `<script>` 输出故事级钩子。 |
-| `##` | 章节 | 将场景分组。可拥有自己的钩子和 `locals`。 |
-| `###` | 场景 | 可渲染单元，包含 Handlebars 模板。 |
+| 层级  | 标题     | 作用                                              |
+| ----- | -------- | ------------------------------------------------- |
+| `#`   | 故事标题 | 可选。章节/场景之前的 `<script>` 输出故事级钩子。 |
+| `##`  | 章节     | 将场景分组。可拥有自己的钩子和 `locals`。         |
+| `###` | 场景     | 可渲染单元，包含 Handlebars 模板。                |
 
 如果没有 `#` 标题，故事标题会使用 metadata 中的 `title`；如果 metadata 也没有设置，则为空。
 任何 `##` 之前的 `###` 会自动归入一个隐式默认章节。
@@ -54,10 +54,10 @@ globals:
 用 `{{#nav target}}标签{{/nav}}` 让读者在不同场景间移动：
 
 ```markdown
-{{#nav "forest"}}     回到森林（同一章节）        {{/nav}}
-{{#nav "chap2.cave"}} 进入洞穴（跨章节）          {{/nav}}
-{{#nav "chap2"}}      前往第二章                  {{/nav}}
-{{#nav null}}         故事结束                    {{/nav}}
+{{#nav "forest"}} 回到森林（同一章节） {{/nav}}
+{{#nav "chap2.cave"}} 进入洞穴（跨章节） {{/nav}}
+{{#nav "chap2"}} 前往第二章 {{/nav}}
+{{#nav null}} 故事结束 {{/nav}}
 ```
 
 ### 输入
@@ -67,10 +67,10 @@ globals:
 输入默认写入章节 `locals`。变量名前加 `$` 时写入 `globals`。
 
 ```markdown
-{{input "string"  名字="小明"}}    ← 局部文本输入
-{{input "number"  年龄=30}}        ← 局部数字输入
-{{input "boolean" 勇敢=true}}      ← 局部复选框
-{{input "string"  $名字="小明"}}   ← 全局文本输入
+{{input "string"  名字="小明"}} ← 局部文本输入
+{{input "number"  年龄=30}} ← 局部数字输入
+{{input "boolean" 勇敢=true}} ← 局部复选框
+{{input "string"  $名字="小明"}} ← 全局文本输入
 ```
 
 全局值可在故事中任意位置使用：
@@ -105,8 +105,8 @@ assets:
 
 ```markdown
 ![]({asset "map"})
-{{asset "bgm"}}  → 输出 URL
-{{mime "bgm"}}   → 输出 "audio/mpeg"
+{{asset "bgm"}} → 输出 URL
+{{mime "bgm"}} → 输出 "audio/mpeg"
 ```
 
 ### 样式表
@@ -115,7 +115,9 @@ assets:
 
 ```html
 <style>
-  .clue { color: #ffd700; }
+  .clue {
+    color: #ffd700;
+  }
 </style>
 ```
 
@@ -136,24 +138,24 @@ assets:
 钩子是在特定时机执行的 JavaScript 函数，从 `<script>` 标签中导出。
 每个 story、chapter 或 scene 作用域最多只能包含一个 `<script>` 标签。
 
-| 层级 | 位置 | 钩子 | 作用 |
-|------|------|------|------|
-| Story | `#` 下 | `globals()` | 返回初始全局变量 |
-| | | `onStart({ globals })` | 故事开始时的副作用 |
-| Chapter | `##` 下 | `locals({ globals })` | 返回章节局部变量 |
-| | | `onEnter({ globals, locals })` | 进入章节时的副作用 |
-| | | `onLeave({ globals, locals, target })` | 离开章节时的副作用，包括故事结束 |
-| Scene | `###` 下 | `view({ globals, locals })` | 返回场景本次渲染使用的临时值 |
-| | | `onEnter({ globals, locals })` | 进入场景时的副作用 |
-| | | `onLeave({ globals, locals, target })` | 离开场景时的副作用 |
+| 层级    | 位置     | 钩子                                   | 作用                             |
+| ------- | -------- | -------------------------------------- | -------------------------------- |
+| Story   | `#` 下   | `globals()`                            | 返回初始全局变量                 |
+|         |          | `onStart({ globals })`                 | 故事开始时的副作用               |
+| Chapter | `##` 下  | `locals({ globals })`                  | 返回章节局部变量                 |
+|         |          | `onEnter({ globals, locals })`         | 进入章节时的副作用               |
+|         |          | `onLeave({ globals, locals, target })` | 离开章节时的副作用，包括故事结束 |
+| Scene   | `###` 下 | `view({ globals, locals })`            | 返回场景本次渲染使用的临时值     |
+|         |          | `onEnter({ globals, locals })`         | 进入场景时的副作用               |
+|         |          | `onLeave({ globals, locals, target })` | 离开场景时的副作用               |
 
 有返回值的钩子支持同步和 `async`。`globals()` 不接收参数。`view()` 接收当前运行时作用域，但返回值只用于当前这次渲染。
 
 ### 空行
 
 ```markdown
-{{linebreak}}     ← 一个空行
-{{linebreak 3}}   ← 三个空行
+{{linebreak}} ← 一个空行
+{{linebreak 3}} ← 三个空行
 ```
 
 ### 分支场景示例
@@ -278,20 +280,4 @@ title: 岔路口
 
 {{#nav "start"}}往回走{{/nav}}
 {{#nav null}}走向光明{{/nav}}
-```
-
-- `simple.md` — 基础分支
-- `rickroll.md` — 单场景循环动画
-- `abyss.md` — 科幻心理惊悚，多分支
-- `time-loop.md` — 侦探时间循环，多章节多场景
-- `include/main.md` — 多重 `!include()` 示例
-
-## CLI
-
-在终端中运行故事：
-
-```bash
-npm run cli examples/simple.md
-npm run cli examples/include/main.md
-npm run cli examples/time-loop.md -- --debug   # 显示每场景的 globals/locals
 ```

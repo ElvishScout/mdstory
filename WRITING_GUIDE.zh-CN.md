@@ -140,7 +140,7 @@ globals:
 
 ### globals
 
-`globals` 是整个故事共享的持久状态。变量名前带 `$` 的输入会写入 `globals`。
+`globals` 是整个故事共享的持久状态。
 
 适合放：
 
