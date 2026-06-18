@@ -24,7 +24,8 @@
     "inquirer": "^12.6.0",
     "markdown-it-terminal": "^0.4.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "words-count": "^2.0.2"
   },
   "dependencies": {
     "handlebars": "^4.7.8",
