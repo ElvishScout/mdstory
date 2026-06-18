@@ -138,5 +138,9 @@ dist
 # typescript declarations
 types/
 
+# Coding agents
+.claude/
+openspec/
+
 # .DS_Store
 .DS_Store
