@@ -13,7 +13,6 @@ import {
 } from "./definitions.js";
 import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
-import { DuplicateIdError, DuplicateScriptError, EmptyChapterIdError, InvalidMetadataError } from "./error.js";
 import { normalizePath } from "./utils.js";
 
 type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
@@ -84,12 +83,8 @@ export async function parseStorySource(source: string, options: ParseStoryOption
 
   tokens.forEach((token, i) => {
     if (token.type === "front_matter" && token.meta) {
-      try {
-        const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
-        metadata = Object.assign(metadata, frontMatter);
-      } catch {
-        throw new InvalidMetadataError(token.meta);
-      }
+      const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
+      Object.assign(metadata, frontMatter);
     } else if (
       token.type === "heading_open" &&
       ["h1", "h2", "h3"].includes(token.tag) &&
@@ -104,12 +99,32 @@ export async function parseStorySource(source: string, options: ParseStoryOption
         id ||= content;
         title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
       }
-      if (!id) {
-        throw new EmptyChapterIdError();
+      if (token.tag !== "h1" && !id) {
+        throw new Error("Chapter or scene id cannot be empty");
       }
-      if (headings.find((h) => h.id === id)) {
-        throw new DuplicateIdError(id);
+
+      {
+        let chapterId = null;
+        const chapterIdSet = new Set<string>();
+        const fullSceneIdSet = new Set<string>();
+
+        for (const heading of headings) {
+          if (heading.tag === "h2") {
+            if (chapterIdSet.has(heading.id)) {
+              throw new Error(`Duplicated chapter id found: ${heading.id}`);
+            }
+            chapterId = heading.id;
+            chapterIdSet.add(chapterId);
+          } else if (heading.tag === "h3") {
+            const fullSceneId = `${chapterId ?? ""}.${heading.id}`;
+            if (fullSceneIdSet.has(fullSceneId)) {
+              throw new Error(`Duplicated scene id found: ${fullSceneId}`);
+            }
+            fullSceneIdSet.add(fullSceneId);
+          }
+        }
       }
+
       headings.push({ tag: token.tag as "h1" | "h2" | "h3", id, title, lineno: token.map[0] });
     } else if (token.type === "html_block" && token.map) {
       let match;
@@ -239,10 +254,7 @@ export async function parseStorySource(source: string, options: ParseStoryOption
 function getScriptInScope(scripts: ScriptBlock[], from: number, to: number, scope: string): string {
   const scopedScripts = scripts.filter((script) => script.from >= from && script.to <= to);
   if (scopedScripts.length > 1) {
-    throw new DuplicateScriptError(
-      scope,
-      scopedScripts.map(({ from }) => from + 1),
-    );
+    throw new Error(`More than one script block found in ${scope}`);
   }
   return scopedScripts[0]?.content ?? "";
 }

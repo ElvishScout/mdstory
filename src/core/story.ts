@@ -3,7 +3,6 @@ import { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset } from "./defi
 import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
 import { RenderOptions, RenderResult } from "./scene.js";
-import { ChapterNotFoundError, InvalidInputError } from "./error.js";
 import { ParseStoryOptions, parseStorySource } from "./parser.js";
 import { loadSource, normalizePath } from "./utils.js";
 
@@ -37,7 +36,7 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
       try {
         return [name, parstInput(type, value)];
       } catch {
-        throw new InvalidInputError(name, value);
+        throw new Error(`Invalid input from FormData: ${name}, ${value}`);
       }
     }),
   );
@@ -268,7 +267,7 @@ export class Story {
       // Resolve target
       const resolved = this.resolveTarget(finalTarget, chapter);
       if (!resolved) {
-        throw new ChapterNotFoundError(finalTarget);
+        throw new Error(`Chapter not found: ${finalTarget}`);
       }
 
       // Chapter transition
