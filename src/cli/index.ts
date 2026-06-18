@@ -1,10 +1,11 @@
+#!/usr/bin/env node
 import inquirer from "inquirer";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginTerminal from "markdown-it-terminal";
 import pluginMark from "markdown-it-mark";
 
-import { Story, StoryPrompt, Scope } from "../src/index";
+import { Story, StoryPrompt, Scope } from "../index.js";
 
 const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal).use(pluginMark);
 

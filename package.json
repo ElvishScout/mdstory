@@ -9,9 +9,12 @@
     "./dist",
     "./types"
   ],
+  "bin": {
+    "mdstory": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc -b",
-    "cli": "tsx ./cli/index.ts"
+    "cli": "node ./dist/cli.js"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
