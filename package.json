@@ -10,7 +10,7 @@
     "./types"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
     "cli": "tsx ./cli/index.ts"
   },
   "devDependencies": {
