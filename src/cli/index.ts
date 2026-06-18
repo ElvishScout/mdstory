@@ -103,7 +103,7 @@ const main = async () => {
   const story = await Story.fromPath(storyPath);
 
   story.play(prompt, {
-    format: "markdown",
+    renderer: "markdown",
     debug,
   });
 };

@@ -62,12 +62,19 @@ const createSubmitButtonHtml = ({ target, children }: { target: string; children
 };
 
 /** Custom renderer for generating output in different formats. */
-export type Renderer = {
-  input?: ({ name, type, value }: { name: string; type: InputType; value: string }) => string;
-  nav?: ({ target, children }: { target: string | null; children: string }) => string;
-};
+export interface Renderer {
+  /** Whether to convert Markdown to HTML */
+  html?: boolean;
+  /** Render input area */
+  input?(options: { name: string; type: InputType; value: string }): string;
+  /** Render navigation area */
+  nav?(options: { target: string | null; children: string }): string;
+  /** Render line breaks */
+  linebreak?(options: { n?: number }): string;
+}
 
 const markdownRenderer: Renderer = {
+  html: false,
   input({ name, type }) {
     if (type === "boolean") {
       return `<u>[? ${name}]</u>`;
@@ -78,22 +85,27 @@ const markdownRenderer: Renderer = {
   nav({ children }) {
     return `<u>[@ ${children}]</u>`;
   },
+  linebreak({ n }) {
+    return "\n".repeat(n ?? 1);
+  },
 };
 
 const htmlRenderer: Renderer = {
+  html: true,
   input({ type, name, value }) {
     return createInputHtml({ name, type, value });
   },
   nav({ target, children }) {
     return createSubmitButtonHtml({ target: target ?? "", children });
   },
+  linebreak({ n }) {
+    return "<br>".repeat(n ?? 1);
+  },
 };
 
 /** Rendering options. */
 export type RenderOptions = {
-  format: "markdown" | "html" | Renderer;
-  html?: boolean;
-  debug?: boolean;
+  renderer: "markdown" | "html" | Renderer;
 };
 
 /** The rendering result containing rendered text and extracted fields. */
@@ -104,17 +116,13 @@ type Fields = {
   navs: { text: string; target: string | null }[];
 };
 
-const useHelper = (
-  { inputs, navs }: Fields,
-  assets: Record<string, Asset>,
-  renderer: Renderer,
-): HelperDeclareSpec => {
+function useHelper({ inputs, navs }: Fields, assets: Record<string, Asset>, renderer: Renderer): HelperDeclareSpec {
   return {
     input(type: InputType, opt: HelperOptions) {
       for (const name in opt.hash) {
         const value = opt.hash[name];
         inputs.push({ name, type, value });
-        const result = renderer.input ? renderer.input({ name, type, value }) : "";
+        const result = renderer.input?.({ name, type, value }) ?? "";
         return new Handlebars.SafeString(result);
       }
       return "";
@@ -122,7 +130,7 @@ const useHelper = (
     nav(target: string | null, opt: HelperOptions) {
       const text = opt.fn(this).trim();
       navs.push({ text, target });
-      const result = renderer.nav ? renderer.nav({ target, children: text }) : "";
+      const result = renderer.nav?.({ target, children: text }) ?? "";
       return new Handlebars.SafeString(result);
     },
     asset(name: string) {
@@ -132,10 +140,11 @@ const useHelper = (
       return new Handlebars.SafeString(assets[name]?.mime ?? "");
     },
     linebreak(n?: number) {
-      return new Handlebars.SafeString("<br>".repeat(n ?? 1));
+      const result = renderer.linebreak?.({ n }) ?? "";
+      return new Handlebars.SafeString(result);
     },
   };
-};
+}
 
 /** Defines a scene with a Handlebars template and lifecycle hooks. */
 export class Scene {
@@ -157,14 +166,13 @@ export class Scene {
    * @param assets - Asset objects keyed by name.
    * @param options - Rendering options (format, html).
    */
-  render(scope: Scope, assets: Record<string, Asset> = {}, { format, html }: RenderOptions): RenderResult {
-    let renderer: Renderer;
-    if (format === "markdown") {
+  render(scope: Scope, assets: Record<string, Asset> = {}, { renderer }: RenderOptions): RenderResult {
+    if (renderer === "markdown") {
       renderer = markdownRenderer;
-    } else if (format === "html") {
+    } else if (renderer === "html") {
       renderer = htmlRenderer;
     } else {
-      renderer = format;
+      renderer = renderer;
     }
 
     const fields: Fields = {
@@ -175,7 +183,7 @@ export class Scene {
     const helpers = useHelper(fields, assets, renderer);
 
     let text;
-    if (html) {
+    if (renderer.html) {
       const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginMark);
       text = Handlebars.compile(this.template)(scope, { helpers });
       text = md.render(text);

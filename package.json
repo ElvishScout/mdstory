@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "cli": "node ./dist/cli.js"
+    "cli": "node ./dist/cli/index.js"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

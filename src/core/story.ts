@@ -14,6 +14,10 @@ export type StoryPrompt = (
   props: { scene: Scene } & RenderResult,
 ) => Promise<{ target: string | null; inputs: Scope } | FormData>;
 
+export type PlayOptions = RenderOptions & {
+  debug?: boolean;
+};
+
 function parstInput(type: InputType, text: string | null) {
   switch (type) {
     case "boolean": {
@@ -163,7 +167,7 @@ export class Story {
   }
 
   /** Starts playing the story, looping through chapters and scenes until navigation ends. */
-  async play(prompt: StoryPrompt, options: RenderOptions) {
+  async play(prompt: StoryPrompt, options: PlayOptions) {
     if (this.hooks.globals) {
       const result = await this.hooks.globals();
       if (result) {
