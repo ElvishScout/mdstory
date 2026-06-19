@@ -142,7 +142,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.acceptedTour = true;
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -180,7 +179,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.acceptedTour = false;
     },
   };
@@ -370,7 +368,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.joinedLiterature = true;
       globals.flags.joinedClub = "文艺部";
       globals.affection = (globals.affection || 0) + 1;
@@ -446,7 +443,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.joinedSports = true;
       globals.flags.joinedClub = "篮球部";
     },
@@ -486,7 +482,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.noClub = true;
     },
   };
@@ -583,7 +578,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.acceptedLibrary = true;
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -695,7 +689,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.acceptedLibrary = false;
     },
   };
@@ -728,7 +721,6 @@
 <script>
   export default {
     onLeave({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter1Complete = true;
     },
     view({ globals }) {

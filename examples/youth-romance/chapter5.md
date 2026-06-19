@@ -10,7 +10,6 @@
       };
     },
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter5Entered = true;
     },
   };
@@ -94,7 +93,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.confessed = true;
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -140,7 +138,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.confessed = false;
     },
   };
@@ -199,7 +196,6 @@
 <script>
   export default {
     onLeave({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter5Complete = true;
     },
   };

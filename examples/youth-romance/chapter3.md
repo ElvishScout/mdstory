@@ -10,7 +10,6 @@
       };
     },
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter3Entered = true;
     },
   };
@@ -49,7 +48,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.festivalProject = "鬼屋";
     },
     view({ globals }) {
@@ -79,7 +77,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.festivalProject = "舞台剧";
     },
   };
@@ -120,7 +117,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.taskGroup = "装饰组";
     },
   };
@@ -163,7 +159,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.taskGroup = "餐点组";
     },
   };
@@ -216,7 +211,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.taskGroup = "饮品组";
     },
   };
@@ -328,7 +322,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.festivalDayReached = true;
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -417,7 +410,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.crisisChoice = "help";
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -451,7 +443,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.crisisChoice = "fix";
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -485,7 +476,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.rooftopReached = true;
     },
     view({ globals }) {
@@ -544,7 +534,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.acceptedDig = true;
       globals.affection = (globals.affection || 0) + 1;
       if (!Array.isArray(globals.inventory)) globals.inventory = [];
@@ -580,7 +569,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.acceptedDig = false;
     },
   };
@@ -617,7 +605,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.transferNewsReached = true;
     },
     view({ globals }) {
@@ -702,7 +689,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter3Complete = true;
     },
   };

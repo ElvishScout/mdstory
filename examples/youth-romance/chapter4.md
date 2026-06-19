@@ -10,7 +10,6 @@
       };
     },
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter4Entered = true;
     },
   };
@@ -67,7 +66,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.christmasReached = true;
     },
   };
@@ -139,7 +137,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.gaveChristmasGift = true;
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -181,7 +178,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.gaveChristmasGift = false;
     },
   };
@@ -202,7 +198,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       if (!Array.isArray(globals.inventory)) globals.inventory = [];
       if (!globals.inventory.includes("樱花书签")) {
         globals.inventory.push("樱花书签");
@@ -321,7 +316,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.studiedTogether = true;
       globals.affection = (globals.affection || 0) + 1;
     },
@@ -377,7 +371,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.studiedTogether = false;
     },
   };
@@ -444,7 +437,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.goodbyeReached = true;
     },
     view({ globals }) {
@@ -549,7 +541,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter4Complete = true;
     },
   };

@@ -3,7 +3,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.ending = "good";
       globals.flags.gameCompleted = true;
     },

@@ -10,7 +10,6 @@
       };
     },
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.chapter2Entered = true;
     },
   };
@@ -68,7 +67,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.beenToSea = true;
     },
   };
@@ -103,7 +101,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.beenToSea = false;
     },
   };
@@ -160,7 +157,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.beachActivity = "游泳";
     },
   };
@@ -209,7 +205,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.beachActivity = "捡贝壳";
     },
   };
@@ -250,7 +245,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.beachActivity = "沙滩排球";
     },
   };
@@ -289,7 +283,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
     },
   };
 </script>
@@ -328,7 +321,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.scaredAtNight = true;
     },
   };
@@ -385,7 +377,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.scaredAtNight = false;
     },
   };
@@ -422,7 +413,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.attendedFireworks = true;
       if (!Array.isArray(globals.inventory)) globals.inventory = [];
       if (!globals.inventory.includes("护身符")) {
@@ -589,7 +579,6 @@
 <script>
   export default {
     onEnter({ globals }) {
-      if (!globals.flags) globals.flags = {};
       globals.flags.summerCampComplete = true;
     },
     view({ globals }) {
