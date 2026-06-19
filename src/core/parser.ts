@@ -99,6 +99,9 @@ export async function parseStorySource(source: string, options: ParseStoryOption
         id ||= content;
         title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
       }
+      if (id.includes(".")) {
+        throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
+      }
       if (token.tag !== "h1" && !id) {
         throw new Error("Chapter or scene id cannot be empty");
       }
@@ -161,11 +164,11 @@ export async function parseStorySource(source: string, options: ParseStoryOption
   const defaultScenes = sceneHeadings.filter((sh) => sh.lineno < firstChapterLine);
 
   // Build all chapters (default first, then parsed ones)
-  const chapters: Record<string | symbol, Chapter> = {};
+  const chapters: Chapter[] = [];
   let chapterOrder: Heading[] = [];
 
   if (defaultScenes.length > 0) {
-    const scenes: Record<string, Scene> = {};
+    const scenes: Scene[] = [];
     let entryScene: string | null = null;
 
     for (let si = 0; si < defaultScenes.length; si++) {
@@ -181,19 +184,19 @@ export async function parseStorySource(source: string, options: ParseStoryOption
         .join("\n")
         .replace(/^\n+/, "");
 
-      const scene = new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks });
-      scenes[sh.id] = scene;
+      scenes.push(new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks }));
       if (entryScene === null) {
         entryScene = sh.id;
       }
     }
 
-    chapters[DEFAULT_CHAPTER] = new Chapter({
-      id: DEFAULT_CHAPTER,
-      title: "",
-      scenes,
-      entry: entryScene,
-    });
+    chapters.push(
+      new Chapter({
+        id: DEFAULT_CHAPTER,
+        title: "",
+        scenes,
+      }),
+    );
   }
 
   for (let ci = 0; ci < chapterHeadings.length; ci++) {
@@ -204,7 +207,7 @@ export async function parseStorySource(source: string, options: ParseStoryOption
     const chScriptEnd = chapterScenes[0]?.lineno ?? chEnd;
     const chScript = getScriptInScope(scripts, ch.lineno, chScriptEnd, `chapter "${ch.id}"`);
     const chHooks = await parseScript(chScript, ChapterHooksSchema);
-    const scenes: Record<string, Scene> = {};
+    const scenes: Scene[] = [];
     let entryScene: string | null = null;
 
     for (let si = 0; si < chapterScenes.length; si++) {
@@ -220,32 +223,30 @@ export async function parseStorySource(source: string, options: ParseStoryOption
         .join("\n")
         .replace(/^\n+/, "");
 
-      const scene = new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks });
-      scenes[sh.id] = scene;
+      scenes.push(new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks }));
       if (entryScene === null) {
         entryScene = sh.id;
       }
     }
 
-    chapters[ch.id] = new Chapter({
-      id: ch.id,
-      title: ch.title,
-      hooks: chHooks,
-      scenes,
-      entry: entryScene,
-    });
+    chapters.push(
+      new Chapter({
+        id: ch.id,
+        title: ch.title,
+        hooks: chHooks,
+        scenes,
+      }),
+    );
     chapterOrder.push(ch);
   }
 
   const storyScript = getScriptInScope(scripts, storyHeading?.lineno ?? 0, storyEnd, "story");
   const storyHooks = await parseScript(storyScript, StoryHooksSchema);
-  const entry = DEFAULT_CHAPTER in chapters ? DEFAULT_CHAPTER : (chapterOrder[0]?.id ?? null);
 
   return {
     metadata,
     title: storyHeading?.title,
     chapters,
-    entry,
     hooks: storyHooks,
     stylesheet,
   };

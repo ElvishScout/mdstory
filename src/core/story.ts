@@ -78,40 +78,8 @@ export class Story {
   assets: Record<string, Asset>;
   hooks: StoryHooks;
   stylesheet: string;
-  chapters: Record<string | symbol, Chapter>;
-  entry: Chapter | null;
+  chapters: Chapter[];
   /** @internal */ _storyTitleShown = false;
-
-  resolveTarget(target: string, currentChapter: Chapter): { chapter: Chapter; scene: Scene } | null {
-    const dot = target.indexOf(".");
-    if (dot !== -1) {
-      // Cross-chapter scene: "chapterId.sceneId"
-      const chId = target.slice(0, dot);
-      const scId = target.slice(dot + 1);
-      const ch = this.chapters[chId];
-      if (ch) {
-        const sc = ch.scenes[scId];
-        if (sc) {
-          return { chapter: ch, scene: sc };
-        }
-      }
-      return null;
-    }
-    // Local scene in current chapter
-    const local = currentChapter.scenes[target];
-    if (local) return { chapter: currentChapter, scene: local };
-    // Global scene lookup across all chapters
-    const allChKeys = Reflect.ownKeys(this.chapters) as (string | symbol)[];
-    for (const chKey of allChKeys) {
-      const ch = this.chapters[chKey]!;
-      const sc = ch.scenes[target];
-      if (sc) return { chapter: ch, scene: sc };
-    }
-    // Chapter id → entry scene
-    const ch = this.chapters[target];
-    if (ch?.entry) return { chapter: ch, scene: ch.entry };
-    return null;
-  }
 
   constructor(init: StoryInit) {
     this.title = init.title ?? init.metadata?.title ?? "";
@@ -121,12 +89,59 @@ export class Story {
     this.assets = this.metadata.assets ?? {};
     this.hooks = init.hooks ?? {};
     this.stylesheet = init.stylesheet ?? "";
-    this.entry = init.entry ? (init.chapters[init.entry as string | symbol] ?? null) : null;
+  }
+
+  /** Get chapter by chapter id */
+  getChapter(id: string) {
+    return this.chapters.find((chapter) => chapter.id === id) ?? null;
+  }
+
+  resolveTarget(target: string, currentChapter: Chapter): { chapter: Chapter; scene: Scene } | null {
+    const dot = target.indexOf(".");
+    if (dot !== -1) {
+      // Cross-chapter scene: "chapterId.sceneId"
+      const chapterId = target.slice(0, dot);
+      const sceneId = target.slice(dot + 1);
+      const chapter = this.getChapter(chapterId);
+      if (chapter) {
+        const scene = chapter.getScene(sceneId);
+        if (scene) {
+          return { chapter, scene };
+        }
+      }
+      return null;
+    }
+
+    // Local scene in current chapter
+    {
+      const chapter = currentChapter.getScene(target);
+      if (chapter) {
+        return { chapter: currentChapter, scene: chapter };
+      }
+    }
+
+    // Global scene lookup across all chapters
+    for (const chapter of this.chapters) {
+      const scene = chapter.getScene(target);
+      if (scene) {
+        return { chapter: chapter, scene: scene };
+      }
+    }
+
+    // Chapter id → entry scene
+    {
+      const chapter = this.getChapter(target);
+      if (chapter && chapter.scenes.length > 0) {
+        return { chapter, scene: chapter.scenes[0] };
+      }
+    }
+
+    return null;
   }
 
   /** Renders the story title with Handlebars using the current globals. */
   renderTitle(): string {
-    return this.title ? Handlebars.compile(this.title)(this.globals) : "";
+    return this.title && Handlebars.compile(this.title)(this.globals);
   }
 
   /** Parses a story source string and creates a Story instance. */
@@ -174,28 +189,30 @@ export class Story {
         Object.assign(this.globals, result);
       }
     }
+
     if (this.hooks.onStart) {
       await this.hooks.onStart({ globals: this.globals });
     }
+
     const assetUrlMap = Object.fromEntries(Object.entries(this.assets).map(([name, { url }]) => [name, url]));
 
-    const entryChapter = this.entry;
-    const entryScene = entryChapter?.entry;
+    const entryChapter = this.chapters[0];
+    const entryScene = entryChapter?.scenes[0];
     if (!entryChapter || !entryScene) {
       return;
     }
 
-    let chapter: Chapter = entryChapter;
-    let scene: Scene = entryScene;
+    let chapter = entryChapter;
+    let scene = entryScene;
     let currentChapterId: string | symbol | null = null;
     await this.enterChapter(chapter);
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       // Scene onEnter + render-only view data
       if (scene.hooks.onEnter) {
         await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
       }
+
       let sceneOverrides: Scope = {};
       if (scene.hooks.view) {
         const result = await scene.hooks.view({

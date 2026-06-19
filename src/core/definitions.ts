@@ -111,20 +111,18 @@ export type SceneInit = {
 
 /** Structured representation of a chapter. */
 export type ChapterInit = {
-  id: string | symbol;
+  id: string | typeof DEFAULT_CHAPTER;
   title?: string;
   hooks?: ChapterHooks;
   locals?: Scope;
-  scenes: Record<string, Scene>;
-  entry?: string | null;
+  scenes: Scene[];
 };
 
 /** Structured representation of the full story. */
 export type StoryInit = {
   metadata?: Metadata;
   title?: string;
-  chapters: Record<string | symbol, Chapter>;
-  entry?: string | symbol | null;
+  chapters: Chapter[];
   stylesheet?: string;
   hooks?: StoryHooks;
 };
