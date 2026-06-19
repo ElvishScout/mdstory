@@ -139,7 +139,10 @@ dist
 types/
 
 # Coding agents
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/mdstory-write/
 openspec/
 
 # .DS_Store
