@@ -102,9 +102,6 @@ export async function parseStorySource(source: string, options: ParseStoryOption
       if (id.includes(".")) {
         throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
       }
-      if (token.tag !== "h1" && !id) {
-        throw new Error("Chapter or scene id cannot be empty");
-      }
 
       {
         let chapterId = null;

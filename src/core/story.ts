@@ -288,7 +288,7 @@ export class Story {
       // Resolve target
       const resolved = this.resolveTarget(finalTarget, chapter);
       if (!resolved) {
-        throw new Error(`Chapter not found: ${finalTarget}`);
+        throw new Error(`Target not found: ${finalTarget}`);
       }
 
       // Chapter transition
