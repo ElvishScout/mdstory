@@ -7,6 +7,8 @@ description: Write interactive fiction using the MdStory format — Markdown + H
 
 MdStory 是基于 Markdown 和 Handlebars 的互动小说脚本格式。本技能指导你使用 MdStory 格式创作互动故事（写在 `.md` 文件中）。
 
+开始写作前先阅读本 skill 目录下的参考示例（`examples/`）以理解格式。
+
 ## 快速参考
 
 一次对话中的工作流：
