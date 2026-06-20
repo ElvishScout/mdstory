@@ -86,6 +86,9 @@ export const SceneHooksSchema = z
   })
   .partial() as z.ZodType<SceneHooks>;
 
+/** Symbol key for the implicit default chapter holding orphan scenes. */
+export const DEFAULT_CHAPTER = Symbol("default");
+
 /** All JSON-compatible values. */
 export type Variable = z.infer<typeof VariableSchema>;
 /** An object of variable values by their names. */
@@ -94,9 +97,6 @@ export type Scope = z.infer<typeof ScopeSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 /** Story metadata. */
 export type Metadata = z.infer<typeof MetadataSchema>;
-
-/** Symbol key for the implicit default chapter holding orphan scenes. */
-export const DEFAULT_CHAPTER = Symbol("default");
 
 /** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";

@@ -1,9 +1,9 @@
-import { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset } from "./definitions.js";
+import { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset, StoryHooksSchema } from "./definitions.js";
 import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
 import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
-import { ParseStoryOptions, parseStorySource } from "./parser.js";
-import { loadSource, normalizePath } from "./utils.js";
+import { ParsedStory, ParseStoryOptions, parseStorySource, resolveParseOptions } from "./parser.js";
+import { normalizePath, parseScript } from "./utils.js";
 
 /**
  * Prompt function for handling user input during story playback.
@@ -54,16 +54,6 @@ function applyInputScopes(targets: { globals: Scope; locals: Scope }, inputs: Sc
       targets.locals[name] = value;
     }
   }
-}
-
-async function resolveParseOptions(
-  options: Partial<ParseStoryOptions> | undefined,
-  defaultBase: string,
-): Promise<ParseStoryOptions> {
-  return {
-    base: options?.base ?? defaultBase,
-    resolveInclude: options?.resolveInclude ?? ((path) => loadSource(path)),
-  };
 }
 
 /**
@@ -145,18 +135,33 @@ export class Story {
     return renderTemplate(this.template, scope, assets, options);
   }
 
+  static async fromParsed(story: ParsedStory) {
+    return new Story({
+      metadata: story.metadata,
+      title: story.title,
+      template: story.template,
+      chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
+      stylesheet: story.stylesheet,
+      hooks: await parseScript(story.script, StoryHooksSchema),
+    });
+  }
+
   /** Parses a story source string and creates a Story instance. */
   static async fromSource(source: string, options?: Partial<ParseStoryOptions>) {
-    return new Story(await parseStorySource(source, await resolveParseOptions(options, await normalizePath("./"))));
+    const parseOptions = await resolveParseOptions(options);
+    const parsedStory = await parseStorySource(source, parseOptions);
+
+    return Story.fromParsed(parsedStory);
   }
 
   /** Loads a story from a path or URL and resolves includes relative to each containing resource. */
   static async fromPath(path: string, options?: Partial<ParseStoryOptions>) {
     const normalizedPath = await normalizePath(path, options?.base);
-    const parseOptions = await resolveParseOptions(options, normalizedPath);
+    const parseOptions = await resolveParseOptions({ ...options, base: normalizedPath });
     const source = await parseOptions.resolveInclude(normalizedPath);
+    const parsedStory = await parseStorySource(source, parseOptions);
 
-    return new Story(await parseStorySource(source, parseOptions));
+    return Story.fromParsed(parsedStory);
   }
 
   private async enterChapter(chapter: Chapter) {

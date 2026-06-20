@@ -1,5 +1,7 @@
-import { SceneHooks, Scope, Asset, SceneInit } from "./definitions.js";
+import { SceneHooks, Scope, Asset, SceneInit, SceneHooksSchema } from "./definitions.js";
+import { ParsedScene } from "./parser.js";
 import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
+import { parseScript } from "./utils.js";
 
 export type { RenderOptions, RenderResult };
 
@@ -15,6 +17,15 @@ export class Scene {
     this.title = title ?? "";
     this.template = template;
     this.hooks = hooks ?? {};
+  }
+
+  static async fromParsed(scene: ParsedScene) {
+    return new Scene({
+      id: scene.id,
+      title: scene.title,
+      template: scene.template,
+      hooks: await parseScript(scene.script, SceneHooksSchema),
+    });
   }
 
   /**

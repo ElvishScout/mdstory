@@ -14,8 +14,20 @@ async function nodeFs() {
   return isBrowser() ? null : dynamicImport("node:fs/promises");
 }
 
+async function importScriptModule(script: string) {
+  const uint8 = new TextEncoder().encode(script);
+  const binary = String.fromCharCode(...uint8);
+  const url = "data:text/javascript;base64," + btoa(binary);
+  const module = await import(/* @vite-ignore */ url);
+  return module.default ?? {};
+}
+
 export function isUrl(path: string) {
   return /^https?:\/\//.test(path);
+}
+
+export async function parseScript<T>(script: string, schema: Zod.ZodType<T>): Promise<T> {
+  return script.trim() ? schema.parse(await importScriptModule(script)) : ({} as T);
 }
 
 export async function normalizePath(path: string, base?: string) {

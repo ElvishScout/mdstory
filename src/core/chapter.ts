@@ -1,6 +1,8 @@
-import type { Scene } from "./scene.js";
+import { Scene } from "./scene.js";
 import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
-import { ChapterHooks, Scope, Asset, ChapterInit, DEFAULT_CHAPTER } from "./definitions.js";
+import { ChapterHooks, Scope, Asset, ChapterInit, DEFAULT_CHAPTER, ChapterHooksSchema } from "./definitions.js";
+import { ParsedChapter } from "./parser.js";
+import { parseScript } from "./utils.js";
 
 /** A chapter grouping scenes with shared hooks and local variables. */
 export class Chapter {
@@ -18,6 +20,16 @@ export class Chapter {
     this.hooks = hooks ?? {};
     this.locals = locals ?? {};
     this.scenes = scenes;
+  }
+
+  static async fromParsed(chapter: ParsedChapter) {
+    return new Chapter({
+      id: chapter.id,
+      title: chapter.title,
+      template: chapter.template,
+      scenes: await Promise.all(chapter.scenes.map((scene) => Scene.fromParsed(scene))),
+      hooks: await parseScript(chapter.script, ChapterHooksSchema),
+    });
   }
 
   /** Renders the chapter template with the given scope and render options. */

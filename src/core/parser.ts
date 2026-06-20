@@ -3,37 +3,41 @@ import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
 
-import {
-  StoryInit,
-  MetadataSchema,
-  StoryHooksSchema,
-  ChapterHooksSchema,
-  SceneHooksSchema,
-  DEFAULT_CHAPTER,
-} from "./definitions.js";
-import { Scene } from "./scene.js";
-import { Chapter } from "./chapter.js";
-import { normalizePath } from "./utils.js";
+import { MetadataSchema, DEFAULT_CHAPTER, Metadata } from "./definitions.js";
+import { loadSource, normalizePath } from "./utils.js";
 
 type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
 type ScriptBlock = { from: number; to: number; content: string };
+
 export type IncludeResolver = (path: string) => string | Promise<string>;
 export type ParseStoryOptions = {
   base: string;
   resolveInclude: IncludeResolver;
 };
 
-async function importScriptModule(script: string) {
-  const uint8 = new TextEncoder().encode(script);
-  const binary = String.fromCharCode(...uint8);
-  const url = "data:text/javascript;base64," + btoa(binary);
-  const module = await import(/* @vite-ignore */ url);
-  return module.default ?? {};
-}
+export type ParsedScene = {
+  id: string;
+  title: string;
+  template: string;
+  script: string;
+};
 
-async function parseScript<T>(script: string, schema: Zod.ZodType<T>): Promise<T> {
-  return script.trim() ? schema.parse(await importScriptModule(script)) : ({} as T);
-}
+export type ParsedChapter = {
+  id: string | typeof DEFAULT_CHAPTER;
+  title: string;
+  template: string;
+  script: string;
+  scenes: ParsedScene[];
+};
+
+export type ParsedStory = {
+  metadata: Metadata;
+  title: string;
+  template: string;
+  chapters: ParsedChapter[];
+  stylesheet: string;
+  script: string;
+};
 
 async function expandIncludes(source: string, options: ParseStoryOptions, stack: string[] = []): Promise<string> {
   const lines = source.split("\n");
@@ -60,6 +64,13 @@ async function expandIncludes(source: string, options: ParseStoryOptions, stack:
   return expanded.join("\n");
 }
 
+export async function resolveParseOptions(options?: Partial<ParseStoryOptions>): Promise<ParseStoryOptions> {
+  return {
+    base: options?.base ?? (await normalizePath("./")),
+    resolveInclude: options?.resolveInclude ?? ((path) => loadSource(path)),
+  };
+}
+
 /**
  * Parses a Markdown-formatted story source string into a structured StoryInit.
  *
@@ -68,8 +79,9 @@ async function expandIncludes(source: string, options: ParseStoryOptions, stack:
  * - `##` (h2): Chapters — with chapter hooks, contain scenes
  * - `###` (h3): Scenes — with scene hooks and Handlebars templates
  */
-export async function parseStorySource(source: string, options: ParseStoryOptions): Promise<StoryInit> {
-  source = await expandIncludes(source, options);
+export async function parseStorySource(source: string, options?: Partial<ParseStoryOptions>): Promise<ParsedStory> {
+  const parseOptions = await resolveParseOptions(options);
+  source = await expandIncludes(source, parseOptions);
 
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
   const tokens = md.parse(source, {});
@@ -157,10 +169,7 @@ export async function parseStorySource(source: string, options: ParseStoryOption
   const storyEnd = chapterHeadings[0]?.lineno ?? sceneHeadings[0]?.lineno ?? lines.length;
 
   // Story template from h1 heading to the first h2 or h3 (whichever comes first)
-  const storyTemplateEnd = Math.min(
-    chapterHeadings[0]?.lineno ?? Infinity,
-    sceneHeadings[0]?.lineno ?? Infinity,
-  );
+  const storyTemplateEnd = Math.min(chapterHeadings[0]?.lineno ?? Infinity, sceneHeadings[0]?.lineno ?? Infinity);
   const storyTemplate = (() => {
     if (!isFinite(storyTemplateEnd)) return "";
     const start = storyHeading?.lineno ?? 0;
@@ -176,18 +185,17 @@ export async function parseStorySource(source: string, options: ParseStoryOption
   const defaultScenes = sceneHeadings.filter((sh) => sh.lineno < firstChapterLine);
 
   // Build all chapters (default first, then parsed ones)
-  const chapters: Chapter[] = [];
+  const chapters: ParsedChapter[] = [];
   let chapterOrder: Heading[] = [];
 
   if (defaultScenes.length > 0) {
-    const scenes: Scene[] = [];
+    const scenes: ParsedScene[] = [];
     let entryScene: string | null = null;
 
     for (let si = 0; si < defaultScenes.length; si++) {
       const sh = defaultScenes[si];
       const seEnd = defaultScenes[si + 1]?.lineno ?? firstChapterLine;
       const scScript = getScriptInScope(scripts, sh.lineno, seEnd, `scene "${sh.id}"`);
-      const scHooks = await parseScript(scScript, SceneHooksSchema);
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -196,19 +204,19 @@ export async function parseStorySource(source: string, options: ParseStoryOption
         .join("\n")
         .replace(/^\n+/, "");
 
-      scenes.push(new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks }));
+      scenes.push({ id: sh.id, title: sh.title, template, script: scScript });
       if (entryScene === null) {
         entryScene = sh.id;
       }
     }
 
-    chapters.push(
-      new Chapter({
-        id: DEFAULT_CHAPTER,
-        title: "",
-        scenes,
-      }),
-    );
+    chapters.push({
+      id: DEFAULT_CHAPTER,
+      title: "",
+      template: "",
+      script: "",
+      scenes,
+    });
   }
 
   for (let ci = 0; ci < chapterHeadings.length; ci++) {
@@ -224,15 +232,13 @@ export async function parseStorySource(source: string, options: ParseStoryOption
       .join("\n")
       .replace(/^\n+/, "");
     const chScript = getScriptInScope(scripts, ch.lineno, chScriptEnd, `chapter "${ch.id}"`);
-    const chHooks = await parseScript(chScript, ChapterHooksSchema);
-    const scenes: Scene[] = [];
+    const scenes: ParsedScene[] = [];
     let entryScene: string | null = null;
 
     for (let si = 0; si < chapterScenes.length; si++) {
       const sh = chapterScenes[si];
       const seEnd = chapterScenes[si + 1]?.lineno ?? chEnd;
       const scScript = getScriptInScope(scripts, sh.lineno, seEnd, `scene "${sh.id}"`);
-      const scHooks = await parseScript(scScript, SceneHooksSchema);
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -241,34 +247,31 @@ export async function parseStorySource(source: string, options: ParseStoryOption
         .join("\n")
         .replace(/^\n+/, "");
 
-      scenes.push(new Scene({ id: sh.id, title: sh.title, template, hooks: scHooks }));
+      scenes.push({ id: sh.id, title: sh.title, template, script: scScript });
       if (entryScene === null) {
         entryScene = sh.id;
       }
     }
 
-    chapters.push(
-      new Chapter({
-        id: ch.id,
-        title: ch.title,
-        template: chTemplate,
-        hooks: chHooks,
-        scenes,
-      }),
-    );
+    chapters.push({
+      id: ch.id,
+      title: ch.title,
+      template: chTemplate,
+      script: chScript,
+      scenes,
+    });
     chapterOrder.push(ch);
   }
 
   const storyScript = getScriptInScope(scripts, storyHeading?.lineno ?? 0, storyEnd, "story");
-  const storyHooks = await parseScript(storyScript, StoryHooksSchema);
 
   return {
     metadata,
-    title: storyHeading?.title,
+    title: storyHeading?.title ?? "",
     template: storyTemplate,
     chapters,
-    hooks: storyHooks,
     stylesheet,
+    script: storyScript,
   };
 }
 
