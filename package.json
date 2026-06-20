@@ -1,4 +1,7 @@
 {
+  "workspaces": [
+    "html-template"
+  ],
   "name": "@elvishscout/mdstory",
   "repository": "https://github.com/ElvishScout/mdstory.git",
   "version": "0.1.4",
@@ -7,10 +10,11 @@
   "type": "module",
   "files": [
     "./dist",
-    "./types"
+    "./types",
+    "./html-template/dist"
   ],
   "bin": {
-    "mdstory": "./dist/cli.js"
+    "mdstory": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc -b",
