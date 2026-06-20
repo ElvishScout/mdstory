@@ -15,7 +15,11 @@ function PromiseLikeSchema<T extends z.ZodType>(schema: T) {
 export const VariableSchema = z.any().transform((v) => v as JsonValue);
 export const ScopeSchema = z.record(VariableSchema);
 
-const AssetObjectSchema = z.object({ url: z.string(), mime: z.string().optional(), alt: z.string().optional() });
+const AssetObjectSchema = z.object({
+  url: z.string(),
+  mime: z.string().optional(),
+  alt: z.string().optional(),
+});
 
 export const AssetSchema = z.union([
   z.string().transform((url) => AssetObjectSchema.parse({ url, mime: undefined })),
