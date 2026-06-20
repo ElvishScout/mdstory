@@ -156,6 +156,21 @@ export async function parseStorySource(source: string, options: ParseStoryOption
   const lines = source.split("\n");
   const storyEnd = chapterHeadings[0]?.lineno ?? sceneHeadings[0]?.lineno ?? lines.length;
 
+  // Story template from h1 heading to the first h2 or h3 (whichever comes first)
+  const storyTemplateEnd = Math.min(
+    chapterHeadings[0]?.lineno ?? Infinity,
+    sceneHeadings[0]?.lineno ?? Infinity,
+  );
+  const storyTemplate = (() => {
+    if (!isFinite(storyTemplateEnd)) return "";
+    const start = storyHeading?.lineno ?? 0;
+    return lines
+      .slice(start, storyTemplateEnd)
+      .filter((_, i) => !ignoredLines.has(start + i))
+      .join("\n")
+      .replace(/^\n+/, "");
+  })();
+
   // Orphan h3s before the first h2 get a default chapter
   const firstChapterLine = chapterHeadings[0]?.lineno ?? Infinity;
   const defaultScenes = sceneHeadings.filter((sh) => sh.lineno < firstChapterLine);
@@ -202,6 +217,12 @@ export async function parseStorySource(source: string, options: ParseStoryOption
     const chapterScenes = sceneHeadings.filter((sh) => sh.lineno > ch.lineno && sh.lineno < chEnd);
     // Chapter script ends before the first scene heading
     const chScriptEnd = chapterScenes[0]?.lineno ?? chEnd;
+    const chTemplateStart = ch.title ? ch.lineno : ch.lineno + 1;
+    const chTemplate = lines
+      .slice(chTemplateStart, chScriptEnd)
+      .filter((_, i) => !ignoredLines.has(chTemplateStart + i))
+      .join("\n")
+      .replace(/^\n+/, "");
     const chScript = getScriptInScope(scripts, ch.lineno, chScriptEnd, `chapter "${ch.id}"`);
     const chHooks = await parseScript(chScript, ChapterHooksSchema);
     const scenes: Scene[] = [];
@@ -230,6 +251,7 @@ export async function parseStorySource(source: string, options: ParseStoryOption
       new Chapter({
         id: ch.id,
         title: ch.title,
+        template: chTemplate,
         hooks: chHooks,
         scenes,
       }),
@@ -243,6 +265,7 @@ export async function parseStorySource(source: string, options: ParseStoryOption
   return {
     metadata,
     title: storyHeading?.title,
+    template: storyTemplate,
     chapters,
     hooks: storyHooks,
     stylesheet,

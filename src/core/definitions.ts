@@ -113,6 +113,7 @@ export type SceneInit = {
 export type ChapterInit = {
   id: string | typeof DEFAULT_CHAPTER;
   title?: string;
+  template?: string;
   hooks?: ChapterHooks;
   locals?: Scope;
   scenes: Scene[];
@@ -122,6 +123,7 @@ export type ChapterInit = {
 export type StoryInit = {
   metadata?: Metadata;
   title?: string;
+  template?: string;
   chapters: Chapter[];
   stylesheet?: string;
   hooks?: StoryHooks;

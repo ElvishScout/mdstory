@@ -1,8 +1,7 @@
-import Handlebars from "handlebars";
 import { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset } from "./definitions.js";
 import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
-import { RenderOptions, RenderResult } from "./scene.js";
+import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
 import { ParseStoryOptions, parseStorySource } from "./parser.js";
 import { loadSource, normalizePath } from "./utils.js";
 
@@ -74,6 +73,7 @@ async function resolveParseOptions(
 export class Story {
   metadata: Metadata;
   title: string;
+  template: string;
   globals: Scope;
   assets: Record<string, Asset>;
   hooks: StoryHooks;
@@ -83,6 +83,7 @@ export class Story {
 
   constructor(init: StoryInit) {
     this.title = init.title ?? init.metadata?.title ?? "";
+    this.template = init.template ?? "";
     this.chapters = init.chapters;
     this.metadata = init.metadata ?? {};
     this.globals = this.metadata.globals ?? {};
@@ -139,9 +140,9 @@ export class Story {
     return null;
   }
 
-  /** Renders the story title with Handlebars using the current globals. */
-  renderTitle(): string {
-    return this.title && Handlebars.compile(this.title)(this.globals);
+  /** Renders the story template with the given scope and render options. */
+  render(scope: Scope, assets: Record<string, Asset>, options: RenderOptions): RenderResult {
+    return renderTemplate(this.template, scope, assets, options);
   }
 
   /** Parses a story source string and creates a Story instance. */
@@ -233,29 +234,27 @@ export class Story {
       const renderContext = { ...this.globals, ...assetUrlMap, ...chapter.locals, ...sceneOverrides };
       const renderResult = scene.render(renderContext, this.assets, options);
 
-      // Prepend chapter and story titles to rendered text
+      // Prepend chapter and story templates to rendered text
       let { text } = renderResult;
       let prefix = "";
 
-      if (chapter.title && chapter.id !== currentChapterId) {
-        const rendered = chapter.renderTitle(renderContext);
-        if (rendered) {
-          prefix += `## ${rendered}\n\n`;
-        }
-        currentChapterId = chapter.id;
-      }
-
       if (!this._storyTitleShown) {
-        const rendered = this.renderTitle();
-        if (rendered) {
-          prefix = `# ${rendered}\n\n${prefix}`;
+        const rendered = this.render(renderContext, this.assets, options);
+        if (rendered.text) {
+          prefix += rendered.text;
         }
         this._storyTitleShown = true;
       }
 
-      if (prefix) {
-        text = prefix + text;
+      if (chapter.id !== currentChapterId) {
+        const rendered = chapter.render(renderContext, this.assets, options);
+        if (rendered.text) {
+          prefix += rendered.text;
+        }
+        currentChapterId = chapter.id;
       }
+
+      text = prefix + text;
 
       const promptResult = await prompt({ scene, ...renderResult, text });
       const normalizedPromptResult =
