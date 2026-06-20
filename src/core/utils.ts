@@ -1,4 +1,6 @@
-const dynamicImport = new Function("specifier", "return import(specifier)") as (specifier: string) => Promise<any>;
+function dynamicImport(specifier: string) {
+  return import(/* @vite-ignore */ specifier) as Promise<any>;
+}
 
 function isBrowser() {
   return typeof window !== "undefined" && typeof window.location?.href === "string";

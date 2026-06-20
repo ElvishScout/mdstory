@@ -27,7 +27,7 @@ async function importScriptModule(script: string) {
   const uint8 = new TextEncoder().encode(script);
   const binary = String.fromCharCode(...uint8);
   const url = "data:text/javascript;base64," + btoa(binary);
-  const module = await import(url);
+  const module = await import(/* @vite-ignore */ url);
   return module.default ?? {};
 }
 
