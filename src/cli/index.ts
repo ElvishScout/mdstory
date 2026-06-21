@@ -1,111 +1,42 @@
 #!/usr/bin/env node
-import inquirer from "inquirer";
-import MarkdownIt from "markdown-it";
-import pluginAttrs from "markdown-it-attrs";
-import pluginTerminal from "markdown-it-terminal";
-import pluginMark from "markdown-it-mark";
+import { Command } from "commander";
+import { playCommand } from "./commands/play.js";
+import { buildCommand } from "./commands/build.js";
 
-import { Story, StoryPrompt, Scope } from "../index.js";
+const program = new Command();
 
-const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal).use(pluginMark);
+program
+  .name("mdstory")
+  .description("An interactive fiction scripting format based on Markdown and Handlebars.")
+  .version("0.1.4");
 
-// markdown-it-terminal doesn't support mark or <u> tags
-const defaultHtmlInline = md.renderer.rules.html_inline!;
-md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
-  const tag = tokens[idx].content;
-  if (tag === "<u>") return "\x1b[4m";
-  if (tag === "</u>") return "\x1b[24m";
-  return defaultHtmlInline(tokens, idx, options, env, self);
-};
-const defaultHeadingClose = md.renderer.rules.heading_close;
-md.renderer.rules.heading_close = (tokens, idx, options, env, self) => {
-  return (defaultHeadingClose?.(tokens, idx, options, env, self) ?? "") + "\n";
-};
-md.renderer.rules.mark_open = () => "\x1b[7m";
-md.renderer.rules.mark_close = () => "\x1b[27m";
-
-// markdown-it-terminal has a bug: blockquote_open/close don't declare (tokens, idx) params
-md.renderer.rules.blockquote_open = () => "";
-md.renderer.rules.blockquote_close = () => "\n";
-const prompt: StoryPrompt = async ({ text, inputs: fields, navs }) => {
-  console.log(md.render(text).trim());
-  console.log();
-
-  let inputReplies;
-  let targetReplies;
-
-  try {
-    inputReplies = await inquirer.prompt(
-      fields.map(({ name, type, value }) => {
-        if (type === "number") {
-          return {
-            type: "number",
-            name,
-            message: name,
-            default: Number(value),
-          };
-        } else if (type === "boolean") {
-          return {
-            type: "confirm",
-            name,
-            message: name,
-            default: Boolean(value),
-          };
-        } else {
-          return {
-            type: "input",
-            name,
-            message: name,
-            default: String(value),
-          };
-        }
-      }),
-    );
-
-    if (navs.length) {
-      targetReplies = await inquirer.prompt([
-        {
-          type: "list",
-          name: "target",
-          message: "Choose target",
-          choices: navs.map(({ text, target }) => ({ name: text, value: target })),
-        },
-      ]);
-    } else {
-      targetReplies = null;
+program
+  .command("play")
+  .description("Play a story interactively in the terminal")
+  .argument("<story>", "Path to the story .md file")
+  .option("--debug", "Enable debug output")
+  .action(async (storyPath, options) => {
+    try {
+      await playCommand(storyPath, { debug: options.debug ?? false });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
     }
-  } catch (err) {
-    if (err instanceof Error && err.name === "ExitPromptError") {
-      process.exit(0);
-    }
-    throw err;
-  }
-
-  const { target } = targetReplies ?? { target: null };
-  const submittedInputs = Object.fromEntries([
-    ...fields.map(({ name }) => {
-      const answer = inputReplies[name];
-      const value = answer;
-      return [name, value];
-    }),
-  ]) as Scope;
-
-  return { target, inputs: submittedInputs };
-};
-
-const main = async () => {
-  const args = process.argv.slice(2);
-  const debug = args.includes("--debug");
-  const storyPath = args.find((a) => !a.startsWith("--"));
-  if (!storyPath) {
-    return;
-  }
-  const story = await Story.fromPath(storyPath);
-
-  story.play(prompt, {
-    renderer: "markdown",
-    debug,
   });
-};
 
-main();
+program
+  .command("build")
+  .description("Generate a complete HTML page from a story and open it in the browser")
+  .argument("<story>", "Path to the story .md file")
+  .option("-o, --output <path>", "Output HTML file path")
+  .option("--no-open", "Do not open the generated HTML in the browser")
+  .action(async (storyPath, options) => {
+    try {
+      await buildCommand(storyPath, { output: options.output, open: options.open });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program.parse();
