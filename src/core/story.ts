@@ -58,7 +58,8 @@ function applyInputScopes(targets: { globals: Scope; locals: Scope }, inputs: Sc
 
 /**
  * Story runtime containing core playback logic.
- * Parse via `Story.fromSource()`, or construct manually with a parsed StoryInit.
+ * Construct via `fromSource(source)`, `fromPath(path)`,
+ * `fromParsed(parsedStory)`, or manually with a parsed StoryInit.
  */
 export class Story {
   metadata: Metadata;
@@ -133,35 +134,6 @@ export class Story {
   /** Renders the story template with the given scope and render options. */
   render(scope: Scope, assets: Record<string, Asset>, options: RenderOptions): RenderResult {
     return renderTemplate(this.template, scope, assets, options);
-  }
-
-  static async fromParsed(story: ParsedStory) {
-    return new Story({
-      metadata: story.metadata,
-      title: story.title,
-      template: story.template,
-      chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
-      stylesheet: story.stylesheet,
-      hooks: await parseScript(story.script, StoryHooksSchema),
-    });
-  }
-
-  /** Parses a story source string and creates a Story instance. */
-  static async fromSource(source: string, options?: Partial<ParseStoryOptions>) {
-    const parseOptions = await resolveParseOptions(options);
-    const parsedStory = await parseStorySource(source, parseOptions);
-
-    return Story.fromParsed(parsedStory);
-  }
-
-  /** Loads a story from a path or URL and resolves includes relative to each containing resource. */
-  static async fromPath(path: string, options?: Partial<ParseStoryOptions>) {
-    const normalizedPath = await normalizePath(path, options?.base);
-    const parseOptions = await resolveParseOptions({ ...options, base: normalizedPath });
-    const source = await parseOptions.resolveInclude(normalizedPath);
-    const parsedStory = await parseStorySource(source, parseOptions);
-
-    return Story.fromParsed(parsedStory);
   }
 
   private async enterChapter(chapter: Chapter) {
@@ -305,4 +277,34 @@ export class Story {
       scene = resolved.scene;
     }
   }
+}
+
+/** Creates a Story instance from a parsed story object. */
+export async function fromParsed(story: ParsedStory) {
+  return new Story({
+    metadata: story.metadata,
+    title: story.title,
+    template: story.template,
+    chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
+    stylesheet: story.stylesheet,
+    hooks: await parseScript(story.script, StoryHooksSchema),
+  });
+}
+
+/** Parses a story source string and creates a Story instance. */
+export async function fromSource(source: string, options?: Partial<ParseStoryOptions>) {
+  const parseOptions = await resolveParseOptions(options);
+  const parsedStory = await parseStorySource(source, parseOptions);
+
+  return fromParsed(parsedStory);
+}
+
+/** Loads a story from a path or URL and resolves includes relative to each containing resource. */
+export async function fromPath(path: string, options?: Partial<ParseStoryOptions>) {
+  const normalizedPath = await normalizePath(path, options?.base);
+  const parseOptions = await resolveParseOptions({ ...options, base: normalizedPath });
+  const source = await parseOptions.resolveInclude(normalizedPath);
+  const parsedStory = await parseStorySource(source, parseOptions);
+
+  return fromParsed(parsedStory);
 }

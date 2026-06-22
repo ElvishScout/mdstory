@@ -1,4 +1,4 @@
-import { Story } from "../../";
+import { Story, fromParsed } from "../../";
 import { useEffect, useState } from "react";
 
 import StoryPlayer from "./components/StoryPlayer";
@@ -12,7 +12,7 @@ export default function App() {
 
     const sourceScript = document.querySelector<HTMLScriptElement>("#parsed-story")!;
     const parsedStory = JSON.parse(unescapeHtml(sourceScript.textContent!));
-    Story.fromParsed(parsedStory).then((story) => {
+    fromParsed(parsedStory).then((story) => {
       document.title = story.title;
       setStory(story);
     });

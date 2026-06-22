@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import { Story } from "../index.js";
+import { fromPath } from "../index.js";
 
 const require = createRequire(import.meta.url);
 const { wordsCount } = require("words-count");
@@ -11,7 +11,7 @@ function countWords(text: string) {
 
 async function main() {
   const entryPath = process.argv[2];
-  const story = await Story.fromPath(entryPath);
+  const story = await fromPath(entryPath);
 
   let count = 0;
   count += countWords(story.title);
