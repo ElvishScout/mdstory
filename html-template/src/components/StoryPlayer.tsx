@@ -47,32 +47,32 @@ const FormBody = memo(({ html, enabled }: { html: string; enabled: boolean }) =>
   return parse(html, useParserOptions(enabled));
 });
 
-type ChapterLog = {
+type SceneLog = {
   html: string;
 };
 
 export default function StoryPlayer({ story }: { story: Story }) {
   const [stage, setStage] = useState<"ready" | "started" | "ended">("ready");
-  const [chapters, setChapters] = useState<ChapterLog[]>([]);
+  const [scenes, setScenes] = useState<SceneLog[]>([]);
 
-  const chapterRef = useRef<HTMLDivElement>(null);
-  const chapterCoverRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const sceneCoverRef = useRef<HTMLDivElement>(null);
   const resolveRef = useRef<(formData: FormData) => void>(null);
 
   useLayoutEffect(() => {
-    const chapter = chapterRef.current;
-    const cover = chapterCoverRef.current;
-    if (chapter) {
-      chapter.scrollIntoView({ behavior: "smooth", block: "start" });
+    const scene = sceneRef.current;
+    const cover = sceneCoverRef.current;
+    if (scene) {
+      scene.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     if (cover) {
       const animation = cover.animate([{ top: "-100%" }, { top: "100%" }], { duration: 1000 });
       animation.play();
     }
-  }, [chapters]);
+  }, [scenes]);
 
   const prompt: StoryPrompt = async ({ text }) => {
-    setChapters(
+    setScenes(
       produce((draft) => {
         draft.push({ html: text });
       }),
@@ -103,15 +103,15 @@ export default function StoryPlayer({ story }: { story: Story }) {
   };
 
   return (
-    <div className="px-2 md:px-12 py-4 md:py-8">
+    <div className="px-2 md:px-12">
       <div>
-        {chapters.map(({ html }, i) => {
-          const enabled = stage === "started" && i === chapters.length - 1;
+        {scenes.map(({ html }, i) => {
+          const enabled = stage === "started" && i === scenes.length - 1;
           return (
             <div
               key={i}
-              ref={enabled ? chapterRef : undefined}
-              className={`relative mt-8 px-2 pb-8 last:pb-[25vh] first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden ${
+              ref={enabled ? sceneRef : undefined}
+              className={`relative px-2 pt-8 first:pt-4 md:first:pt-8 pb-8 last:pb-[33vh] first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden ${
                 !enabled ? "opacity-50" : ""
               }`}
             >
@@ -124,7 +124,7 @@ export default function StoryPlayer({ story }: { story: Story }) {
               </form>
               {enabled && (
                 <div
-                  ref={chapterCoverRef}
+                  ref={sceneCoverRef}
                   className="absolute left-0 right-0 top-[100%] h-[200%] bg-linear-[to_bottom,transparent_0%,#ffffff_50%,#ffffff_100%] z-10"
                 ></div>
               )}
