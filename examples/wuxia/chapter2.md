@@ -44,7 +44,6 @@
 你收回目光。
 
 {{#nav "chapter2.stranger-approach"}}下楼去和那个负剑女子搭话{{/nav}}
-{{#nav "chapter2.stranger-ignore"}}回房间休息，不去管她{{/nav}}
 
 ### 结识柳如烟 {#stranger-approach}
 
