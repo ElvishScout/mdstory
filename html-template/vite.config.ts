@@ -16,9 +16,7 @@ const pluginUseExample = (): PluginOption => {
       order: "pre",
       async handler(html, context) {
         if (context.server) {
-          const source = (await fs.readFile(path.resolve(__dirname, "example.md")))
-            .toString()
-            .replace(/\r\n|\r/g, "\n");
+          const source = await fs.readFile(path.resolve(__dirname, "example.md"), { encoding: "utf-8" });
           const parsedStory = await parseStorySource(source);
           const storyJson = JSON.stringify(parsedStory);
           return html.replace('"__PARSED_STORY__"', escapeHtml(storyJson));

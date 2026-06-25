@@ -89,6 +89,7 @@ export async function resolveParseOptions(options?: Partial<ParseStoryOptions>):
 export async function parseStorySource(source: string, options?: Partial<ParseStoryOptions>): Promise<ParsedStory> {
   const parseOptions = await resolveParseOptions(options);
   source = await expandIncludes(source, parseOptions);
+  source = source.replace(/\r\n?/g, "\n");
 
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
   const tokens = md.parse(source, {});
