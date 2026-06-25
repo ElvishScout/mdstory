@@ -3,8 +3,15 @@ import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
 
-import { MetadataSchema, DEFAULT_CHAPTER, Metadata } from "./definitions.js";
-import { loadSource, normalizePath } from "./utils.js";
+import {
+  MetadataSchema,
+  DEFAULT_CHAPTER,
+  Metadata,
+  SceneHooksSchema,
+  ChapterHooksSchema,
+  StoryHooksSchema,
+} from "./definitions.js";
+import { loadSource, normalizePath, parseScript } from "./utils.js";
 
 type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
 type ScriptBlock = { from: number; to: number; content: string };
@@ -196,6 +203,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       const sh = defaultScenes[si];
       const seEnd = defaultScenes[si + 1]?.lineno ?? firstChapterLine;
       const scScript = getScriptInScope(scripts, sh.lineno, seEnd, `scene "${sh.id}"`);
+      await parseScript(scScript, SceneHooksSchema);
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -232,6 +240,8 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       .join("\n")
       .replace(/^\n+/, "");
     const chScript = getScriptInScope(scripts, ch.lineno, chScriptEnd, `chapter "${ch.id}"`);
+    await parseScript(chScript, ChapterHooksSchema);
+
     const scenes: ParsedScene[] = [];
     let entryScene: string | null = null;
 
@@ -239,6 +249,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       const sh = chapterScenes[si];
       const seEnd = chapterScenes[si + 1]?.lineno ?? chEnd;
       const scScript = getScriptInScope(scripts, sh.lineno, seEnd, `scene "${sh.id}"`);
+      await parseScript(scScript, SceneHooksSchema);
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -264,6 +275,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   }
 
   const storyScript = getScriptInScope(scripts, storyHeading?.lineno ?? 0, storyEnd, "story");
+  await parseScript(storyScript, StoryHooksSchema);
 
   return {
     metadata,

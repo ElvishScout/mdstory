@@ -14,7 +14,11 @@ async function nodeFs() {
   return isBrowser() ? null : dynamicImport("node:fs/promises");
 }
 
-async function importScriptModule(script: string) {
+export async function importScriptModule(script: string) {
+  if (!script.trim()) {
+    return {};
+  }
+
   const uint8 = new TextEncoder().encode(script);
   const binary = String.fromCharCode(...uint8);
   const url = "data:text/javascript;base64," + btoa(binary);
@@ -27,7 +31,7 @@ export function isUrl(path: string) {
 }
 
 export async function parseScript<T>(script: string, schema: Zod.ZodType<T>): Promise<T> {
-  return script.trim() ? schema.parse(await importScriptModule(script)) : ({} as T);
+  return schema.parse(await importScriptModule(script));
 }
 
 export async function normalizePath(path: string, base?: string) {

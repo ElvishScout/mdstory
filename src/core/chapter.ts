@@ -1,8 +1,8 @@
 import { Scene } from "./scene.js";
 import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
-import { ChapterHooks, Scope, Asset, ChapterInit, DEFAULT_CHAPTER, ChapterHooksSchema } from "./definitions.js";
+import { ChapterHooks, Scope, Asset, ChapterInit, DEFAULT_CHAPTER } from "./definitions.js";
 import { ParsedChapter } from "./parser.js";
-import { parseScript } from "./utils.js";
+import { importScriptModule } from "./utils.js";
 
 /** A chapter grouping scenes with shared hooks and local variables. */
 export class Chapter {
@@ -28,7 +28,7 @@ export class Chapter {
       title: chapter.title,
       template: chapter.template,
       scenes: await Promise.all(chapter.scenes.map((scene) => Scene.fromParsed(scene))),
-      hooks: await parseScript(chapter.script, ChapterHooksSchema),
+      hooks: await importScriptModule(chapter.script),
     });
   }
 
