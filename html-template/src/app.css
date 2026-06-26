@@ -34,10 +34,6 @@ body {
 
 .scene-form button {
   @apply mx-0.5 text-red-600 underline cursor-pointer;
-  background: none;
-  border: none;
-  font-size: inherit;
-  font-family: inherit;
 }
 .scene-form button:hover:not(:disabled) {
   @apply text-red-400;
@@ -46,5 +42,5 @@ body {
   @apply text-red-300;
 }
 .scene-form button:disabled {
-  @apply text-red-600;
+  @apply text-red-600 cursor-default;
 }

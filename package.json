@@ -19,6 +19,7 @@
   },
   "scripts": {
     "build": "tsc -b",
+    "build:template": "cd html-template && npm run build",
     "cli": "node ./dist/cli/index.js"
   },
   "devDependencies": {
