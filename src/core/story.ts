@@ -3,7 +3,7 @@ import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
 import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
 import { ParsedStory, ParseStoryOptions, parseStorySource, resolveParseOptions } from "./parser.js";
-import { importScriptModule, normalizePath } from "./utils.js";
+import { getScriptModuleId, importScriptModule, normalizePath } from "./utils.js";
 
 /**
  * Prompt function for handling user input during story playback.
@@ -291,7 +291,7 @@ export async function fromParsed(story: ParsedStory) {
     template: story.template,
     chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
     stylesheet: story.stylesheet,
-    hooks: await importScriptModule(story.script),
+    hooks: await importScriptModule(story.script, getScriptModuleId()),
     debug: story.debug,
   });
 }

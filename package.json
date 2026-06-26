@@ -20,6 +20,7 @@
   "scripts": {
     "build": "tsc -b",
     "build:template": "cd html-template && npm run build",
+    "build:all": "npm run build && npm run build:template",
     "cli": "node ./dist/cli/index.js"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "markdown-it-attrs": "^4.3.1",
     "markdown-it-front-matter": "^0.2.4",
     "markdown-it-mark": "^4.0.0",
+    "nanoid": "^5.1.16",
     "zod": "^3.24.3"
   },
   "types": "./types",
