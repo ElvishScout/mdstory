@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import open from "open";
+import open, { apps } from "open";
 import { parseStorySource, resolveParseOptions } from "../../index.js";
 
 export interface BuildOptions {
@@ -36,6 +36,6 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
 
   // Open in browser (default: open)
   if (options.open !== false) {
-    open(outputPath);
+    await open(outputPath, { wait: true, app: { name: apps.browser } });
   }
 }
