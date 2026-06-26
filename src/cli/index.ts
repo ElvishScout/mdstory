@@ -30,9 +30,14 @@ program
   .argument("<story>", "Path to the story .md file")
   .option("-o, --output <path>", "Output HTML file path")
   .option("--no-open", "Do not open the generated HTML in the browser")
+  .option("--debug", "Print debug output to the browser console")
   .action(async (storyPath, options) => {
     try {
-      await buildCommand(storyPath, { output: options.output, open: options.open });
+      await buildCommand(storyPath, {
+        output: options.output,
+        open: options.open,
+        debug: options.debug ?? false,
+      });
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

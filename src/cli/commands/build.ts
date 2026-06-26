@@ -1,12 +1,13 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import open, { apps } from "open";
 import { parseStorySource, resolveParseOptions } from "../../index.js";
 
 export interface BuildOptions {
   output?: string;
   open?: boolean;
+  debug?: boolean;
 }
 
 function escapeHtml(text: string): string {
@@ -36,6 +37,10 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
 
   // Open in browser (default: open)
   if (options.open !== false) {
-    await open(outputPath, { wait: true, app: { name: apps.browser } });
+    const outputFileUrl = pathToFileURL(outputPath);
+    if (options.debug) {
+      outputFileUrl.searchParams.set("debug", "1");
+    }
+    await open(outputFileUrl.toString(), { wait: true, app: { name: apps.browser } });
   }
 }

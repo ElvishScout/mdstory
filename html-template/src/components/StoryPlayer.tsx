@@ -51,7 +51,7 @@ type SceneLog = {
   html: string;
 };
 
-export default function StoryPlayer({ story }: { story: Story }) {
+export default function StoryPlayer({ story, debug }: { story: Story; debug?: boolean }) {
   const [stage, setStage] = useState<"ready" | "started" | "ended">("ready");
   const [scenes, setScenes] = useState<SceneLog[]>([]);
 
@@ -83,7 +83,7 @@ export default function StoryPlayer({ story }: { story: Story }) {
   };
 
   const handleCoverClick = () => {
-    story.play(prompt, { renderer: "html" }).then(() => setStage("ended"));
+    story.play(prompt, { renderer: "html", debug }).then(() => setStage("ended"));
     setStage("started");
   };
 

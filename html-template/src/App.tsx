@@ -1,11 +1,12 @@
 import { Story, fromParsed } from "../../";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import StoryPlayer from "./components/StoryPlayer";
 import { unescapeHtml } from "./utils";
 
 export default function App() {
   const [story, setStory] = useState<Story>();
+  const debug = useMemo(() => new URLSearchParams(window.location.search).get("debug") === "1", []);
 
   useEffect(() => {
     const originalTitle = document.title;
@@ -22,5 +23,5 @@ export default function App() {
     };
   }, []);
 
-  return <>{story && <StoryPlayer story={story} />}</>;
+  return <>{story && <StoryPlayer story={story} debug={debug} />}</>;
 }
