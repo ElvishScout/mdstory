@@ -14,6 +14,12 @@ async function nodeFs() {
   return isBrowser() ? null : dynamicImport("node:fs/promises");
 }
 
+function isUrl(path: string) {
+  return /^https?:\/\//.test(path);
+}
+
+let counter = 0;
+
 export async function importScriptModule(script: string) {
   if (!script.trim()) {
     return {};
@@ -21,13 +27,9 @@ export async function importScriptModule(script: string) {
 
   const uint8 = new TextEncoder().encode(script);
   const binary = String.fromCharCode(...uint8);
-  const url = "data:text/javascript;base64," + btoa(binary);
+  const url = "data:text/javascript;charset=utf-8;base64," + btoa(binary) + `#id_${counter++}`;
   const module = await import(/* @vite-ignore */ url);
   return module.default ?? {};
-}
-
-export function isUrl(path: string) {
-  return /^https?:\/\//.test(path);
 }
 
 export async function parseScript<T>(script: string, schema: Zod.ZodType<T>): Promise<T> {
