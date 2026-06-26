@@ -1,4 +1,5 @@
-import Handlebars, { HelperDeclareSpec, HelperOptions } from "handlebars";
+import Handlebars from "handlebars";
+import type { HelperDeclareSpec, HelperOptions } from "handlebars";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";

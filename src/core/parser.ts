@@ -6,12 +6,12 @@ import { nanoid } from "nanoid";
 
 import {
   MetadataSchema,
-  DEFAULT_CHAPTER,
-  Metadata,
   SceneHooksSchema,
   ChapterHooksSchema,
   StoryHooksSchema,
-} from "./definitions.js";
+} from "./schema.js";
+import { DEFAULT_CHAPTER } from "./definitions.js";
+import type { Metadata } from "./definitions.js";
 import { getScriptModuleId, loadSource, normalizePath, parseScript } from "./utils.js";
 
 type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };

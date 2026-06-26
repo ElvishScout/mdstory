@@ -1,8 +1,10 @@
-import { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset } from "./definitions.js";
+import type { StoryInit, StoryHooks, Scope, InputType, Metadata, Asset } from "./definitions.js";
 import { Scene } from "./scene.js";
 import { Chapter } from "./chapter.js";
-import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
-import { ParsedStory, ParseStoryOptions, parseStorySource, resolveParseOptions } from "./parser.js";
+import { renderTemplate } from "./render.js";
+import type { RenderOptions, RenderResult } from "./render.js";
+import type { ParsedStory, ParseStoryOptions } from "./parser.js";
+import { parseStorySource, resolveParseOptions } from "./parser.js";
 import { getScriptModuleId, importScriptModule, normalizePath } from "./utils.js";
 
 /**

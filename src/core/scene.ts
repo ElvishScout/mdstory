@@ -1,6 +1,7 @@
-import { SceneHooks, Scope, Asset, SceneInit, DEFAULT_CHAPTER } from "./definitions.js";
-import { ParsedScene } from "./parser.js";
-import { renderTemplate, RenderOptions, RenderResult } from "./render.js";
+import type { SceneHooks, Scope, Asset, SceneInit, DEFAULT_CHAPTER } from "./definitions.js";
+import type { ParsedScene } from "./parser.js";
+import { renderTemplate } from "./render.js";
+import type { RenderOptions, RenderResult } from "./render.js";
 import { getScriptModuleId, importScriptModule } from "./utils.js";
 
 export type { RenderOptions, RenderResult };
