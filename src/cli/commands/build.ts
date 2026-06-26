@@ -23,7 +23,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
 
   // Read the pre-built HTML template (from html-template workspace)
   const cliDir = path.dirname(fileURLToPath(import.meta.url));
-  const templatePath = path.resolve(cliDir, "../../../html-template/dist/template.html");
+  const templatePath = path.resolve(cliDir, "../../../html-template/dist/index.html");
   const template = await readFile(templatePath, "utf-8");
 
   // Inject the parsed story JSON into the template
