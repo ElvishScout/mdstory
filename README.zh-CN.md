@@ -49,6 +49,22 @@ globals:
 如果没有 `#` 标题，故事标题会使用 metadata 中的 `title`；如果 metadata 也没有设置，则为空。
 任何 `##` 之前的 `###` 会自动归入一个隐式默认章节。
 
+`#` 标题到第一个 `##`/`###` 之间的内容是**故事模板**——它会在故事开始时渲染一次。`##` 标题到第一个 `###` 之间的内容是**章节模板**——进入该章节时渲染一次。两者都支持与场景相同的 Handlebars 语法和助手函数。
+
+```markdown
+# 地下城
+
+*你翻开一本落满灰尘的古书……*
+
+## 第一章 {#ch1}
+
+*空气随着你深入而愈发寒冷。*
+
+### 入口 {#entrance}
+
+你站在一扇巨大的铁门前。
+```
+
 ### 导航
 
 用 `{{#nav target}}标签{{/nav}}` 让读者在不同场景间移动：
@@ -131,7 +147,7 @@ assets:
 !include("https://example.com/shared.md")
 ```
 
-使用 `Story.fromPath(pathOrUrl)` 可以通过一个入口路径或 URL 加载完整故事及其 includes。Node.js 中，相对入口路径基于 `cwd` 转成绝对文件路径，绝对路径从文件系统读取，URL 通过网络读取。浏览器中，相对入口路径基于当前页面 URL 解析，绝对路径基于当前域名解析，URL 保持不变。include 会按包含它的文件或 URL 继续解析相对路径。需要自定义 include 加载方式时，可以向 `Story.fromPath()`、`Story.fromSource()` 或底层的 `parseStorySource()` 传入 `base` 或 `resolveInclude`。
+使用 `fromPath(pathOrUrl)` 可以通过一个入口路径或 URL 加载完整故事及其 includes。Node.js 中，相对入口路径基于 `cwd` 转成绝对文件路径，绝对路径从文件系统读取，URL 通过网络读取。浏览器中，相对入口路径基于当前页面 URL 解析，绝对路径基于当前域名解析，URL 保持不变。include 会按包含它的文件或 URL 继续解析相对路径。需要自定义 include 加载方式时，可以向 `fromPath()`、`fromSource()` 或底层的 `parseStorySource()` 传入 `base` 或 `resolveInclude`。也可以使用 `fromParsed()` 从已解析的结构直接构建故事。
 
 ### 钩子
 
@@ -156,6 +172,30 @@ assets:
 ```markdown
 {{linebreak}} ← 一个空行
 {{linebreak 3}} ← 三个空行
+```
+
+空行输出会根据渲染器自适应：Markdown 输出中为 `\n`，HTML 输出中为 `<br>`。
+
+### CLI
+
+```bash
+# 在终端中交互式游玩故事
+npx mdstory play my-story.md
+
+# 带调试输出游玩
+npx mdstory play my-story.md --debug
+
+# 生成独立 HTML 文件并在浏览器中打开
+npx mdstory build my-story.md
+
+# 构建到指定输出路径
+npx mdstory build my-story.md -o dist/story.html
+
+# 构建但不自动打开浏览器
+npx mdstory build my-story.md --no-open
+
+# 构建并在浏览器控制台输出调试信息
+npx mdstory build my-story.md --debug
 ```
 
 ### 分支场景示例

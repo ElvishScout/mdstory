@@ -49,6 +49,22 @@ You wake up in a dark forest. Your name is {{name}} and you have {{gold}} gold.
 If no `#` heading is present, the story title comes from metadata `title`, or is empty.
 Scenes placed before any `##` are grouped into an implicit default chapter.
 
+Content between the `#` heading and the first `##`/`###` is the **story template** — it is rendered once at the beginning of the story. Content between a `##` heading and its first `###` is the **chapter template** — it is rendered once when entering that chapter. Both support the same Handlebars syntax and helpers as scenes.
+
+```markdown
+# The Dungeon
+
+*You open a dusty tome...*
+
+## Chapter One {#ch1}
+
+*The air grows cold as you descend.*
+
+### The Entrance {#entrance}
+
+You stand before a massive iron door.
+```
+
 ### Navigation
 
 Use `{{#nav target}}label{{/nav}}` to let the reader move between scenes:
@@ -131,7 +147,7 @@ Use `!include("target")` to splice another Markdown source before parsing:
 !include("https://example.com/shared.md")
 ```
 
-Use `Story.fromPath(pathOrUrl)` to load an entry story and its includes through one path or URL. In Node, relative entry paths are resolved from `cwd`, absolute paths load from the file system, and URLs load over the network. In browsers, relative entry paths resolve from the current page URL, absolute paths resolve from the current origin, and URLs stay unchanged. Includes follow the same rule relative to the file or URL that contains the `!include`. Pass `base` or `resolveInclude` to `Story.fromPath()`, `Story.fromSource()`, or lower-level `parseStorySource()` when you need custom include loading.
+Use `fromPath(pathOrUrl)` to load an entry story and its includes through one path or URL. In Node, relative entry paths are resolved from `cwd`, absolute paths load from the file system, and URLs load over the network. In browsers, relative entry paths resolve from the current page URL, absolute paths resolve from the current origin, and URLs stay unchanged. Includes follow the same rule relative to the file or URL that contains the `!include`. Pass `base` or `resolveInclude` to `fromPath()`, `fromSource()`, or the lower-level `parseStorySource()` when you need custom include loading. You can also use `fromParsed()` to construct a story from an already-parsed structure.
 
 ### Hooks
 
@@ -156,6 +172,30 @@ Hooks with return values support both sync and `async`. `globals()` receives no 
 ```markdown
 {{linebreak}} ← one blank line
 {{linebreak 3}} ← three blank lines
+```
+
+Line breaks are renderer-aware: `\n` in Markdown output, `<br>` in HTML output.
+
+### CLI
+
+```bash
+# Play a story interactively in the terminal
+npx mdstory play my-story.md
+
+# Play with debug output
+npx mdstory play my-story.md --debug
+
+# Build a standalone HTML file and open in browser
+npx mdstory build my-story.md
+
+# Build to a specific output path
+npx mdstory build my-story.md -o dist/story.html
+
+# Build without opening the browser
+npx mdstory build my-story.md --no-open
+
+# Build with debug output in the browser console
+npx mdstory build my-story.md --debug
 ```
 
 ### Example: Branching Scene
