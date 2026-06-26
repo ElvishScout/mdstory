@@ -131,4 +131,5 @@ export type StoryInit = {
   chapters: Chapter[];
   stylesheet?: string;
   hooks?: StoryHooks;
+  debug?: boolean;
 };

@@ -4,10 +4,13 @@
   import StoryPlayer from "./lib/StoryPlayer.svelte";
 
   let story: Story | undefined = $state();
-  let debug = $state(false);
+  let debug = $state<boolean | undefined>(undefined);
 
   $effect(() => {
-    debug = new URLSearchParams(window.location.search).get("debug") === "1";
+    const debugParam = new URLSearchParams(window.location.search).get("debug");
+    if (debugParam !== null) {
+      debug = debugParam === "1";
+    }
 
     const originalTitle = document.title;
 

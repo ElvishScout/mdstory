@@ -12,7 +12,7 @@
     debug?: boolean;
   }
 
-  let { story, debug = false }: Props = $props();
+  let { story, debug }: Props = $props();
 
   type Stage = "ready" | "started" | "ended";
   type SceneLog = { html: string };

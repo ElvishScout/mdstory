@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import open, { apps } from "open";
 import { parseStorySource, resolveParseOptions } from "../../index.js";
 
@@ -21,6 +21,10 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
   const source = await readFile(resolvedPath, "utf-8");
   const parsedStory = await parseStorySource(source, parseOptions);
 
+  if (options.debug) {
+    parsedStory.debug = true;
+  }
+
   // Read the pre-built HTML template (from html-template workspace)
   const cliDir = path.dirname(fileURLToPath(import.meta.url));
   const templatePath = path.resolve(cliDir, "../../../html-template/dist/index.html");
@@ -37,10 +41,6 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
 
   // Open in browser (default: open)
   if (options.open !== false) {
-    const outputFileUrl = pathToFileURL(outputPath);
-    if (options.debug) {
-      outputFileUrl.searchParams.set("debug", "1");
-    }
-    open(outputFileUrl.toString(), { app: { name: apps.browser } });
+    open(outputPath, { app: { name: apps.browser } });
   }
 }
