@@ -1,13 +1,13 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 
-import { defineConfig, type PluginOption } from "vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { defineConfig, PluginOption } from "vite";
+import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
-import { parseStorySource } from "../src/index.ts";
-import { escapeHtml } from "./src/utils.ts";
+import { parseStorySource } from "../";
+import { escapeHtml } from "./src/utils";
 
 const pluginUseExample = (): PluginOption => {
   return {
@@ -27,8 +27,14 @@ const pluginUseExample = (): PluginOption => {
   };
 };
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte(), tailwindcss(), viteSingleFile(), pluginUseExample()],
+  plugins: [react(), tailwindcss(), viteSingleFile(), pluginUseExample()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "template.html"),
+      },
+    },
+  },
   base: "./",
 });

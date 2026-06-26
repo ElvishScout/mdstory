@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+* {
+  @apply outline-none;
+}
+
+:root {
+  @apply font-serif bg-white selection:bg-red-500/20;
+}
+
+body {
+  @apply overflow-auto;
+}
+
+.scene-form * {
+  @apply text-lg;
+}
+
+.scene-form h1 {
+  @apply mb-8 text-3xl text-center;
+}
+
+.scene-form h2 {
+  @apply mb-6 text-2xl;
+}
+
+.scene-form h3 {
+  @apply mb-4 text-xl;
+}
+
+.scene-form p {
+  @apply mb-2;
+}
+
+.scene-form button {
+  @apply mx-0.5 text-red-600 underline cursor-pointer;
+}
+.scene-form button:hover:not(:disabled) {
+  @apply text-red-400;
+}
+.scene-form button:active:not(:disabled) {
+  @apply text-red-300;
+}
+.scene-form button:disabled {
+  @apply text-red-600 cursor-default;
+}
