@@ -41,6 +41,6 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
     if (options.debug) {
       outputFileUrl.searchParams.set("debug", "1");
     }
-    await open(outputFileUrl.toString(), { wait: true, app: { name: apps.browser } });
+    open(outputFileUrl.toString(), { app: { name: apps.browser } });
   }
 }
