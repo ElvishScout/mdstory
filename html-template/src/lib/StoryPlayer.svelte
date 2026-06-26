@@ -86,7 +86,7 @@
           onkeydown={handleFormKeyDown}
           onsubmit={enabled ? handleFormSubmit : (e) => e.preventDefault()}
         >
-          {@html processHtml(html)}
+          {@html processHtml(html, !enabled)}
         </form>
         {#if enabled}
           <div

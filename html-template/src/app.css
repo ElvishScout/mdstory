@@ -47,5 +47,4 @@ body {
 }
 .scene-form button:disabled {
   @apply text-red-600;
-  cursor: default;
 }
