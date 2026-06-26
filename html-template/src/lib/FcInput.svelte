@@ -11,18 +11,31 @@
     type?: string;
     name?: string;
     value?: string;
-    checked?: boolean;
-    disabled?: boolean;
+    /** When used as a web component, boolean attrs arrive as strings */
+    checked?: boolean | string;
+    disabled?: boolean | string;
   } = $props();
 
   // svelte-ignore state_referenced_locally
   let textValue = $state(value);
+
+  /** Convert web-component string attributes to proper booleans */
+  function toBool(v: boolean | string): boolean {
+    if (typeof v === "boolean") {
+      return v;
+    }
+    // HTML boolean attributes: presence (empty string) or "true" means true
+    return v === "" || v === "true";
+  }
+
+  const isChecked = $derived(toBool(checked));
+  const isDisabled = $derived(toBool(disabled));
 </script>
 
 {#if type === "checkbox"}
   <span class="fc-checkbox">
     <label>
-      <input type="checkbox" {name} {value} {checked} {disabled} />
+      <input type="checkbox" {name} {value} checked={isChecked} disabled={isDisabled} />
       <span class="fc-circle">
         <svg width="256" height="256" viewBox="0 0 256 256">
           <path
@@ -35,7 +48,7 @@
 {:else}
   <span class="fc-text">
     <span class="fc-text-mirror">{textValue}</span>
-    <input {type} {name} value={textValue} {disabled} oninput={(e) => (textValue = e.currentTarget.value)} />
+    <input {type} {name} value={textValue} disabled={isDisabled} oninput={(e) => (textValue = e.currentTarget.value)} />
   </span>
 {/if}
 

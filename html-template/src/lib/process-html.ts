@@ -6,6 +6,10 @@ export function processHtml(html: string, disabled?: boolean): string {
   const doc = new DOMParser().parseFromString(html, "text/html");
 
   for (const input of doc.querySelectorAll("input")) {
+    if (disabled) {
+      input.disabled = true;
+    }
+
     const fcInput = doc.createElement("fc-input");
     for (const attr of input.attributes) {
       fcInput.setAttribute(attr.name, attr.value);
