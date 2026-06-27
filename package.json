@@ -3,8 +3,11 @@
     "html-template"
   ],
   "name": "@elvishscout/mdstory",
-  "repository": "https://github.com/ElvishScout/mdstory.git",
-  "version": "0.2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElvishScout/mdstory.git"
+  },
+  "version": "0.2.1",
   "description": "An interactive fiction scripting format based on Markdown and Handlebars.",
   "main": "./dist/index.js",
   "sideEffects": false,
@@ -15,10 +18,11 @@
     "./html-template/dist"
   ],
   "bin": {
-    "mdstory": "./dist/cli/index.js"
+    "mdstory": "dist/cli/index.js"
   },
   "scripts": {
     "prebuild": "shx rm -rf \"dist/*\" \"dist/.*\"",
+    "postbuild": "shx chmod u+x \"dist/cli/index.js\"",
     "build": "tsc -b",
     "build:template": "cd html-template && npm run build",
     "build:all": "npm run build && npm run build:template",
