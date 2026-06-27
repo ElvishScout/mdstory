@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type ParsedStory, type Story, fromParsed } from "../../";
+  import { type Story, fromParsed } from "../../";
   import { unescapeHtml } from "./utils";
   import StoryPlayer from "./lib/StoryPlayer.svelte";
 

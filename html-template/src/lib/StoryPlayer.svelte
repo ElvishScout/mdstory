@@ -49,10 +49,13 @@
     });
   };
 
-  function handleCoverClick() {
-    story.play(prompt, { renderer: "html", debug }).then(() => (stage = "ended"));
-    stage = "started";
-  }
+  $effect(() => {
+    const timer = setTimeout(() => {
+      story.play(prompt, { renderer: "html", debug }).then(() => (stage = "ended"));
+      stage = "started";
+    }, 200);
+    return () => clearTimeout(timer);
+  });
 
   function handleFormKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
@@ -96,16 +99,4 @@
       </div>
     {/each}
   </div>
-
-  {#if stage === "ready"}
-    <div
-      class="fixed inset-0 flex flex-col justify-center items-center text-4xl leading-0 select-none backdrop-blur-xs z-10 after:content-[''] after:h-16"
-      onclick={handleCoverClick}
-      role="button"
-      tabindex="0"
-      onkeydown={(e) => e.key === "Enter" && handleCoverClick()}
-    >
-      Click to start
-    </div>
-  {/if}
 </div>
