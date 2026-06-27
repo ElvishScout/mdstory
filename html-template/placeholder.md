@@ -12,6 +12,16 @@ globals:
 
 ###
 
+<script>
+  export default {
+    view() {
+      return {
+        replacedText: JSON.stringify(window.PARSED_STORY),
+      }
+    }
+  }
+</script>
+
 Your story JSON is not yet injected. Use one of the methods below to get started.
 
 **CLI**
@@ -24,7 +34,7 @@ npx mdstory build story.md
 
 **Manual**
 
-Replace `"__PARSED_STORY__"` in this HTML file with your parsed story JSON.
+Replace `{{{replacedText}}}` in this HTML file with your parsed story JSON.
 
 {{linebreak 2}}
 

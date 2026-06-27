@@ -10,10 +10,6 @@ export interface BuildOptions {
   debug?: boolean;
 }
 
-function escapeHtml(text: string): string {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 export async function buildCommand(storyPath: string, options: BuildOptions): Promise<void> {
   // Parse the story to a serializable structure
   const resolvedPath = path.resolve(storyPath);
@@ -31,8 +27,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
   const template = await readFile(templatePath, "utf-8");
 
   // Inject the parsed story JSON into the template
-  const storyJson = JSON.stringify(parsedStory);
-  const html = template.replace('"__PARSED_STORY__"', escapeHtml(storyJson));
+  const html = template.replace('"__PARSED_STORY__"', JSON.stringify(parsedStory));
 
   // Write the output file
   const outputPath = options.output ?? resolvedPath.replace(/\.[^.]+$/, "") + ".html";
