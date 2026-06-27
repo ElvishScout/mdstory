@@ -76,7 +76,7 @@ export class Story {
   /** @internal */ _storyTitleShown = false;
 
   constructor(init: StoryInit) {
-    this.title = init.title ?? init.metadata?.title ?? "";
+    this.title = (init.title || init.metadata?.title) ?? "";
     this.template = init.template ?? "";
     this.chapters = init.chapters;
     this.metadata = init.metadata ?? {};
