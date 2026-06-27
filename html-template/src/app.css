@@ -12,8 +12,8 @@ body {
   @apply overflow-auto;
 }
 
-.scene-form * {
-  @apply text-lg;
+.scene-form {
+  @apply text-lg space-y-2;
 }
 
 .scene-form h1 {
@@ -28,8 +28,20 @@ body {
   @apply mb-4 text-xl;
 }
 
-.scene-form p {
-  @apply mb-2;
+.scene-form pre {
+  @apply w-fit max-w-full px-4 py-2.5 border border-red-200 bg-red-100 rounded-md font-mono overflow-auto;
+}
+
+.scene-form code {
+  @apply bg-red-100 px-1.5 py-0.5 rounded font-mono;
+}
+
+.scene-form pre code {
+  @apply bg-inherit p-0 py-0 rounded-none;
+}
+
+.scene-form blockquote {
+  @apply w-fit px-4 py-2.5 bg-red-100 border-l-4 border-red-600 rounded-md;
 }
 
 .scene-form button {
@@ -43,9 +55,4 @@ body {
 }
 .scene-form button:disabled {
   @apply text-red-600 cursor-default;
-}
-
-.scene-form > fc-input,
-.scene-form > button {
-  @apply mb-2;
 }

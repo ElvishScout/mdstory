@@ -1,34 +1,23 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 
-import { defineConfig, type PluginOption } from "vite";
+import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
 import { parseStorySource } from "../src/index.ts";
-import { escapeHtml } from "./src/utils.ts";
-
-const pluginUseExample = (): PluginOption => {
-  return {
-    name: "plugin-use-example",
-    transformIndexHtml: {
-      order: "pre",
-      async handler(html, context) {
-        if (context.server) {
-          const source = await fs.readFile(path.resolve(__dirname, "example.md"), { encoding: "utf-8" });
-          const parsedStory = await parseStorySource(source);
-          const storyJson = JSON.stringify(parsedStory);
-          return html.replace('"__PARSED_STORY__"', escapeHtml(storyJson));
-        }
-        return html;
-      },
-    },
-  };
-};
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [svelte(), tailwindcss(), viteSingleFile(), pluginUseExample()],
-  base: "./",
+export default defineConfig(async () => {
+  const source = await fs.readFile(path.resolve(__dirname, "placeholder.md"), { encoding: "utf-8" });
+  const parsedStory = await parseStorySource(source);
+
+  return {
+    plugins: [svelte(), tailwindcss(), viteSingleFile()],
+    base: "./",
+    define: {
+      __PLACEHOLDER_STORY__: JSON.stringify(parsedStory),
+    },
+  };
 });
