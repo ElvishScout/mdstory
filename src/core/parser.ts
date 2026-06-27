@@ -4,12 +4,7 @@ import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
 import { nanoid } from "nanoid";
 
-import {
-  MetadataSchema,
-  SceneHooksSchema,
-  ChapterHooksSchema,
-  StoryHooksSchema,
-} from "./schema.js";
+import { MetadataSchema, SceneHooksSchema, ChapterHooksSchema, StoryHooksSchema } from "./schema.js";
 import { DEFAULT_CHAPTER } from "./definitions.js";
 import type { Metadata } from "./definitions.js";
 import { getScriptModuleId, loadSource, normalizePath, parseScript } from "./utils.js";
@@ -113,16 +108,18 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       token.level === 0 &&
       token.map
     ) {
-      const id = token.attrs?.find(([key]) => key === "id")?.[1] || nanoid();
-      if (id.includes(".")) {
-        throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
-      }
-
+      let id = token.attrs?.find(([key]) => key === "id")?.[1];
       let title = "";
       const nextToken = tokens[i + 1];
       if (nextToken && nextToken.type === "inline") {
         const content = nextToken.content.trim();
         title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
+        id ||= title;
+      }
+
+      id ||= nanoid();
+      if (id.includes(".")) {
+        throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
       }
 
       {
