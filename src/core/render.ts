@@ -10,6 +10,7 @@ import { escapeHtml } from "./utils.js";
 type HtmlAttrs = Record<string, string | boolean | undefined>;
 
 const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => {
+  // prettier-ignore
   const voidTags = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
     "link", "meta", "param", "source", "track", "wbr",

@@ -44,3 +44,8 @@ body {
 .scene-form button:disabled {
   @apply text-red-600 cursor-default;
 }
+
+.scene-form > fc-input,
+.scene-form > button {
+  @apply mb-2;
+}
