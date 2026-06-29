@@ -20,7 +20,7 @@ function isUrl(path: string) {
   return /^https?:\/\//.test(path);
 }
 
-export function getScriptModuleId(chapterId?: string | typeof DEFAULT_CHAPTER, sceneId?: string) {
+function getScriptModuleId(index: number, chapterId?: string | typeof DEFAULT_CHAPTER, sceneId?: string) {
   let moduleId = "story";
   if (chapterId) {
     const chapterIdStr = chapterId === DEFAULT_CHAPTER ? "" : chapterId;
@@ -29,10 +29,11 @@ export function getScriptModuleId(chapterId?: string | typeof DEFAULT_CHAPTER, s
   if (sceneId) {
     moduleId += `.scene.${sceneId}`;
   }
+  moduleId += `.index.${index}`;
   return moduleId;
 }
 
-export async function importScriptModule(script: string, id?: string) {
+async function importScriptModule(script: string, id?: string) {
   if (!script.trim()) {
     return {};
   }
@@ -44,8 +45,14 @@ export async function importScriptModule(script: string, id?: string) {
   return module.default ?? {};
 }
 
-export async function parseScript<T>(script: string, schema: Zod.ZodType<T>, id: string): Promise<T> {
-  return schema.parse(await importScriptModule(script, id));
+export async function mergeScripts(scripts: string[], chapterId?: string | typeof DEFAULT_CHAPTER, sceneId?: string) {
+  const modules = await Promise.all(
+    scripts.map(async (script, i) => {
+      const moduelId = getScriptModuleId(i, chapterId, sceneId);
+      return await importScriptModule(script, moduelId);
+    }),
+  );
+  return Object.assign({}, ...modules);
 }
 
 export async function normalizePath(path: string, base?: string) {

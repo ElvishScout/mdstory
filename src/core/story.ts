@@ -5,7 +5,7 @@ import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
-import { getScriptModuleId, importScriptModule, normalizePath } from "./utils.js";
+import { mergeScripts, normalizePath } from "./utils.js";
 
 /**
  * Prompt function for handling user input during story playback.
@@ -293,7 +293,7 @@ export async function fromParsed(story: ParsedStory) {
     template: story.template,
     chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
     stylesheet: story.stylesheet,
-    hooks: await importScriptModule(story.script, getScriptModuleId()),
+    hooks: await mergeScripts(story.scripts),
     debug: story.debug,
   });
 }

@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 import { MetadataSchema, SceneHooksSchema, ChapterHooksSchema, StoryHooksSchema } from "./schema.js";
 import { DEFAULT_CHAPTER } from "./definitions.js";
 import type { Metadata } from "./definitions.js";
-import { getScriptModuleId, loadSource, normalizePath, parseScript } from "./utils.js";
+import { loadSource, mergeScripts, normalizePath } from "./utils.js";
 
 type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
 type ScriptBlock = { from: number; to: number; content: string };
@@ -22,14 +22,14 @@ export type ParsedScene = {
   id: string;
   title: string;
   template: string;
-  script: string;
+  scripts: string[];
 };
 
 export type ParsedChapter = {
   id: string | typeof DEFAULT_CHAPTER;
   title: string;
   template: string;
-  script: string;
+  scripts: string[];
   scenes: ParsedScene[];
 };
 
@@ -39,7 +39,7 @@ export type ParsedStory = {
   template: string;
   chapters: ParsedChapter[];
   stylesheet: string;
-  script: string;
+  scripts: string[];
   debug?: boolean;
 };
 
@@ -108,7 +108,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       token.level === 0 &&
       token.map
     ) {
-      let id = token.attrs?.find(([key]) => key === "id")?.[1];
+      let id = token.attrGet("id");
       let title = "";
       const nextToken = tokens[i + 1];
       if (nextToken && nextToken.type === "inline") {
@@ -187,6 +187,10 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       .replace(/^\n+/, "");
   })();
 
+  // Story scripts
+  const storyScripts = getScriptsInScope(scripts, storyHeading?.lineno ?? 0, storyEnd);
+  StoryHooksSchema.parse(await mergeScripts(storyScripts));
+
   // Orphan h3s before the first h2 get a default chapter
   const firstChapterLine = chapterHeadings[0]?.lineno ?? Infinity;
   const defaultScenes = sceneHeadings.filter((sh) => sh.lineno < firstChapterLine);
@@ -202,8 +206,8 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     for (let si = 0; si < defaultScenes.length; si++) {
       const sh = defaultScenes[si];
       const seEnd = defaultScenes[si + 1]?.lineno ?? firstChapterLine;
-      const scScript = getScriptInScope(scripts, sh.lineno, seEnd, `scene "${sh.id}"`);
-      await parseScript(scScript, SceneHooksSchema, getScriptModuleId(DEFAULT_CHAPTER, sh.id));
+      const scScripts = getScriptsInScope(scripts, sh.lineno, seEnd);
+      SceneHooksSchema.parse(await mergeScripts(scScripts, DEFAULT_CHAPTER, sh.id));
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -212,7 +216,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
         .join("\n")
         .replace(/^\n+/, "");
 
-      scenes.push({ id: sh.id, title: sh.title, template, script: scScript });
+      scenes.push({ id: sh.id, title: sh.title, template, scripts: scScripts });
       if (entryScene === null) {
         entryScene = sh.id;
       }
@@ -222,7 +226,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       id: DEFAULT_CHAPTER,
       title: "",
       template: "",
-      script: "",
+      scripts: [],
       scenes,
     });
   }
@@ -239,8 +243,8 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       .filter((_, i) => !ignoredLines.has(chTemplateStart + i))
       .join("\n")
       .replace(/^\n+/, "");
-    const chScript = getScriptInScope(scripts, ch.lineno, chScriptEnd, `chapter "${ch.id}"`);
-    await parseScript(chScript, ChapterHooksSchema, getScriptModuleId(ch.id));
+    const chScripts = getScriptsInScope(scripts, ch.lineno, chScriptEnd);
+    ChapterHooksSchema.parse(await mergeScripts(chScripts, ch.id));
 
     const scenes: ParsedScene[] = [];
     let entryScene: string | null = null;
@@ -248,8 +252,8 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     for (let si = 0; si < chapterScenes.length; si++) {
       const sh = chapterScenes[si];
       const seEnd = chapterScenes[si + 1]?.lineno ?? chEnd;
-      const scScript = getScriptInScope(scripts, sh.lineno, seEnd, `scene "${sh.id}"`);
-      await parseScript(scScript, SceneHooksSchema, getScriptModuleId(ch.id, sh.id));
+      const scScripts = getScriptsInScope(scripts, sh.lineno, seEnd);
+      SceneHooksSchema.parse(await mergeScripts(scScripts, ch.id, sh.id));
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -258,7 +262,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
         .join("\n")
         .replace(/^\n+/, "");
 
-      scenes.push({ id: sh.id, title: sh.title, template, script: scScript });
+      scenes.push({ id: sh.id, title: sh.title, template, scripts: scScripts });
       if (entryScene === null) {
         entryScene = sh.id;
       }
@@ -268,14 +272,11 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       id: ch.id,
       title: ch.title,
       template: chTemplate,
-      script: chScript,
+      scripts: chScripts,
       scenes,
     });
     chapterOrder.push(ch);
   }
-
-  const storyScript = getScriptInScope(scripts, storyHeading?.lineno ?? 0, storyEnd, "story");
-  await parseScript(storyScript, StoryHooksSchema, getScriptModuleId());
 
   return {
     metadata,
@@ -283,14 +284,13 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     template: storyTemplate,
     chapters,
     stylesheet,
-    script: storyScript,
+    scripts: storyScripts,
   };
 }
 
-function getScriptInScope(scripts: ScriptBlock[], from: number, to: number, scope: string): string {
-  const scopedScripts = scripts.filter((script) => script.from >= from && script.to <= to);
-  if (scopedScripts.length > 1) {
-    throw new Error(`More than one script block found in ${scope}`);
-  }
-  return scopedScripts[0]?.content ?? "";
+function getScriptsInScope(scripts: ScriptBlock[], from: number, to: number) {
+  const scopedScripts = scripts
+    .filter((script) => script.from >= from && script.to <= to)
+    .map((script) => script.content);
+  return scopedScripts;
 }

@@ -2,7 +2,7 @@ import type { SceneHooks, Scope, Asset, SceneInit, DEFAULT_CHAPTER } from "./def
 import type { ParsedScene } from "./parser.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
-import { getScriptModuleId, importScriptModule } from "./utils.js";
+import { mergeScripts } from "./utils.js";
 
 export type { RenderOptions, RenderResult };
 
@@ -25,7 +25,7 @@ export class Scene {
       id: scene.id,
       title: scene.title,
       template: scene.template,
-      hooks: await importScriptModule(scene.script, getScriptModuleId(chapterId, scene.id)),
+      hooks: await mergeScripts(scene.scripts, chapterId, scene.id),
     });
   }
 
