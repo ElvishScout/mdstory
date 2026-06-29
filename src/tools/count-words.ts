@@ -14,10 +14,10 @@ async function main() {
   const story = await fromPath(entryPath);
 
   let count = 0;
-  count += countWords(story.title);
-  for (const chapter of Object.values(story.chapters)) {
-    count += countWords(chapter.title);
-    for (const scene of Object.values(chapter.scenes)) {
+  count += countWords(story.template);
+  for (const chapter of story.chapters) {
+    count += countWords(chapter.template);
+    for (const scene of chapter.scenes) {
       count += countWords(scene.template);
     }
   }
