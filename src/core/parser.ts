@@ -40,7 +40,6 @@ export type ParsedStory = {
   chapters: ParsedChapter[];
   stylesheet: string;
   scripts: string[];
-  debug?: boolean;
 };
 
 async function expandIncludes(source: string, options: ParseStoryOptions, stack: string[] = []): Promise<string> {

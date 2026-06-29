@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import { type Story, type StoryPrompt } from "../../../";
+  import { type Story, type StoryPrompt, type TemplateOptions } from "../../../";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "./process-html";
 
@@ -9,10 +9,10 @@
 
   interface Props {
     story: Story;
-    debug?: boolean;
+    options?: TemplateOptions;
   }
 
-  let { story, debug }: Props = $props();
+  let { story, options = {} }: Props = $props();
 
   type Stage = "ready" | "started" | "ended";
   type SceneLog = { html: string };
@@ -50,7 +50,7 @@
 
   $effect(() => {
     const timer = setTimeout(() => {
-      story.play(prompt, { renderer: "html", debug }).then(() => (stage = "ended"));
+      story.play(prompt, { renderer: "html", debug: options.debug }).then(() => (stage = "ended"));
       stage = "started";
     }, 200);
     return () => clearTimeout(timer);

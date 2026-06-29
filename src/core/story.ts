@@ -72,7 +72,6 @@ export class Story {
   hooks: StoryHooks;
   stylesheet: string;
   chapters: Chapter[];
-  debug: boolean;
   /** @internal */ _storyTitleShown = false;
 
   constructor(init: StoryInit) {
@@ -84,7 +83,6 @@ export class Story {
     this.assets = this.metadata.assets ?? {};
     this.hooks = init.hooks ?? {};
     this.stylesheet = init.stylesheet ?? "";
-    this.debug = init.debug ?? false;
   }
 
   /** Get chapter by chapter id */
@@ -165,8 +163,6 @@ export class Story {
 
   /** Starts playing the story, looping through chapters and scenes until navigation ends. */
   async play(prompt: StoryPrompt, options: PlayOptions) {
-    const debug = options.debug ?? this.debug;
-
     if (this.hooks.globals) {
       const result = await this.hooks.globals();
       if (result) {
@@ -208,7 +204,7 @@ export class Story {
         }
       }
 
-      if (debug) {
+      if (options.debug) {
         console.log("--- [debug] scene:", scene.id);
         console.log("--- [debug] globals:", JSON.stringify(this.globals, null, 2));
         console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
@@ -294,7 +290,6 @@ export async function fromParsed(story: ParsedStory) {
     chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
     stylesheet: story.stylesheet,
     hooks: await mergeScripts(story.scripts),
-    debug: story.debug,
   });
 }
 

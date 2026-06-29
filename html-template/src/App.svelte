@@ -1,17 +1,22 @@
 <script lang="ts">
-  import { type Story, fromParsed } from "../../";
+  import { type Story, type TemplateOptions, fromParsed } from "../../";
   import StoryPlayer from "./lib/StoryPlayer.svelte";
 
   let story: Story | undefined = $state();
-  let debug = $state<boolean | undefined>(undefined);
+  let options: TemplateOptions | undefined = $state();
 
   $effect(() => {
-    const debugParam = new URLSearchParams(window.location.search).get("debug");
+    const originalTitle = document.title;
+
+    const searchParams = new URLSearchParams(location.search);
+    const debugParam = searchParams.get("debug");
+
+    const templateOptions = typeof window.TEMPLATE_OPTIONS === "string" ? {} : window.TEMPLATE_OPTIONS;
     if (debugParam !== null) {
-      debug = debugParam === "1";
+      templateOptions.debug = debugParam === "1";
     }
 
-    const originalTitle = document.title;
+    options = templateOptions;
 
     const parsedStory = typeof window.PARSED_STORY === "string" ? window.PLACEHOLDER_STORY : window.PARSED_STORY;
     fromParsed(parsedStory).then((s) => {
@@ -26,5 +31,5 @@
 </script>
 
 {#if story}
-  <StoryPlayer {story} {debug} />
+  <StoryPlayer {story} {options} />
 {/if}

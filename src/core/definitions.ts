@@ -90,5 +90,9 @@ export type StoryInit = {
   chapters: Chapter[];
   stylesheet?: string;
   hooks?: StoryHooks;
+};
+
+/** Base options for HTML templates */
+export type TemplateOptions = {
   debug?: boolean;
 };
