@@ -6,12 +6,19 @@ import pluginMark from "markdown-it-mark";
 export function createMarkdownRenderer(): MarkdownIt {
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginTerminal).use(pluginMark);
 
-  // markdown-it-terminal doesn't support mark or <u> tags
+  // fix unsupported tags
   const defaultHtmlInline = md.renderer.rules.html_inline!;
   md.renderer.rules.html_inline = (tokens, idx, ...args) => {
     const tag = tokens[idx].content;
-    if (tag === "<u>") return "\x1b[4m";
-    if (tag === "</u>") return "\x1b[24m";
+    if (tag === "<u>") {
+      return "\x1b[4m";
+    }
+    if (tag === "</u>") {
+      return "\x1b[24m";
+    }
+    if (tag === "<br>") {
+      return "\n";
+    }
     return defaultHtmlInline(tokens, idx, ...args);
   };
 

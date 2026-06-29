@@ -87,7 +87,7 @@ const markdownRenderer: Renderer = {
     return `<u>[@ ${children}]</u>`;
   },
   linebreak({ n }) {
-    return "\n".repeat(n ?? 1);
+    return "<br>".repeat(n ?? 1);
   },
 };
 
@@ -134,15 +134,15 @@ function useHelper({ inputs, navs }: Fields, assets: Record<string, Asset>, rend
       const result = renderer.nav?.({ target, children: text }) ?? "";
       return new Handlebars.SafeString(result);
     },
+    linebreak(n?: number) {
+      const result = renderer.linebreak?.({ n }) ?? "";
+      return new Handlebars.SafeString(result);
+    },
     asset(name: string) {
       return new Handlebars.SafeString(assets[name]?.url ?? "");
     },
     mime(name: string) {
       return new Handlebars.SafeString(assets[name]?.mime ?? "");
-    },
-    linebreak(n?: number) {
-      const result = renderer.linebreak?.({ n }) ?? "";
-      return new Handlebars.SafeString(result);
     },
   };
 }
