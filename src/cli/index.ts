@@ -2,13 +2,14 @@
 import { Command } from "commander";
 import { playCommand } from "./commands/play.js";
 import { buildCommand } from "./commands/build.js";
+import pkg from "../../package.json" with { type: "json" };
 
 const program = new Command();
 
 program
   .name("mdstory")
   .description("An interactive fiction scripting format based on Markdown and Handlebars.")
-  .version("0.1.4");
+  .version(pkg.version);
 
 program
   .command("play")
