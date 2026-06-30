@@ -15,7 +15,10 @@
   "files": [
     "./dist",
     "./types",
-    "./html-template/dist"
+    "./html-template/dist",
+    "./skills",
+    "./README*.md",
+    "./WRITING_GUIDE*.md"
   ],
   "bin": {
     "mdstory": "dist/cli/index.js"
