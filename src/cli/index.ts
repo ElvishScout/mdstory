@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { playCommand } from "./commands/play.js";
 import { buildCommand } from "./commands/build.js";
+import { skillsCommand } from "./commands/skills.js";
 import pkg from "../../package.json" with { type: "json" };
 
 const program = new Command();
@@ -40,6 +41,21 @@ program
         debug: options.debug ?? false,
       });
     } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("skills")
+  .description("Install MdStory skills to a coding agent (Claude Code, Codex, etc.)")
+  .action(async () => {
+    try {
+      await skillsCommand();
+    } catch (err) {
+      if (err instanceof Error && err.name === "ExitPromptError") {
+        process.exit(0);
+      }
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
     }

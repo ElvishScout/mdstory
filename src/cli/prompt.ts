@@ -11,22 +11,22 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
     let targetReplies: { target: string } | null;
 
     try {
-      inputReplies = await inquirer.prompt(
+      inputReplies = await inquirer.prompt<Record<string, unknown>>(
         fields.map(({ name, type, value }) => {
           if (type === "number") {
-            return { type: "number" as const, name, message: name, default: Number(value) };
+            return { type: "number", name, message: name, default: Number(value) };
           } else if (type === "boolean") {
-            return { type: "confirm" as const, name, message: name, default: Boolean(value) };
+            return { type: "confirm", name, message: name, default: Boolean(value) };
           } else {
-            return { type: "input" as const, name, message: name, default: String(value) };
+            return { type: "input", name, message: name, default: String(value) };
           }
         }),
       );
 
       if (navs.length) {
-        targetReplies = await inquirer.prompt([
+        targetReplies = await inquirer.prompt<{ target: string }>([
           {
-            type: "list",
+            type: "select",
             name: "target",
             message: "Choose target",
             choices: navs.map(({ text, target }) => ({ name: text, value: target })),
