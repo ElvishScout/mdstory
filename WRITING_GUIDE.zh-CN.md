@@ -109,9 +109,7 @@ globals:
 
 ## Script 规范
 
-每个 story、chapter 或 scene 作用域最多只能有一个 `<script>` 标签。
-
-正确：
+每个 story、chapter 或 scene 作用域允许写多个 `<script>` 标签。多个脚本的 hook 导出会被 `Object.assign` 合并，同名 hook 后面的覆盖前面的。
 
 ```markdown
 ### 宝箱 {#chest}
@@ -123,23 +121,15 @@ globals:
     },
   };
 </script>
-```
-
-不推荐：
-
-```markdown
-### 宝箱 {#chest}
 
 <script>
-  export default { view() { return { opened: false }; } };
-</script>
-
-<script>
-  export default { onLeave() {} };
+  export default {
+    onLeave({ globals }) {
+      globals.chestOpened = true;
+    },
+  };
 </script>
 ```
-
-多个脚本不会被合并；解析时会直接报错。把同一作用域的 hooks 写在同一个 `export default` 对象里。
 
 ## Hook 速查
 
@@ -421,10 +411,6 @@ onLeave({ globals, locals }) {
 ### 把所有变量都放进 globals
 
 `globals` 应保存跨故事流程需要的状态。章节内临时值用 `locals()`，场景渲染值用 `view()`。
-
-### 在一个作用域写多个 script
-
-每个 story/chapter/scene 作用域只允许一个 `<script>`。多个 hook 写在同一个默认导出对象里。
 
 ### 依赖标题文字作为 id
 

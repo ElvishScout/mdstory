@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/ElvishScout/mdstory.git"
   },
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "An interactive fiction scripting format based on Markdown and Handlebars.",
   "main": "./dist/index.js",
   "sideEffects": false,

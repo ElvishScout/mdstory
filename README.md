@@ -152,7 +152,7 @@ Use `fromPath(pathOrUrl)` to load an entry story and its includes through one pa
 ### Hooks
 
 Hooks are JavaScript functions that run at specific points. Export them from `<script>` tags.
-Each story, chapter, or scene scope may contain at most one `<script>` tag.
+Each story, chapter, or scene scope supports one or more `<script>` tags — their exports are merged together, with later scripts taking precedence for the same hook.
 
 | Level   | Position    | Hook                                   | Purpose                                                   |
 | ------- | ----------- | -------------------------------------- | --------------------------------------------------------- |
