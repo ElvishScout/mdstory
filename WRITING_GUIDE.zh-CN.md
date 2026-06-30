@@ -45,11 +45,11 @@ globals:
 ```markdown
 # 地下城
 
-*你翻开一本落满灰尘的古书，书页间夹着一张泛黄的地图……*
+_你翻开一本落满灰尘的古书，书页间夹着一张泛黄的地图……_
 
 ## 第一章：入口 {#ch1}
 
-*你推开锈迹斑斑的铁门，冷风从地底深处涌上来。*
+_你推开锈迹斑斑的铁门，冷风从地底深处涌上来。_
 
 ### 长廊 {#corridor}
 
@@ -57,6 +57,64 @@ globals:
 ```
 
 故事模板适合放开场叙述、旁白或全局提示。章节模板适合放章节导语、氛围描写或每次进入章节都要重复的内容。模板内容是可选的——不写则不会渲染额外内容。
+
+## 模板语法
+
+场景内容使用 Handlebars 语法与故事状态交互。
+
+### 变量插值
+
+双花括号输出转义后的安全文本：
+
+```markdown
+你的名字是 {{name}}，当前金币 {{gold}}。
+```
+
+三花括号输出原始 HTML，**仅在确实需要渲染 HTML 标签时使用**（如富文本描述、带格式的对话等）。注意：如果变量值来自读者输入，使用 `{{{...}}}` 可能导致 XSS 风险。
+
+```markdown
+{{{richDescription}}}
+```
+
+### 条件渲染
+
+```markdown
+{{#if hasKey}}
+你打开了门。
+{{else if hasLockpick}}
+你用工具撬开了门。
+{{else}}
+门锁着。
+{{/if}}
+```
+
+### 列表渲染
+
+```markdown
+你的背包里有：
+{{#each inventory}}
+
+- {{this}}
+  {{/each}}
+```
+
+```markdown
+{{#each heroes}}
+{{name}}（{{role}}）
+{{/each}}
+```
+
+### 内置助手
+
+MdStory 提供以下内置 Handlebars 助手，详见各自章节：
+
+| 助手                 | 用途                       | 参考     |
+| -------------------- | -------------------------- | -------- |
+| `{{#nav target}}`    | 场景导航链接               | 导航规范 |
+| `{{input type ...}}` | 读者输入字段               | 输入规范 |
+| `{{asset key}}`      | 引用 metadata 中定义的资源 | 进阶功能 |
+| `{{mime key}}`       | 资源 MIME 类型             | 进阶功能 |
+| `{{linebreak}}`      | 插入空行                   | 进阶功能 |
 
 ## Include 规范
 
@@ -89,12 +147,12 @@ globals:
 
 `target` 有四种常用写法：
 
-| 写法 | 含义 | 示例 |
-|------|------|------|
-| `scene` | 跳到当前章节内的场景 | `"forest"` |
+| 写法            | 含义                     | 示例              |
+| --------------- | ------------------------ | ----------------- |
+| `scene`         | 跳到当前章节内的场景     | `"forest"`        |
 | `chapter.scene` | 跳到指定章节内的指定场景 | `"chapter2.cave"` |
-| `chapter` | 跳到指定章节的入口场景 | `"chapter2"` |
-| `null` | 结束故事 | `null` |
+| `chapter`       | 跳到指定章节的入口场景   | `"chapter2"`      |
+| `null`          | 结束故事                 | `null`            |
 
 当 `target` 不带点号时，运行时会先在当前章节查找同名场景；找不到时再在所有章节中查找同名场景；最后才把它当作章节 id 查找入口场景。
 
@@ -133,16 +191,16 @@ globals:
 
 ## Hook 速查
 
-| 层级 | Hook | 时机 | 推荐用途 |
-|------|------|------|----------|
-| Story | `globals()` | `play()` 开始时，`onStart()` 之前 | 返回动态初始全局变量 |
-| Story | `onStart({ globals })` | 故事开始时 | 初始化外部状态、修正全局状态、记录启动事件 |
-| Chapter | `locals({ globals })` | 每次进入章节时，`onEnter()` 之前 | 返回本次进入章节的局部变量 |
-| Chapter | `onEnter({ globals, locals })` | 每次进入章节时 | 修改状态、记录进入章节 |
-| Chapter | `onLeave({ globals, locals, target })` | 离开章节或故事结束时 | 结算章节状态、记录目标 |
-| Scene | `onEnter({ globals, locals })` | 每次进入场景时，`view()` 之前 | 修改状态、发放物品、记录访问 |
-| Scene | `view({ globals, locals })` | 场景渲染前 | 返回只用于本次渲染的临时值 |
-| Scene | `onLeave({ globals, locals, target })` | 读者提交输入并离开场景后 | 根据当前状态或目标更新状态 |
+| 层级    | Hook                                   | 时机                              | 推荐用途                                   |
+| ------- | -------------------------------------- | --------------------------------- | ------------------------------------------ |
+| Story   | `globals()`                            | `play()` 开始时，`onStart()` 之前 | 返回动态初始全局变量                       |
+| Story   | `onStart({ globals })`                 | 故事开始时                        | 初始化外部状态、修正全局状态、记录启动事件 |
+| Chapter | `locals({ globals })`                  | 每次进入章节时，`onEnter()` 之前  | 返回本次进入章节的局部变量                 |
+| Chapter | `onEnter({ globals, locals })`         | 每次进入章节时                    | 修改状态、记录进入章节                     |
+| Chapter | `onLeave({ globals, locals, target })` | 离开章节或故事结束时              | 结算章节状态、记录目标                     |
+| Scene   | `onEnter({ globals, locals })`         | 每次进入场景时，`view()` 之前     | 修改状态、发放物品、记录访问               |
+| Scene   | `view({ globals, locals })`            | 场景渲染前                        | 返回只用于本次渲染的临时值                 |
+| Scene   | `onLeave({ globals, locals, target })` | 读者提交输入并离开场景后          | 根据当前状态或目标更新状态                 |
 
 所有 hook 都可以是同步函数或 `async` 函数。`globals()` 不接收参数。
 
@@ -330,7 +388,7 @@ export default {
   onEnter({ globals }) {
     globals.visitedDungeon = true;
   },
-}
+};
 ```
 
 ## 命名规范
@@ -370,10 +428,10 @@ export default {
 输入默认写入当前章节的 `locals`。如果变量名前加 `$`，则写入 `globals`，并在写入时去掉 `$` 前缀。
 
 ```markdown
-{{input "string" name="旅人"}}      ← 写入 locals.name
-{{input "number" age=18}}          ← 写入 locals.age
-{{input "boolean" brave=false}}    ← 写入 locals.brave
-{{input "string" $name="旅人"}}     ← 写入 globals.name
+{{input "string" name="旅人"}} ← 写入 locals.name
+{{input "number" age=18}} ← 写入 locals.age
+{{input "boolean" brave=false}} ← 写入 locals.brave
+{{input "string" $name="旅人"}} ← 写入 globals.name
 ```
 
 推荐：
@@ -400,6 +458,47 @@ onLeave({ globals, locals }) {
     globals.nameConfirmed = true;
   }
 }
+```
+
+## 进阶功能
+
+### 资源与多媒体
+
+YAML metadata 中定义资源，模板中引用：
+
+```yaml
+assets:
+  map: "https://example.com/map.png"
+  bgm: { url: "https://example.com/audio.mp3", mime: "audio/mpeg" }
+```
+
+```markdown
+![]({asset "map"})
+{{asset "bgm"}} → 输出 URL
+{{mime "bgm"}} → 输出 "audio/mpeg"
+```
+
+### 图片
+
+```markdown
+![]({asset "map"})
+```
+
+### 样式
+
+```html
+<style>
+  .clue {
+    color: #ffd700;
+  }
+</style>
+```
+
+### 空行
+
+```markdown
+{{linebreak}} ← 一个空行
+{{linebreak 3}} ← 三个空行
 ```
 
 ## 常见反模式

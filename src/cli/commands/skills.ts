@@ -1,4 +1,4 @@
-import { readdir, cp } from "node:fs/promises";
+import { readdir, readFile, writeFile, mkdir, cp } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import inquirer from "inquirer";
@@ -7,6 +7,75 @@ interface AgentConfig {
   name: string;
   /** Project-level skills directory (relative to cwd) */
   projectDir: string;
+}
+
+// ---------------------------------------------------------------------------
+// Placeholder resolution
+// ---------------------------------------------------------------------------
+// Rules: `@!` followed by uppercase letters, underscores, digits; no digit at
+// start; optional trailing / for directories.
+const PLACEHOLDER_RE = /@!([A-Z][A-Z0-9_]*)(\/?)/g;
+
+/** Maps placeholder names to project-root-relative paths. */
+const PLACEHOLDER_PATHS: Record<string, string> = {
+  WRITING_GUIDE_PATH: "WRITING_GUIDE.zh-CN.md",
+};
+
+/**
+ * Replace all `@!PLACEHOLDER` occurrences in `content` with real filesystem
+ * paths.  When the package is installed inside a project's `node_modules`
+ * the paths are relative to `cwd`; for a global install they are absolute.
+ */
+function resolvePlaceholders(content: string, packageRoot: string, inNodeModules: boolean): string {
+  return content.replace(PLACEHOLDER_RE, (match, name, trailingSlash) => {
+    const relativePath = PLACEHOLDER_PATHS[name];
+    if (relativePath === undefined) {
+      console.warn(`  [warn] Unknown placeholder: @!${name}`);
+      return match;
+    }
+    // Trailing-slash consistency: directory placeholders must end with `/`,
+    // file placeholders must not.
+    const isDir = relativePath.endsWith("/") || relativePath.endsWith("\\");
+    if (!!trailingSlash !== isDir) {
+      console.warn(
+        `  [warn] Placeholder @!${name} trailing-slash mismatch ` +
+          `(${isDir ? "directory" : "file"} path) — left unchanged`,
+      );
+      return match;
+    }
+    const absolute = path.resolve(packageRoot, relativePath);
+    const resolved = inNodeModules ? path.relative(process.cwd(), absolute) : absolute;
+    return `@${resolved}`;
+  });
+}
+
+/**
+ * Recursively copy a skill directory tree, replacing `@!PLACEHOLDER` tokens in
+ * `.md` (and `.yaml`/`.yml`) files.
+ */
+async function copySkillTree(
+  srcDir: string,
+  destDir: string,
+  packageRoot: string,
+  inNodeModules: boolean,
+): Promise<void> {
+  await mkdir(destDir, { recursive: true });
+  const entries = await readdir(srcDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(srcDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
+    if (entry.isDirectory()) {
+      await copySkillTree(srcPath, destPath, packageRoot, inNodeModules);
+    } else {
+      const ext = path.extname(entry.name).toLowerCase();
+      if (ext === ".md" || ext === ".yaml" || ext === ".yml") {
+        const raw = await readFile(srcPath, "utf-8");
+        await writeFile(destPath, resolvePlaceholders(raw, packageRoot, inNodeModules), "utf-8");
+      } else {
+        await cp(srcPath, destPath);
+      }
+    }
+  }
 }
 
 const AGENTS: AgentConfig[] = [
@@ -117,6 +186,13 @@ export async function skillsCommand(): Promise<void> {
     return;
   }
 
+  // Determine install type for path resolution.
+  // If the package root is cwd or a subdirectory of cwd → relative paths.
+  // Otherwise (e.g. global install) → absolute paths.
+  const packageRoot = path.resolve(cliDir, "../../..");
+  const relFromCwd = path.relative(process.cwd(), packageRoot);
+  const inNodeModules = !relFromCwd.startsWith("..") && !path.isAbsolute(relFromCwd);
+
   // Copy all skills to each target
   for (const { agent, dir: targetDir } of targets) {
     console.log(`\n[${agent}]`);
@@ -124,7 +200,7 @@ export async function skillsCommand(): Promise<void> {
       const src = path.join(skillsDir, skillName);
       const dest = path.join(targetDir, skillName);
       console.log(`  Copying "${skillName}"...`);
-      await cp(src, dest, { recursive: true });
+      await copySkillTree(src, dest, packageRoot, inNodeModules);
     }
   }
 
