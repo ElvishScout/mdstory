@@ -174,7 +174,7 @@ assets:
 {{linebreak 3}} ← 三个空行
 ```
 
-空行输出会根据渲染器自适应：Markdown 输出中为 `\n`，HTML 输出中为 `<br>`。
+在终端和 HTML 输出中都产生 `<br>` 换行。
 
 ### CLI
 

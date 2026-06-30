@@ -174,7 +174,7 @@ Hooks with return values support both sync and `async`. `globals()` receives no 
 {{linebreak 3}} ← three blank lines
 ```
 
-Line breaks are renderer-aware: `\n` in Markdown output, `<br>` in HTML output.
+Produces a line break (`<br>`) in both terminal and HTML output.
 
 ### CLI
 
