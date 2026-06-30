@@ -97,6 +97,11 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   const scripts: ScriptBlock[] = [];
   const styleRanges: [number, number][] = [];
 
+  // Track seen IDs across all headings so duplicates are caught immediately.
+  let chapterId: string | null = null;
+  const chapterIdSet = new Set<string>();
+  const fullSceneIdSet = new Set<string>();
+
   tokens.forEach((token, i) => {
     if (token.type === "front_matter" && token.meta) {
       const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
@@ -121,26 +126,18 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
         throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
       }
 
-      {
-        let chapterId = null;
-        const chapterIdSet = new Set<string>();
-        const fullSceneIdSet = new Set<string>();
-
-        for (const heading of headings) {
-          if (heading.tag === "h2") {
-            if (chapterIdSet.has(heading.id)) {
-              throw new Error(`Duplicated chapter id found: ${heading.id}`);
-            }
-            chapterId = heading.id;
-            chapterIdSet.add(chapterId);
-          } else if (heading.tag === "h3") {
-            const fullSceneId = `${chapterId ?? ""}.${heading.id}`;
-            if (fullSceneIdSet.has(fullSceneId)) {
-              throw new Error(`Duplicated scene id found: ${fullSceneId}`);
-            }
-            fullSceneIdSet.add(fullSceneId);
-          }
+      if (token.tag === "h2") {
+        if (chapterIdSet.has(id)) {
+          throw new Error(`Duplicated chapter id found: ${id}`);
         }
+        chapterId = id;
+        chapterIdSet.add(id);
+      } else if (token.tag === "h3") {
+        const fullSceneId = `${chapterId ?? ""}.${id}`;
+        if (fullSceneIdSet.has(fullSceneId)) {
+          throw new Error(`Duplicated scene id found: ${fullSceneId}`);
+        }
+        fullSceneIdSet.add(fullSceneId);
       }
 
       headings.push({ tag: token.tag as "h1" | "h2" | "h3", id, title, lineno: token.map[0] });
