@@ -48,15 +48,19 @@ export async function skillsCommand(): Promise<void> {
   console.log(`Found ${skillNames.length} skill(s): ${skillNames.join(", ")}\n`);
 
   // Step 1: Choose target agents (multi-select)
+  const CUSTOM_KEY = "__custom__";
   const { agentNames } = await inquirer.prompt<{ agentNames: string[] }>([
     {
       type: "checkbox",
       name: "agentNames",
       message: "Select target coding agents",
-      choices: AGENTS.map((a) => ({ name: a.name, value: a.name })),
+      choices: [
+        ...AGENTS.map((a) => ({ name: a.name, value: a.name })),
+        { name: "Custom directory…", value: CUSTOM_KEY },
+      ],
       validate: (input: string[]) => {
         if (!input.length) {
-          return "Select at least one agent";
+          return "Select at least one agent or custom directory";
         }
         return true;
       },
@@ -64,12 +68,35 @@ export async function skillsCommand(): Promise<void> {
   ]);
 
   const selectedAgents = AGENTS.filter((a) => agentNames.includes(a.name));
+  const useCustom = agentNames.includes(CUSTOM_KEY);
 
-  // Step 2: Confirm
+  // Step 2: If custom selected, ask for directory
+  let customDir = "";
+  if (useCustom) {
+    const answer = await inquirer.prompt<{ customDir: string }>([
+      {
+        type: "input",
+        name: "customDir",
+        message: "Enter custom directory path:",
+        validate: (input: string) => {
+          if (!input.trim()) {
+            return "Directory path cannot be empty";
+          }
+          return true;
+        },
+      },
+    ]);
+    customDir = path.resolve(process.cwd(), answer.customDir.trim());
+  }
+
+  // Step 3: Confirm
   const targets = selectedAgents.map((a) => {
     const dir = path.resolve(process.cwd(), a.projectDir);
     return { agent: a.name, dir };
   });
+  if (useCustom) {
+    targets.push({ agent: "Custom", dir: customDir });
+  }
 
   console.log(`\nWill copy ${skillNames.length} skill(s) to:`);
   for (const t of targets) {
