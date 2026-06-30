@@ -17,6 +17,7 @@
     "./types",
     "./html-template/dist",
     "./skills",
+    "./examples/compact",
     "./README*.md",
     "./WRITING_GUIDE*.md"
   ],
