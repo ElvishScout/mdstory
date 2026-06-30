@@ -96,6 +96,14 @@
 
 ### 女仆咖啡厅 {#maid-cafe}
 
+<script>
+  export default {
+    onEnter({ globals }) {
+      globals.flags.festivalProject = "女仆咖啡厅";
+    },
+  };
+</script>
+
 "女仆咖啡厅感觉不错。"
 
 "我也觉得！"林雪的眼睛亮了，"我看过上届的照片，他们做得特别用心。而且——"她压低声音，像说秘密一样凑近了一点，"我可以负责做甜点。我最近在学烘焙，戚风蛋糕已经做得不错了。"
