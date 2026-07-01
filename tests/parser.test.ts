@@ -144,6 +144,55 @@ describe("parseStorySource", () => {
       expect(r.metadata.title).toBe("YAML Title");
       expect(r.title).toBe("H1 Title");
     });
+
+    it("filters YAML handshake from story template (no h1)", async () => {
+      // Regression: frontmatter lines leaked into the story template because
+      // they were never added to the ignored-lines set.
+      const src = [
+        "---",
+        "title: Test",
+        "globals:",
+        "  score: 0",
+        "---",
+        "",
+        "### Scene 1 {#s1}",
+        "Scene body.",
+      ].join("\n");
+      const r = await parse(src);
+      expect(r.template).toBe("");
+      expect(r.metadata.title).toBe("Test");
+      expect(r.metadata.globals).toEqual({ score: 0 });
+      expect(r.chapters[0].scenes[0].template).toContain("Scene body.");
+    });
+
+    it("filters YAML handshake from story template with h3 only", async () => {
+      // Similar to html-template/placeholder.md: frontmatter then h3, no h1.
+      const src = [
+        "---",
+        "title: MdStory",
+        "globals:",
+        "  flags: {}",
+        "---",
+        "",
+        "### 📖 MdStory",
+        "",
+        "<script>",
+        "export default { view() { return {}; } };",
+        "</script>",
+        "",
+        "Your story JSON is not yet injected.",
+      ].join("\n");
+      const r = await parse(src);
+      // Template must NOT contain any frontmatter content
+      expect(r.template).not.toContain("title:");
+      expect(r.template).not.toContain("globals:");
+      expect(r.template).not.toContain("flags:");
+      expect(r.template).not.toContain("---");
+      expect(r.metadata.title).toBe("MdStory");
+      expect(r.chapters).toHaveLength(1);
+      expect(r.chapters[0].scenes[0].title).toBe("📖 MdStory");
+      expect(r.chapters[0].scenes[0].template).toContain("Your story JSON is not yet injected.");
+    });
   });
 
   // -- heading hierarchy -----------------------------------------------------

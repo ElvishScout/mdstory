@@ -96,6 +96,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   const headings: Heading[] = [];
   const scripts: ScriptBlock[] = [];
   const styleRanges: [number, number][] = [];
+  const frontMatterRanges: [number, number][] = [];
 
   // Track seen IDs across all headings so duplicates are caught immediately.
   let chapterId: string | null = null;
@@ -106,6 +107,9 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     if (token.type === "front_matter" && token.meta) {
       const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
       Object.assign(metadata, frontMatter);
+      if (token.map) {
+        frontMatterRanges.push([token.map[0], token.map[1]]);
+      }
     } else if (
       token.type === "heading_open" &&
       ["h1", "h2", "h3"].includes(token.tag) &&
@@ -164,7 +168,11 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
 
   // Collect all script ranges and style ranges into a set for filtering
   const ignoredLines = new Set<number>();
-  for (const [from, to] of [...scripts.map(({ from, to }) => [from, to] as [number, number]), ...styleRanges]) {
+  for (const [from, to] of [
+    ...scripts.map(({ from, to }) => [from, to] as [number, number]),
+    ...styleRanges,
+    ...frontMatterRanges,
+  ]) {
     for (let i = from; i < to; i++) ignoredLines.add(i);
   }
 
