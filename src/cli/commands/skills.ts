@@ -39,8 +39,7 @@ function resolvePlaceholders(content: string, packageRoot: string, isRelative: b
     const absolute = path.resolve(packageRoot, relativePath);
 
     let resolved = isRelative ? path.relative(process.cwd(), absolute) : absolute;
-    resolved ||= ".";
-
+    resolved = path.normalize(resolved).replace(/\\/g, "/").replace(/\/$/, "");
     return `@${resolved}`;
   });
 }
