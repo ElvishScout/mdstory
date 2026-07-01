@@ -67,6 +67,51 @@ npx mdstory play story.md
 npx mdstory build story.md
 ```
 
+## CLI
+
+```bash
+# 在终端中交互式游玩故事
+npx mdstory play my-story.md
+
+# 带调试输出游玩
+npx mdstory play my-story.md --debug
+
+# 生成独立 HTML 文件并在浏览器中打开
+npx mdstory build my-story.md
+
+# 构建到指定输出路径
+npx mdstory build my-story.md -o dist/story.html
+
+# 构建但不自动打开浏览器
+npx mdstory build my-story.md --no-open
+
+# 构建并在浏览器控制台输出调试信息
+npx mdstory build my-story.md --debug
+
+# 将 MdStory 写作 skill 安装到 coding agent
+npx mdstory skills
+
+# 安装到指定 agent（非交互模式）
+npx mdstory skills --agent claude
+npx mdstory skills --agent claude --agent codex
+
+# 安装到自定义目录
+npx mdstory skills --dir ./my-skills
+
+# 跳过确认提示
+npx mdstory skills --agent claude --yes
+```
+
+## Skills
+
+安装 skill 后，在 coding agent 中使用 `/mdstory-write` 创建互动故事：
+
+```
+/mdstory-write 写一个发生在废弃空间站上的悬疑故事。玩家发现船员失踪的线索。包含 3 个章节和多个结局。
+```
+
+agent 会设计故事结构、逐章编写、执行检查清单，并交付完整可玩的故事。
+
 ## 指南
 
 ### 故事结构
@@ -254,41 +299,6 @@ assets:
 ```
 
 在终端和 HTML 输出中均产生 `<br>` 换行。
-
-## CLI
-
-```bash
-# 在终端中交互式游玩故事
-npx mdstory play my-story.md
-
-# 带调试输出游玩
-npx mdstory play my-story.md --debug
-
-# 生成独立 HTML 文件并在浏览器中打开
-npx mdstory build my-story.md
-
-# 构建到指定输出路径
-npx mdstory build my-story.md -o dist/story.html
-
-# 构建但不自动打开浏览器
-npx mdstory build my-story.md --no-open
-
-# 构建并在浏览器控制台输出调试信息
-npx mdstory build my-story.md --debug
-
-# 将 MdStory 写作技能安装到编码智能体
-npx mdstory skills
-
-# 安装到指定智能体（非交互模式）
-npx mdstory skills --agent claude
-npx mdstory skills --agent claude --agent codex
-
-# 安装到自定义目录
-npx mdstory skills --dir ./my-skills
-
-# 跳过确认提示
-npx mdstory skills --agent claude --yes
-```
 
 ## 更多资源
 

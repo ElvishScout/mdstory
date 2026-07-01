@@ -67,6 +67,51 @@ Or build a standalone HTML file:
 npx mdstory build story.md
 ```
 
+## CLI
+
+```bash
+# Play a story in the terminal
+npx mdstory play my-story.md
+
+# Play with debug output
+npx mdstory play my-story.md --debug
+
+# Build a standalone HTML file and open in browser
+npx mdstory build my-story.md
+
+# Build to a specific output path
+npx mdstory build my-story.md -o dist/story.html
+
+# Build without opening browser
+npx mdstory build my-story.md --no-open
+
+# Build with debug output in browser console
+npx mdstory build my-story.md --debug
+
+# Install MdStory writing skills to coding agents
+npx mdstory skills
+
+# Install to specific agents (non-interactive)
+npx mdstory skills --agent claude
+npx mdstory skills --agent claude --agent codex
+
+# Install to a custom directory
+npx mdstory skills --dir ./my-skills
+
+# Skip confirmation prompt
+npx mdstory skills --agent claude --yes
+```
+
+## Skills
+
+After installing skills, use `/mdstory-write` in your coding agent to create interactive stories:
+
+```
+/mdstory-write Write a mystery set in an abandoned space station. The player discovers clues about what happened to the crew. Include 3 chapters with multiple endings.
+```
+
+The agent will design the structure, write each chapter, run validation checks, and deliver a complete playable story.
+
 ## Guide
 
 ### Story Structure
@@ -254,41 +299,6 @@ Includes are resolved relative to the file that contains them. For custom includ
 ```
 
 Produces `<br>` in both terminal and HTML output.
-
-## CLI
-
-```bash
-# Play a story in the terminal
-npx mdstory play my-story.md
-
-# Play with debug output
-npx mdstory play my-story.md --debug
-
-# Build a standalone HTML file and open in browser
-npx mdstory build my-story.md
-
-# Build to a specific output path
-npx mdstory build my-story.md -o dist/story.html
-
-# Build without opening browser
-npx mdstory build my-story.md --no-open
-
-# Build with debug output in browser console
-npx mdstory build my-story.md --debug
-
-# Install MdStory writing skills to coding agents
-npx mdstory skills
-
-# Install to specific agents (non-interactive)
-npx mdstory skills --agent claude
-npx mdstory skills --agent claude --agent codex
-
-# Install to a custom directory
-npx mdstory skills --dir ./my-skills
-
-# Skip confirmation prompt
-npx mdstory skills --agent claude --yes
-```
 
 ## More Resources
 
