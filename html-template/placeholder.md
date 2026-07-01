@@ -6,6 +6,14 @@ globals:
   reputation: 0
 ---
 
+<style>
+  h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1.33;
+  }
+</style>
+
 ### 📖 MdStory
 
 <script>
