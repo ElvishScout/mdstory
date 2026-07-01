@@ -1,13 +1,13 @@
 import { Scene } from "./scene.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
-import type { ChapterHooks, Scope, Asset, ChapterInit, DEFAULT_CHAPTER } from "./definitions.js";
+import type { ChapterHooks, Scope, Asset, ChapterInit } from "./definitions.js";
 import type { ParsedChapter } from "./parser.js";
 import { mergeScripts } from "./utils.js";
 
 /** A chapter grouping scenes with shared hooks and local variables. */
 export class Chapter {
-  id: string | typeof DEFAULT_CHAPTER;
+  id: string;
   title: string;
   template: string;
   hooks: ChapterHooks;

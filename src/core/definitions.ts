@@ -62,7 +62,7 @@ export type SceneHooks = {
 };
 
 /** Symbol key for the implicit default chapter holding orphan scenes. */
-export const DEFAULT_CHAPTER = Symbol("default");
+export const DEFAULT_CHAPTER = "__DEFAULT_CHAPTER__";
 
 /** Structured representation of a scene's content. */
 export type SceneInit = {
@@ -74,7 +74,7 @@ export type SceneInit = {
 
 /** Structured representation of a chapter. */
 export type ChapterInit = {
-  id: string | typeof DEFAULT_CHAPTER;
+  id: string;
   title?: string;
   template?: string;
   hooks?: ChapterHooks;

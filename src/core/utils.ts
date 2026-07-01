@@ -1,5 +1,3 @@
-import { DEFAULT_CHAPTER } from "./definitions.js";
-
 function dynamicImport(specifier: string) {
   return import(/* @vite-ignore */ specifier) as Promise<any>;
 }
@@ -20,11 +18,10 @@ function isUrl(path: string) {
   return /^https?:\/\//.test(path);
 }
 
-function getScriptModuleId(index: number, chapterId?: string | typeof DEFAULT_CHAPTER, sceneId?: string) {
+function getScriptModuleId(index: number, chapterId?: string, sceneId?: string) {
   let moduleId = "story";
   if (chapterId) {
-    const chapterIdStr = chapterId === DEFAULT_CHAPTER ? "" : chapterId;
-    moduleId += `.chapter.${chapterIdStr}`;
+    moduleId += `.chapter.${chapterId}`;
   }
   if (sceneId) {
     moduleId += `.scene.${sceneId}`;
@@ -45,7 +42,7 @@ async function importScriptModule(script: string, id?: string) {
   return module.default ?? {};
 }
 
-export async function mergeScripts(scripts: string[], chapterId?: string | typeof DEFAULT_CHAPTER, sceneId?: string) {
+export async function mergeScripts(scripts: string[], chapterId?: string, sceneId?: string) {
   const modules = await Promise.all(
     scripts.map(async (script, i) => {
       const moduelId = getScriptModuleId(i, chapterId, sceneId);

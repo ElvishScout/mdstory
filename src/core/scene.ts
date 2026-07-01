@@ -1,4 +1,4 @@
-import type { SceneHooks, Scope, Asset, SceneInit, DEFAULT_CHAPTER } from "./definitions.js";
+import type { SceneHooks, Scope, Asset, SceneInit } from "./definitions.js";
 import type { ParsedScene } from "./parser.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
@@ -20,7 +20,7 @@ export class Scene {
     this.hooks = hooks ?? {};
   }
 
-  static async fromParsed(scene: ParsedScene, chapterId: string | typeof DEFAULT_CHAPTER) {
+  static async fromParsed(scene: ParsedScene, chapterId: string) {
     return new Scene({
       id: scene.id,
       title: scene.title,

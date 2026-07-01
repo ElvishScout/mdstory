@@ -26,7 +26,7 @@ export type ParsedScene = {
 };
 
 export type ParsedChapter = {
-  id: string | typeof DEFAULT_CHAPTER;
+  id: string;
   title: string;
   template: string;
   scripts: string[];
