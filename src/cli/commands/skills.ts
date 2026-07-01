@@ -108,7 +108,8 @@ export interface SkillsOptions {
 
 export async function skillsCommand(options: SkillsOptions = {}): Promise<void> {
   const cliDir = path.dirname(fileURLToPath(import.meta.url));
-  const skillsDir = path.resolve(cliDir, "../../../skills");
+  const packageRoot = path.resolve(cliDir, "../../../");
+  const skillsDir = path.join(packageRoot, "skills");
 
   // Discover available skills (each subdirectory under skills/ is a skill)
   const entries = await readdir(skillsDir, { withFileTypes: true });
@@ -137,9 +138,7 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
         if (found) {
           selectedAgents.push(found);
         } else {
-          console.error(`Unknown agent: "${name}"`);
-          console.error(`  Available agents: ${AGENTS.map((a) => a.name).join(", ")}`);
-          process.exit(1);
+          throw new Error(`Unknown agent: "${name}". Available agents: ${AGENTS.map((a) => a.name).join(", ")}`);
         }
       }
     }
@@ -150,8 +149,7 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
     }
 
     if (!selectedAgents.length && !useCustom) {
-      console.error("No target agents or directories specified.");
-      process.exit(1);
+      throw new Error("No target agents or directories specified.");
     }
   } else {
     // ---- Interactive agent selection ----
@@ -230,7 +228,6 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
   // Determine install type for path resolution.
   // If the package root is cwd or a subdirectory of cwd → relative paths.
   // Otherwise (e.g. global install) → absolute paths.
-  const packageRoot = path.resolve(cliDir, "../../..");
   const relFromCwd = path.relative(process.cwd(), packageRoot);
   const inNodeModules = !relFromCwd.startsWith("..") && !path.isAbsolute(relFromCwd);
 

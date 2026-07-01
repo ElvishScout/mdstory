@@ -99,68 +99,72 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   const frontMatterRanges: [number, number][] = [];
 
   // Track seen IDs across all headings so duplicates are caught immediately.
-  let chapterId: string | null = null;
-  const chapterIdSet = new Set<string>();
-  const fullSceneIdSet = new Set<string>();
+  // The chapter-id state is scoped tightly — it is only valid during the token
+  // pass below and must not be read after the forEach completes.
+  {
+    let chapterId: string | null = null;
+    const chapterIdSet = new Set<string>();
+    const fullSceneIdSet = new Set<string>();
 
-  tokens.forEach((token, i) => {
-    if (token.type === "front_matter" && token.meta) {
-      const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
-      Object.assign(metadata, frontMatter);
-      if (token.map) {
-        frontMatterRanges.push([token.map[0], token.map[1]]);
-      }
-    } else if (
-      token.type === "heading_open" &&
-      ["h1", "h2", "h3"].includes(token.tag) &&
-      token.level === 0 &&
-      token.map
-    ) {
-      let id = token.attrGet("id");
-      let title = "";
-      const nextToken = tokens[i + 1];
-      if (nextToken && nextToken.type === "inline") {
-        const content = nextToken.content.trim();
-        title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
-        id ||= title;
-      }
+    tokens.forEach((token, i) => {
+      if (token.type === "front_matter" && token.meta) {
+        const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
+        Object.assign(metadata, frontMatter);
+        if (token.map) {
+          frontMatterRanges.push([token.map[0], token.map[1]]);
+        }
+      } else if (
+        token.type === "heading_open" &&
+        ["h1", "h2", "h3"].includes(token.tag) &&
+        token.level === 0 &&
+        token.map
+      ) {
+        let id = token.attrGet("id");
+        let title = "";
+        const nextToken = tokens[i + 1];
+        if (nextToken && nextToken.type === "inline") {
+          const content = nextToken.content.trim();
+          title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
+          id ||= title;
+        }
 
-      id ||= nanoid();
-      if (id.includes(".")) {
-        throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
-      }
+        id ||= nanoid();
+        if (id.includes(".")) {
+          throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
+        }
 
-      if (token.tag === "h2") {
-        if (chapterIdSet.has(id)) {
-          throw new Error(`Duplicated chapter id found: ${id}`);
+        if (token.tag === "h2") {
+          if (chapterIdSet.has(id)) {
+            throw new Error(`Duplicated chapter id found: ${id}`);
+          }
+          chapterId = id;
+          chapterIdSet.add(id);
+        } else if (token.tag === "h3") {
+          const fullSceneId = `${chapterId ?? ""}.${id}`;
+          if (fullSceneIdSet.has(fullSceneId)) {
+            throw new Error(`Duplicated scene id found: ${fullSceneId}`);
+          }
+          fullSceneIdSet.add(fullSceneId);
         }
-        chapterId = id;
-        chapterIdSet.add(id);
-      } else if (token.tag === "h3") {
-        const fullSceneId = `${chapterId ?? ""}.${id}`;
-        if (fullSceneIdSet.has(fullSceneId)) {
-          throw new Error(`Duplicated scene id found: ${fullSceneId}`);
-        }
-        fullSceneIdSet.add(fullSceneId);
-      }
 
-      headings.push({ tag: token.tag as "h1" | "h2" | "h3", id, title, lineno: token.map[0] });
-    } else if (token.type === "html_block" && token.map) {
-      let match;
-      if ((match = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content))) {
-        const script = match[1].trim();
-        if (script) {
-          scripts.push({ from: token.map[0], to: token.map[1], content: script });
-        }
-      } else if ((match = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content))) {
-        const style = match[1].trim();
-        if (style) {
-          stylesheet += style;
-          styleRanges.push(token.map);
+        headings.push({ tag: token.tag as "h1" | "h2" | "h3", id, title, lineno: token.map[0] });
+      } else if (token.type === "html_block" && token.map) {
+        let match;
+        if ((match = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content))) {
+          const script = match[1].trim();
+          if (script) {
+            scripts.push({ from: token.map[0], to: token.map[1], content: script });
+          }
+        } else if ((match = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content))) {
+          const style = match[1].trim();
+          if (style) {
+            stylesheet += style;
+            styleRanges.push(token.map);
+          }
         }
       }
-    }
-  });
+    });
+  }
 
   const storyHeading = headings.find((h) => h.tag === "h1");
   const chapterHeadings = headings.filter((h) => h.tag === "h2");
