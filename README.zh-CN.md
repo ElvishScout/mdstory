@@ -12,12 +12,6 @@
 npm install @elvishscout/mdstory
 ```
 
-或直接运行：
-
-```bash
-npx mdstory play my-story.md
-```
-
 ## 快速开始
 
 MdStory 文件是一个 Markdown 文档，使用三级标题结构——`#` 故事、`##` 章节、`###` 场景：
@@ -65,6 +59,12 @@ title: 岔路口
 
 ```bash
 npx mdstory play story.md
+```
+
+或构建为独立 HTML 文件：
+
+```bash
+npx mdstory build story.md
 ```
 
 ## 指南
@@ -278,6 +278,16 @@ npx mdstory build my-story.md --debug
 
 # 将 MdStory 写作技能安装到编码智能体
 npx mdstory skills
+
+# 安装到指定智能体（非交互模式）
+npx mdstory skills --agent claude
+npx mdstory skills --agent claude --agent codex
+
+# 安装到自定义目录
+npx mdstory skills --dir ./my-skills
+
+# 跳过确认提示
+npx mdstory skills --agent claude --yes
 ```
 
 ## 更多资源

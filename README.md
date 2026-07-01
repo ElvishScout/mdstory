@@ -12,12 +12,6 @@ Online demo: <https://mdstory.elvish.cc>
 npm install @elvishscout/mdstory
 ```
 
-Or run directly:
-
-```bash
-npx mdstory play my-story.md
-```
-
 ## Quick Start
 
 An MdStory file is a Markdown document with three heading levels — `#` story, `##` chapter, `###` scene:
@@ -65,6 +59,12 @@ Save as `story.md` and run:
 
 ```bash
 npx mdstory play story.md
+```
+
+Or build a standalone HTML file:
+
+```bash
+npx mdstory build story.md
 ```
 
 ## Guide
@@ -278,6 +278,16 @@ npx mdstory build my-story.md --debug
 
 # Install MdStory writing skills to coding agents
 npx mdstory skills
+
+# Install to specific agents (non-interactive)
+npx mdstory skills --agent claude
+npx mdstory skills --agent claude --agent codex
+
+# Install to a custom directory
+npx mdstory skills --dir ./my-skills
+
+# Skip confirmation prompt
+npx mdstory skills --agent claude --yes
 ```
 
 ## More Resources
