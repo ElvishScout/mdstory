@@ -6,11 +6,7 @@ globals:
   reputation: 0
 ---
 
-#
-
-## 📖 MdStory
-
-###
+### 📖 MdStory
 
 <script>
   export default {
