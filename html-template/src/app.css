@@ -1,58 +1,60 @@
 @import "tailwindcss";
 
-* {
-  @apply outline-none;
-}
+@layer custom {
+  * {
+    @apply outline-none;
+  }
 
-:root {
-  @apply font-serif bg-white selection:bg-red-500/20;
-}
+  :root {
+    @apply font-serif bg-white selection:bg-red-500/20;
+  }
 
-body {
-  @apply overflow-auto;
-}
+  body {
+    @apply overflow-auto;
+  }
 
-.scene-form {
-  @apply text-lg space-y-2;
-}
+  .scene-form {
+    @apply text-lg space-y-2;
+  }
 
-.scene-form h1 {
-  @apply mb-8 text-3xl text-center;
-}
+  .scene-form h1 {
+    @apply mb-8 text-3xl text-center;
+  }
 
-.scene-form h2 {
-  @apply mb-6 text-2xl;
-}
+  .scene-form h2 {
+    @apply mb-6 text-2xl;
+  }
 
-.scene-form h3 {
-  @apply mb-4 text-xl;
-}
+  .scene-form h3 {
+    @apply mb-4 text-xl;
+  }
 
-.scene-form pre {
-  @apply w-fit max-w-full px-4 py-2.5 border border-red-200 bg-red-100 rounded-md font-mono overflow-auto;
-}
+  .scene-form pre {
+    @apply w-fit max-w-full px-4 py-2.5 border border-red-200 bg-red-100 rounded-md font-mono overflow-auto;
+  }
 
-.scene-form code {
-  @apply bg-red-100 px-1.5 py-0.5 rounded font-mono;
-}
+  .scene-form code {
+    @apply bg-red-100 px-1.5 py-0.5 rounded font-mono;
+  }
 
-.scene-form pre code {
-  @apply bg-inherit p-0 py-0 rounded-none;
-}
+  .scene-form pre code {
+    @apply bg-inherit p-0 py-0 rounded-none;
+  }
 
-.scene-form blockquote {
-  @apply w-fit px-4 py-2.5 bg-red-100 border-l-4 border-red-600 rounded-md;
-}
+  .scene-form blockquote {
+    @apply w-fit px-4 py-2.5 bg-red-100 border-l-4 border-red-600 rounded-md;
+  }
 
-.scene-form button {
-  @apply mx-0.5 text-red-600 underline cursor-pointer;
-}
-.scene-form button:hover:not(:disabled) {
-  @apply text-red-400;
-}
-.scene-form button:active:not(:disabled) {
-  @apply text-red-300;
-}
-.scene-form button:disabled {
-  @apply text-red-600 cursor-default;
+  .scene-form button {
+    @apply mx-0.5 text-red-600 underline cursor-pointer;
+  }
+  .scene-form button:hover:not(:disabled) {
+    @apply text-red-400;
+  }
+  .scene-form button:active:not(:disabled) {
+    @apply text-red-300;
+  }
+  .scene-form button:disabled {
+    @apply text-red-600 cursor-default;
+  }
 }
