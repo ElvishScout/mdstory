@@ -49,9 +49,16 @@ program
 program
   .command("skills")
   .description("Install MdStory skills to a coding agent (Claude Code, Codex, etc.)")
-  .action(async () => {
+  .option("-a, --agent <name>", "Target agent (repeatable)", (v: string, prev: string[]) => [...(prev ?? []), v], [])
+  .option("-d, --dir <path>", "Custom target directory")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .action(async (options) => {
     try {
-      await skillsCommand();
+      await skillsCommand({
+        agents: options.agent,
+        dir: options.dir,
+        yes: options.yes ?? false,
+      });
     } catch (err) {
       if (err instanceof Error && err.name === "ExitPromptError") {
         process.exit(0);

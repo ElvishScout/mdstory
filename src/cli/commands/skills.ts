@@ -4,9 +4,12 @@ import { fileURLToPath } from "node:url";
 import inquirer from "inquirer";
 
 interface AgentConfig {
+  /** CLI tool name used for identification (e.g. "claude", "codex") */
   name: string;
+  /** Human-readable display label (e.g. "Claude Code", "OpenAI Codex") */
+  label: string;
   /** Project-level skills directory (relative to cwd) */
-  projectDir: string;
+  dir: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,28 +71,42 @@ async function copySkillTree(srcDir: string, destDir: string, packageRoot: strin
 
 const AGENTS: AgentConfig[] = [
   {
-    name: "Claude Code",
-    projectDir: ".claude/skills",
+    name: "claude",
+    label: "Claude Code",
+    dir: ".claude/skills",
   },
   {
-    name: "OpenAI Codex",
-    projectDir: ".codex/skills",
+    name: "codex",
+    label: "OpenAI Codex",
+    dir: ".codex/skills",
   },
   {
-    name: "Open Code",
-    projectDir: ".open-code/skills",
+    name: "opencode",
+    label: "Open Code",
+    dir: ".open-code/skills",
   },
   {
-    name: "Cline",
-    projectDir: ".cline/skills",
+    name: "cline",
+    label: "Cline",
+    dir: ".cline/skills",
   },
   {
-    name: "Cursor",
-    projectDir: ".cursor/skills",
+    name: "cursor",
+    label: "Cursor",
+    dir: ".cursor/skills",
   },
 ];
 
-export async function skillsCommand(): Promise<void> {
+export interface SkillsOptions {
+  /** Pre-selected agent names (bypasses interactive agent selection). */
+  agents?: string[];
+  /** Custom target directory (bypasses interactive custom-dir prompt). */
+  dir?: string;
+  /** Skip the final confirmation prompt. */
+  yes?: boolean;
+}
+
+export async function skillsCommand(options: SkillsOptions = {}): Promise<void> {
   const cliDir = path.dirname(fileURLToPath(import.meta.url));
   const skillsDir = path.resolve(cliDir, "../../../skills");
 
@@ -104,52 +121,85 @@ export async function skillsCommand(): Promise<void> {
 
   console.log(`Found ${skillNames.length} skill(s): ${skillNames.join(", ")}\n`);
 
-  // Step 1: Choose target agents (multi-select)
-  const CUSTOM_KEY = "__custom__";
-  const { agentNames } = await inquirer.prompt<{ agentNames: string[] }>([
-    {
-      type: "checkbox",
-      name: "agentNames",
-      message: "Select target coding agents",
-      choices: [
-        ...AGENTS.map((a) => ({ name: a.name, value: a.name })),
-        { name: "Custom directory…", value: CUSTOM_KEY },
-      ],
-      validate: (input: string[]) => {
-        if (!input.length) {
-          return "Select at least one agent or custom directory";
-        }
-        return true;
-      },
-    },
-  ]);
+  const hasCliAgents = options.agents && options.agents.length > 0;
+  const hasCliDir = !!options.dir;
 
-  const selectedAgents = AGENTS.filter((a) => agentNames.includes(a.name));
-  const useCustom = agentNames.includes(CUSTOM_KEY);
-
-  // Step 2: If custom selected, ask for directory
+  // ---- Non-interactive agent selection (CLI args) ----
+  let selectedAgents: AgentConfig[] = [];
+  let useCustom = false;
   let customDir = "";
-  if (useCustom) {
-    const answer = await inquirer.prompt<{ customDir: string }>([
+
+  if (hasCliAgents || hasCliDir) {
+    // Resolve agent names
+    if (hasCliAgents) {
+      for (const name of options.agents!) {
+        const found = AGENTS.find((a) => a.name === name);
+        if (found) {
+          selectedAgents.push(found);
+        } else {
+          console.error(`Unknown agent: "${name}"`);
+          console.error(`  Available agents: ${AGENTS.map((a) => a.name).join(", ")}`);
+          process.exit(1);
+        }
+      }
+    }
+
+    if (hasCliDir) {
+      useCustom = true;
+      customDir = path.resolve(process.cwd(), options.dir!);
+    }
+
+    if (!selectedAgents.length && !useCustom) {
+      console.error("No target agents or directories specified.");
+      process.exit(1);
+    }
+  } else {
+    // ---- Interactive agent selection ----
+    const CUSTOM_KEY = "__custom__";
+    const { agentNames } = await inquirer.prompt<{ agentNames: string[] }>([
       {
-        type: "input",
-        name: "customDir",
-        message: "Enter custom directory path:",
-        validate: (input: string) => {
-          if (!input.trim()) {
-            return "Directory path cannot be empty";
+        type: "checkbox",
+        name: "agentNames",
+        message: "Select target coding agents",
+        choices: [
+          ...AGENTS.map((a) => ({ name: a.label, value: a.name })),
+          { name: "Custom directory…", value: CUSTOM_KEY },
+        ],
+        validate: (input: string[]) => {
+          if (!input.length) {
+            return "Select at least one agent or custom directory";
           }
           return true;
         },
       },
     ]);
-    customDir = path.resolve(process.cwd(), answer.customDir.trim());
+
+    selectedAgents = AGENTS.filter((a) => agentNames.includes(a.name));
+    useCustom = agentNames.includes(CUSTOM_KEY);
+
+    // If custom selected, ask for directory
+    if (useCustom) {
+      const answer = await inquirer.prompt<{ customDir: string }>([
+        {
+          type: "input",
+          name: "customDir",
+          message: "Enter custom directory path:",
+          validate: (input: string) => {
+            if (!input.trim()) {
+              return "Directory path cannot be empty";
+            }
+            return true;
+          },
+        },
+      ]);
+      customDir = path.resolve(process.cwd(), answer.customDir.trim());
+    }
   }
 
-  // Step 3: Confirm
+  // Build target list
   const targets = selectedAgents.map((a) => {
-    const dir = path.resolve(process.cwd(), a.projectDir);
-    return { agent: a.name, dir };
+    const dir = path.resolve(process.cwd(), a.dir);
+    return { agent: a.label, dir };
   });
   if (useCustom) {
     targets.push({ agent: "Custom", dir: customDir });
@@ -160,18 +210,21 @@ export async function skillsCommand(): Promise<void> {
     console.log(`  ${t.agent}: ${t.dir}`);
   }
 
-  const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
-    {
-      type: "confirm",
-      name: "confirmed",
-      message: "Proceed?",
-      default: true,
-    },
-  ]);
+  // ---- Confirmation ----
+  if (!options.yes) {
+    const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
+      {
+        type: "confirm",
+        name: "confirmed",
+        message: "Proceed?",
+        default: true,
+      },
+    ]);
 
-  if (!confirmed) {
-    console.log("Aborted.");
-    return;
+    if (!confirmed) {
+      console.log("Aborted.");
+      return;
+    }
   }
 
   // Determine install type for path resolution.
