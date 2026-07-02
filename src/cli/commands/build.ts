@@ -12,6 +12,10 @@ export interface BuildOptions {
   debug?: boolean;
 }
 
+function toCamelCase(str: string): string {
+  return str.replace(/[-_]([a-zA-Z])/g, (_, char: string) => char.toUpperCase());
+}
+
 function coerceValue(value: string): string | number | boolean {
   if (value === "true") {
     return true;
@@ -27,7 +31,7 @@ function coerceValue(value: string): string | number | boolean {
 }
 
 function setNested(target: Record<string, unknown>, keyPath: string, value: unknown): void {
-  const keys = keyPath.split(".");
+  const keys = keyPath.split(".").map(toCamelCase);
   let current = target;
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
