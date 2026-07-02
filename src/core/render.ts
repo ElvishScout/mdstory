@@ -4,7 +4,7 @@ import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";
 
-import type { InputType, Variable, Scope, Asset } from "./definitions.js";
+import type { InputType, Variable, Scope } from "./definitions.js";
 import { escapeHtml } from "./utils.js";
 
 type HtmlAttrs = Record<string, string | boolean | undefined>;
@@ -117,7 +117,7 @@ type Fields = {
   navs: { text: string; target: string | null }[];
 };
 
-function useHelper({ inputs, navs }: Fields, assets: Record<string, Asset>, renderer: Renderer): HelperDeclareSpec {
+function useHelper({ inputs, navs }: Fields, renderer: Renderer): HelperDeclareSpec {
   return {
     input(type: InputType, opt: HelperOptions) {
       for (const name in opt.hash) {
@@ -138,12 +138,6 @@ function useHelper({ inputs, navs }: Fields, assets: Record<string, Asset>, rend
       const result = renderer.linebreak?.({ n }) ?? "";
       return new Handlebars.SafeString(result);
     },
-    asset(name: string) {
-      return new Handlebars.SafeString(assets[name]?.url ?? "");
-    },
-    mime(name: string) {
-      return new Handlebars.SafeString(assets[name]?.mime ?? "");
-    },
   };
 }
 
@@ -151,12 +145,7 @@ function useHelper({ inputs, navs }: Fields, assets: Record<string, Asset>, rend
  * Compiles a Handlebars template with built-in helpers, optionally renders
  * through MarkdownIt, and returns the rendered text with extracted fields.
  */
-export function renderTemplate(
-  template: string,
-  scope: Scope,
-  assets: Record<string, Asset>,
-  options: RenderOptions,
-): RenderResult {
+export function renderTemplate(template: string, scope: Scope, options: RenderOptions): RenderResult {
   let resolvedRenderer: Renderer;
   if (options.renderer === "markdown") {
     resolvedRenderer = markdownRenderer;
@@ -167,7 +156,7 @@ export function renderTemplate(
   }
 
   const fields: Fields = { inputs: [], navs: [] };
-  const helpers = useHelper(fields, assets, resolvedRenderer);
+  const helpers = useHelper(fields, resolvedRenderer);
 
   let text;
   if (resolvedRenderer.html) {

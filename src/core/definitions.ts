@@ -17,7 +17,6 @@ export type Scope = JsonObject;
 export type Asset = {
   url: string;
   mime?: string;
-  alt?: string;
 };
 /** Story metadata. */
 export type Metadata = {

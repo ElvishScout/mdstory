@@ -109,7 +109,7 @@ describe("parseStorySource", () => {
       const src = ["---", "title: A", "assets:", "  bg: https://example.com/bg.png", "---", "# A"].join("\n");
       const r = await parse(src);
       expect(r.metadata.assets).toEqual({
-        bg: { url: "https://example.com/bg.png", mime: undefined },
+        bg: { url: "https://example.com/bg.png", mime: "image/png" },
       });
     });
 

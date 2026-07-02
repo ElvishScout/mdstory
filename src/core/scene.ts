@@ -1,4 +1,4 @@
-import type { SceneHooks, Scope, Asset, SceneInit } from "./definitions.js";
+import type { SceneHooks, Scope, SceneInit } from "./definitions.js";
 import type { ParsedScene } from "./parser.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
@@ -32,10 +32,9 @@ export class Scene {
   /**
    * Renders the scene content using the given scope and render options.
    * @param scope - Variables available to the Handlebars template.
-   * @param assets - Asset objects keyed by name.
    * @param options - Rendering options (format, html).
    */
-  render(scope: Scope, assets: Record<string, Asset>, options: RenderOptions): RenderResult {
-    return renderTemplate(this.template, scope, assets, options);
+  render(scope: Scope, options: RenderOptions): RenderResult {
+    return renderTemplate(this.template, scope, options);
   }
 }

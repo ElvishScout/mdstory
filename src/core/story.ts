@@ -134,8 +134,8 @@ export class Story {
   }
 
   /** Renders the story template with the given scope and render options. */
-  render(scope: Scope, assets: Record<string, Asset>, options: RenderOptions): RenderResult {
-    return renderTemplate(this.template, scope, assets, options);
+  render(scope: Scope, options: RenderOptions): RenderResult {
+    return renderTemplate(this.template, scope, options);
   }
 
   private async enterChapter(chapter: Chapter) {
@@ -174,8 +174,6 @@ export class Story {
       await this.hooks.onStart({ globals: this.globals });
     }
 
-    const assetUrlMap = Object.fromEntries(Object.entries(this.assets).map(([name, { url }]) => [name, url]));
-
     const entryChapter = this.chapters[0];
     const entryScene = entryChapter?.scenes[0];
     if (!entryChapter || !entryScene) {
@@ -210,15 +208,15 @@ export class Story {
         console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
       }
 
-      const renderContext = { ...this.globals, ...assetUrlMap, ...chapter.locals, ...sceneOverrides };
-      const renderResult = scene.render(renderContext, this.assets, options);
+      const renderContext = { ...this.assets, ...this.globals, ...chapter.locals, ...sceneOverrides };
+      const renderResult = scene.render(renderContext, options);
 
       // Prepend chapter and story templates to rendered text
       let { text } = renderResult;
       let prefix = "";
 
       if (!this._storyTitleShown) {
-        const rendered = this.render(renderContext, this.assets, options);
+        const rendered = this.render(renderContext, options);
         if (rendered.text) {
           prefix += rendered.text;
         }
@@ -226,7 +224,7 @@ export class Story {
       }
 
       if (chapter.id !== currentChapterId) {
-        const rendered = chapter.render(renderContext, this.assets, options);
+        const rendered = chapter.render(renderContext, options);
         if (rendered.text) {
           prefix += rendered.text;
         }

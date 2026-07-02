@@ -1,7 +1,7 @@
 import { Scene } from "./scene.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
-import type { ChapterHooks, Scope, Asset, ChapterInit } from "./definitions.js";
+import type { ChapterHooks, Scope, ChapterInit } from "./definitions.js";
 import type { ParsedChapter } from "./parser.js";
 import { mergeScripts } from "./utils.js";
 
@@ -34,8 +34,8 @@ export class Chapter {
   }
 
   /** Renders the chapter template with the given scope and render options. */
-  render(scope: Scope, assets: Record<string, Asset>, options: RenderOptions): RenderResult {
-    return renderTemplate(this.template, scope, assets, options);
+  render(scope: Scope, options: RenderOptions): RenderResult {
+    return renderTemplate(this.template, scope, options);
   }
 
   /** Get scene by scene id */
