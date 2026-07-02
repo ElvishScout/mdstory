@@ -52,7 +52,7 @@
 
   $effect(() => {
     const timer = setTimeout(() => {
-      story.play(prompt, { renderer: "html", debug: options.debug }).then(() => (stage = "ended"));
+      story.play(prompt, { adapter: "html", debug: options.debug }).then(() => (stage = "ended"));
       stage = "started";
     }, 200);
     return () => clearTimeout(timer);

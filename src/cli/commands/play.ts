@@ -10,5 +10,5 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
   const story = await fromPath(storyPath);
   const md = createMarkdownRenderer();
   const prompt = createPrompt(md);
-  await story.play(prompt, { renderer: "markdown", debug: options.debug });
+  await story.play(prompt, { adapter: "markdown", debug: options.debug });
 }
