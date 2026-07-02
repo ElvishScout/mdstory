@@ -31,12 +31,14 @@ program
   .description("Generate a complete HTML page from a story and open it in the browser")
   .argument("<story>", "Path to the story .md file")
   .option("-o, --output <path>", "Output HTML file path")
+  .option("-t, --template <name>", 'Template to use (default: "default", or path to custom .html file)')
   .option("--no-open", "Do not open the generated HTML in the browser")
   .option("--debug", "Print debug output to the browser console")
   .action(async (storyPath, options) => {
     try {
       await buildCommand(storyPath, {
         output: options.output,
+        template: options.template,
         open: options.open,
         debug: options.debug ?? false,
       });

@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import open, { apps } from "open";
@@ -6,6 +6,7 @@ import { parseStorySource, resolveParseOptions, TemplateOptions } from "../../in
 
 export interface BuildOptions {
   output?: string;
+  template?: string;
   open?: boolean;
   debug?: boolean;
 }
@@ -22,9 +23,36 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
     debug: options.debug,
   };
 
-  // Read the pre-built HTML template (from html-template workspace)
+  // Resolve the HTML template
   const cliDir = path.dirname(fileURLToPath(import.meta.url));
-  const templatePath = path.resolve(cliDir, "../../../html-template/dist/index.html");
+  const packageRoot = path.resolve(cliDir, "../../..");
+  const templatesDir = path.join(packageRoot, "templates");
+  const templateName = options.template ?? "default";
+
+  let templatePath: string;
+
+  // 1. Look for a subdirectory under templates/
+  const candidateDir = path.join(templatesDir, templateName, "dist", "index.html");
+  const exists = await access(candidateDir)
+    .then(() => true)
+    .catch(() => false);
+
+  if (exists) {
+    templatePath = candidateDir;
+  } else {
+    // 2. Try treating the value as a direct path to an HTML file
+    const candidateFile = path.resolve(templateName);
+    const fileExists = await access(candidateFile)
+      .then(() => true)
+      .catch(() => false);
+
+    if (fileExists) {
+      templatePath = candidateFile;
+    } else {
+      throw new Error(`Template "${templateName}" not found.`);
+    }
+  }
+
   const template = await readFile(templatePath, "utf-8");
 
   // Inject the parsed story JSON and template options into the template

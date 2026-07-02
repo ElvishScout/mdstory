@@ -1,6 +1,6 @@
 {
   "workspaces": [
-    "html-template"
+    "templates/*"
   ],
   "name": "@elvishscout/mdstory",
   "repository": {
@@ -15,9 +15,9 @@
   "files": [
     "./dist",
     "./types",
-    "./html-template/dist",
     "./skills",
     "./examples/compact",
+    "./templates/*/dist/*",
     "./README*.md",
     "./WRITING_GUIDE*.md"
   ],
@@ -28,8 +28,8 @@
     "prebuild": "shx rm -rf \"dist/*\" \"dist/.*\"",
     "postbuild": "shx chmod u+x \"dist/cli/index.js\"",
     "build": "tsc -b",
-    "build:template": "cd html-template && npm run build",
-    "build:all": "npm run build && npm run build:template",
+    "build:templates": "node templates/build.cjs",
+    "build:all": "npm run build && npm run build:templates",
     "cli": "node ./dist/cli/index.js",
     "test": "vitest run",
     "test:watch": "vitest"

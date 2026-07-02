@@ -6,7 +6,7 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
-import { parseStorySource } from "../src/index.ts";
+import { parseStorySource } from "../../src/index.ts";
 
 // https://vite.dev/config/
 export default defineConfig(async () => {

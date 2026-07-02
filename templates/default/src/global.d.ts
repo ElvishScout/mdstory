@@ -1,4 +1,4 @@
-import type { ParsedStory, TemplateOptions } from "../../types";
+import type { ParsedStory, TemplateOptions } from "../../../types";
 
 declare global {
   const __PLACEHOLDER_STORY__: ParsedStory;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Story, type TemplateOptions, fromParsed } from "../../";
+  import { type Story, type TemplateOptions, fromParsed } from "../../../";
   import StoryPlayer from "./lib/StoryPlayer.svelte";
 
   let story: Story | undefined = $state();

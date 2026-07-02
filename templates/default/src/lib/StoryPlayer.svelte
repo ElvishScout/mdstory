@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import { type Story, type StoryPrompt, type TemplateOptions } from "../../../";
+  import { type Story, type StoryPrompt, type TemplateOptions } from "../../../../";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "./process-html";
 
