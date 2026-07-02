@@ -18,8 +18,8 @@ const AssetObjectSchema = z.object({
 
 export const AssetSchema = z.union([
   z.string().transform((url) => {
-    const basename = url.match(/[^/\\]*$/)?.[0] ?? "";
-    return AssetObjectSchema.parse({ url, mime: contentType(basename) || undefined });
+    const extension = url.match(/\.[^./\\?#]*(?=[?#]|$)/)?.[0] ?? "";
+    return AssetObjectSchema.parse({ url, mime: contentType(extension) || undefined });
   }),
   AssetObjectSchema,
 ]);
