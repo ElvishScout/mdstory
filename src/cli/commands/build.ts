@@ -7,8 +7,44 @@ import { parseStorySource, resolveParseOptions, TemplateOptions } from "../../in
 export interface BuildOptions {
   output?: string;
   template?: string;
+  templateOptions?: Record<string, string>;
   open?: boolean;
   debug?: boolean;
+}
+
+function coerceValue(value: string): string | number | boolean {
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  const num = Number(value);
+  if (!Number.isNaN(num) && String(num) === value) {
+    return num;
+  }
+  return value;
+}
+
+function setNested(target: Record<string, unknown>, keyPath: string, value: unknown): void {
+  const keys = keyPath.split(".");
+  let current = target;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if (!(key in current) || typeof current[key] !== "object" || current[key] === null) {
+      current[key] = {};
+    }
+    current = current[key] as Record<string, unknown>;
+  }
+  current[keys[keys.length - 1]] = value;
+}
+
+function buildCLIOptions(cliOptions: Record<string, string>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(cliOptions)) {
+    setNested(result, key, coerceValue(value));
+  }
+  return result;
 }
 
 export async function buildCommand(storyPath: string, options: BuildOptions): Promise<void> {
@@ -21,6 +57,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
   // Build template options
   const templateOptions: TemplateOptions = {
     debug: options.debug,
+    ...buildCLIOptions(options.templateOptions ?? {}),
   };
 
   // Resolve the HTML template

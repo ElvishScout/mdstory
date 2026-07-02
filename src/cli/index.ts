@@ -32,6 +32,17 @@ program
   .argument("<story>", "Path to the story .md file")
   .option("-o, --output <path>", "Output HTML file path")
   .option("-t, --template <name>", 'Template to use (default: "default", or path to custom .html file)')
+  .option(
+    "-O, --option <key=value>",
+    "Pass a template option (repeatable)",
+    (v: string, prev: Record<string, string>) => {
+      const eq = v.indexOf("=");
+      if (eq === -1) throw new Error(`Invalid option format "${v}". Expected key=value.`);
+      const key = v.slice(0, eq);
+      const value = v.slice(eq + 1);
+      return { ...(prev ?? {}), [key]: value };
+    },
+  )
   .option("--no-open", "Do not open the generated HTML in the browser")
   .option("--debug", "Print debug output to the browser console")
   .action(async (storyPath, options) => {
@@ -39,6 +50,7 @@ program
       await buildCommand(storyPath, {
         output: options.output,
         template: options.template,
+        templateOptions: options.option ?? {},
         open: options.open,
         debug: options.debug ?? false,
       });
