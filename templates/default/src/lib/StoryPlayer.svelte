@@ -28,7 +28,9 @@
   // Scroll to latest scene + play cover animation when scenes change
   $effect(() => {
     const count = scenes.length;
-    if (count === 0) return;
+    if (count === 0) {
+      return;
+    }
 
     tick().then(() => {
       // Scroll the latest scene into view

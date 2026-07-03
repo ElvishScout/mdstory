@@ -15,7 +15,9 @@ import type { IncludeResolver } from "../src/core/parser.js";
 function fakeInclude(files: Record<string, string>): IncludeResolver {
   return (fullPath: string): string => {
     // Try exact match first; fall back to suffix match for portability.
-    if (files[fullPath] !== undefined) return files[fullPath];
+    if (files[fullPath] !== undefined) {
+      return files[fullPath];
+    }
     for (const [key, content] of Object.entries(files)) {
       if (fullPath.endsWith(key) || fullPath.replace(/\\/g, "/").endsWith(key)) {
         return content;
@@ -148,16 +150,9 @@ describe("parseStorySource", () => {
     it("filters YAML handshake from story template (no h1)", async () => {
       // Regression: frontmatter lines leaked into the story template because
       // they were never added to the ignored-lines set.
-      const src = [
-        "---",
-        "title: Test",
-        "globals:",
-        "  score: 0",
-        "---",
-        "",
-        "### Scene 1 {#s1}",
-        "Scene body.",
-      ].join("\n");
+      const src = ["---", "title: Test", "globals:", "  score: 0", "---", "", "### Scene 1 {#s1}", "Scene body."].join(
+        "\n",
+      );
       const r = await parse(src);
       expect(r.template).toBe("");
       expect(r.metadata.title).toBe("Test");

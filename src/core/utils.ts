@@ -74,7 +74,7 @@ export async function loadSource(normalizedPath: string) {
   if (isUrl(normalizedPath)) {
     return await (await fetch(normalizedPath)).text();
   }
-  return (await (await nodeFs())!.readFile(normalizedPath, { encoding: "utf-8" })) as string;
+  return (await (await nodeFs())!.readFile(normalizedPath, "utf-8")) as string;
 }
 
 export function escapeHtml(text: string) {

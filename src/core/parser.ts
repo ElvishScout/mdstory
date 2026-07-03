@@ -186,7 +186,9 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   // Story template from h1 heading to the first h2 or h3 (whichever comes first)
   const storyTemplateEnd = Math.min(chapterHeadings[0]?.lineno ?? Infinity, sceneHeadings[0]?.lineno ?? Infinity);
   const storyTemplate = (() => {
-    if (!isFinite(storyTemplateEnd)) return "";
+    if (!isFinite(storyTemplateEnd)) {
+      return "";
+    }
     const start = storyHeading?.lineno ?? 0;
     return lines
       .slice(start, storyTemplateEnd)

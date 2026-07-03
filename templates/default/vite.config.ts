@@ -10,7 +10,7 @@ import { parseStorySource } from "../../src/index.ts";
 
 // https://vite.dev/config/
 export default defineConfig(async () => {
-  const source = await fs.readFile(path.resolve(__dirname, "placeholder.md"), { encoding: "utf-8" });
+  const source = await fs.readFile(path.resolve(__dirname, "placeholder.md"), "utf-8");
   const parsedStory = await parseStorySource(source);
 
   return {

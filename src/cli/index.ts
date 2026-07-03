@@ -37,7 +37,9 @@ program
     "Pass a template option (repeatable)",
     (v: string, prev: Record<string, string>) => {
       const eq = v.indexOf("=");
-      if (eq === -1) throw new Error(`Invalid option format "${v}". Expected key=value.`);
+      if (eq === -1) {
+        throw new Error(`Invalid option format "${v}". Expected key=value.`);
+      }
       const key = v.slice(0, eq);
       const value = v.slice(eq + 1);
       return { ...(prev ?? {}), [key]: value };
