@@ -10,8 +10,11 @@ import { mergeScripts, normalizePath } from "./utils.js";
 /**
  * Prompt function for handling user input during story playback.
  * Receives the current scene and render result, returns navigation target and submitted input values.
+ * Return `void` or a result with `target` set to `undefined` to advance to the next scene in sequence.
  */
-export type StoryPrompt = (props: RenderResult) => Promise<{ target: string | null; inputs: Scope } | FormData>;
+export type StoryPrompt = (
+  props: RenderResult,
+) => Promise<{ target?: string | null; inputs?: Scope } | FormData | void>;
 
 export type PlayOptions = RenderOptions & {
   debug?: boolean;
@@ -135,42 +138,35 @@ export class Story {
     return renderTemplate(this.template, scope, options);
   }
 
-  private async enterChapter(chapter: Chapter) {
-    chapter.locals = {};
-    if (chapter.hooks.locals) {
-      const result = await chapter.hooks.locals({ globals: this.globals });
-      if (result) {
-        Object.assign(chapter.locals, result);
+  /** Finds the next scene in sequential order across chapters. Returns null if no more scenes exist. */
+  private findNextScene(currentChapter: Chapter, currentScene: Scene): { chapter: Chapter; scene: Scene } | null {
+    // Try next scene in the current chapter
+    const sceneIndex = currentChapter.scenes.indexOf(currentScene);
+    if (sceneIndex !== -1 && sceneIndex + 1 < currentChapter.scenes.length) {
+      return { chapter: currentChapter, scene: currentChapter.scenes[sceneIndex + 1] };
+    }
+
+    // Try the first scene of the next non-empty chapter
+    const chapterIndex = this.chapters.indexOf(currentChapter);
+    for (let i = chapterIndex + 1; i < this.chapters.length; i++) {
+      const nextChapter = this.chapters[i];
+      if (nextChapter.scenes.length > 0) {
+        return { chapter: nextChapter, scene: nextChapter.scenes[0] };
       }
     }
-    if (chapter.hooks.onEnter) {
-      await chapter.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
-    }
+
+    return null;
   }
 
-  private async leaveChapter(chapter: Chapter, target: string | null) {
-    if (chapter.hooks.onLeave) {
-      await chapter.hooks.onLeave({
-        globals: this.globals,
-        locals: chapter.locals,
-        target,
-      });
-    }
-  }
-
-  /** Starts playing the story, looping through chapters and scenes until navigation ends. */
+  /**
+   * Plays the story interactively, looping through scenes until navigation ends.
+   *
+   * Each iteration renders the current scene, prompts for user input, then navigates:
+   * - A string target jumps to the named scene (resolved via {@link resolveTarget}).
+   * - `null` ends the story.
+   * - `undefined` (or a void prompt return) advances to the next scene in sequence.
+   */
   async play(prompt: StoryPrompt, options: PlayOptions) {
-    if (this.hooks.globals) {
-      const result = await this.hooks.globals();
-      if (result) {
-        Object.assign(this.globals, result);
-      }
-    }
-
-    if (this.hooks.onStart) {
-      await this.hooks.onStart({ globals: this.globals });
-    }
-
     const entryChapter = this.chapters[0];
     const entryScene = entryChapter?.scenes[0];
     if (!entryChapter || !entryScene) {
@@ -179,11 +175,10 @@ export class Story {
 
     let chapter = entryChapter;
     let scene = entryScene;
-    let started = false;
-    let currentChapterId: string | null = null;
+    let storyStarted = false;
+    let activeChapterId: string | null = null;
 
-    await this.enterChapter(chapter);
-
+    // ── Main loop ────────────────────────────────────────────
     while (true) {
       if (options.debug) {
         console.log("--- [debug] chapter:", chapter.id);
@@ -192,88 +187,122 @@ export class Story {
         console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
       }
 
+      // ── Story hooks & template (once) ──────────────────────
       let prefix = "";
 
-      // Story prefix
-      if (!started) {
-        const rendered = this.render({ ...this.assets, ...this.globals }, options);
-        prefix += rendered.text;
-        started = true;
+      if (!storyStarted) {
+        if (this.hooks.globals) {
+          const result = await this.hooks.globals();
+          if (result) {
+            Object.assign(this.globals, result);
+          }
+        }
+
+        if (this.hooks.onStart) {
+          await this.hooks.onStart({ globals: this.globals });
+        }
+
+        prefix += this.render({ ...this.assets, ...this.globals }, options).text;
+        storyStarted = true;
       }
 
-      // Chapter prefix
-      if (chapter.id !== currentChapterId) {
-        const rendered = chapter.render({ ...this.assets, ...this.globals, ...chapter.locals }, options);
-        prefix += rendered.text;
-        currentChapterId = chapter.id;
+      // ── Chapter enter (on id change) ───────────────────────
+      if (chapter.id !== activeChapterId) {
+        chapter.locals = {};
+
+        if (chapter.hooks.locals) {
+          const result = await chapter.hooks.locals({ globals: this.globals });
+          if (result) {
+            Object.assign(chapter.locals, result);
+          }
+        }
+
+        if (chapter.hooks.onEnter) {
+          await chapter.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
+        }
+
+        prefix += chapter.render({ ...this.assets, ...this.globals, ...chapter.locals }, options).text;
+        activeChapterId = chapter.id;
       }
 
-      // Scene onEnter + render-only view data
+      // ── Scene enter & render ───────────────────────────────
       if (scene.hooks.onEnter) {
         await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
       }
 
-      const sceneOverrides: Scope = {};
+      const overrides: Scope = {};
       if (scene.hooks.view) {
-        const result = await scene.hooks.view({
-          globals: this.globals,
-          locals: chapter.locals,
-        });
+        const result = await scene.hooks.view({ globals: this.globals, locals: chapter.locals });
         if (result) {
-          Object.assign(sceneOverrides, result);
+          Object.assign(overrides, result);
         }
       }
 
-      const renderContext = { ...this.assets, ...this.globals, ...chapter.locals, ...sceneOverrides };
+      const renderContext = { ...this.assets, ...this.globals, ...chapter.locals, ...overrides };
       const renderResult = scene.render(renderContext, options);
+      const text = prefix + renderResult.text;
 
-      // Prepend chapter and story templates to rendered text
-      let { text } = renderResult;
+      // ── Prompt ─────────────────────────────────────────────
+      const rawResult = await prompt({ ...renderResult, text });
 
-      text = prefix + text;
+      // Normalize: void → advance to next scene (undefined target)
+      const promptResult = !rawResult
+        ? { target: undefined as string | null | undefined, inputs: undefined as Scope | undefined }
+        : rawResult instanceof FormData
+          ? parseFormData(rawResult, renderResult)
+          : rawResult;
 
-      const promptResult = await prompt({ ...renderResult, text });
-      const normalizedPromptResult =
-        promptResult instanceof FormData ? parseFormData(promptResult, renderResult) : promptResult;
+      // Apply user inputs into scope
+      if (promptResult.inputs) {
+        applyInputScopes({ globals: this.globals, locals: chapter.locals }, promptResult.inputs);
+      }
 
-      applyInputScopes(
-        {
-          globals: this.globals,
-          locals: chapter.locals,
-        },
-        normalizedPromptResult.inputs,
-      );
+      // ── Resolve destination ────────────────────────────────
+      const target = promptResult.target;
 
-      // Scene onLeave (side effect only)
+      let destination: { chapter: Chapter; scene: Scene } | null;
+
+      if (target === null) {
+        destination = null;
+      } else if (target === undefined) {
+        destination = this.findNextScene(chapter, scene);
+      } else {
+        const resolved = this.resolveTarget(target, chapter);
+        if (!resolved) {
+          throw new Error(`Target not found: ${target}`);
+        }
+        destination = resolved;
+      }
+
+      const canonicalTarget = destination ? `${destination.chapter.id}.${destination.scene.id}` : null;
+
+      // ── Scene leave ────────────────────────────────────────
       if (scene.hooks.onLeave) {
         await scene.hooks.onLeave({
           globals: this.globals,
           locals: chapter.locals,
-          target: normalizedPromptResult.target,
+          target: canonicalTarget,
         });
       }
 
-      const finalTarget = normalizedPromptResult.target;
+      // ── Navigate ───────────────────────────────────────────
+      // Leave current chapter when the story ends or a cross-chapter jump occurs
+      if (!destination || destination.chapter !== chapter) {
+        if (chapter.hooks.onLeave) {
+          await chapter.hooks.onLeave({
+            globals: this.globals,
+            locals: chapter.locals,
+            target: canonicalTarget,
+          });
+        }
+      }
 
-      if (finalTarget === null) {
-        await this.leaveChapter(chapter, finalTarget);
+      if (!destination) {
         break;
       }
 
-      // Resolve target
-      const resolved = this.resolveTarget(finalTarget, chapter);
-      if (!resolved) {
-        throw new Error(`Target not found: ${finalTarget}`);
-      }
-
-      // Chapter transition
-      if (resolved.chapter !== chapter) {
-        await this.leaveChapter(chapter, finalTarget);
-        await this.enterChapter(resolved.chapter);
-      }
-
-      chapter = resolved.chapter;
-      scene = resolved.scene;
+      chapter = destination.chapter;
+      scene = destination.scene;
     }
   }
 }
