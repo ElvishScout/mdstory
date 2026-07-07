@@ -11,9 +11,7 @@ import { mergeScripts, normalizePath } from "./utils.js";
  * Prompt function for handling user input during story playback.
  * Receives the current scene and render result, returns navigation target and submitted input values.
  */
-export type StoryPrompt = (
-  props: { scene: Scene } & RenderResult,
-) => Promise<{ target: string | null; inputs: Scope } | FormData>;
+export type StoryPrompt = (props: RenderResult) => Promise<{ target: string | null; inputs: Scope } | FormData>;
 
 export type PlayOptions = RenderOptions & {
   debug?: boolean;
@@ -72,7 +70,6 @@ export class Story {
   hooks: StoryHooks;
   stylesheet: string;
   chapters: Chapter[];
-  /** @internal */ _storyTitleShown = false;
 
   constructor(init: StoryInit) {
     this.title = (init.title || init.metadata?.title) ?? "";
@@ -182,16 +179,41 @@ export class Story {
 
     let chapter = entryChapter;
     let scene = entryScene;
-    let currentChapterId: string | symbol | null = null;
+    let started = false;
+    let currentChapterId: string | null = null;
+
     await this.enterChapter(chapter);
 
     while (true) {
+      if (options.debug) {
+        console.log("--- [debug] chapter:", chapter.id);
+        console.log("--- [debug] scene:", scene.id);
+        console.log("--- [debug] globals:", JSON.stringify(this.globals, null, 2));
+        console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
+      }
+
+      let prefix = "";
+
+      // Story prefix
+      if (!started) {
+        const rendered = this.render({ ...this.assets, ...this.globals }, options);
+        prefix += rendered.text;
+        started = true;
+      }
+
+      // Chapter prefix
+      if (chapter.id !== currentChapterId) {
+        const rendered = chapter.render({ ...this.assets, ...this.globals, ...chapter.locals }, options);
+        prefix += rendered.text;
+        currentChapterId = chapter.id;
+      }
+
       // Scene onEnter + render-only view data
       if (scene.hooks.onEnter) {
         await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
       }
 
-      let sceneOverrides: Scope = {};
+      const sceneOverrides: Scope = {};
       if (scene.hooks.view) {
         const result = await scene.hooks.view({
           globals: this.globals,
@@ -202,38 +224,15 @@ export class Story {
         }
       }
 
-      if (options.debug) {
-        console.log("--- [debug] scene:", scene.id);
-        console.log("--- [debug] globals:", JSON.stringify(this.globals, null, 2));
-        console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
-      }
-
       const renderContext = { ...this.assets, ...this.globals, ...chapter.locals, ...sceneOverrides };
       const renderResult = scene.render(renderContext, options);
 
       // Prepend chapter and story templates to rendered text
       let { text } = renderResult;
-      let prefix = "";
-
-      if (!this._storyTitleShown) {
-        const rendered = this.render(renderContext, options);
-        if (rendered.text) {
-          prefix += rendered.text;
-        }
-        this._storyTitleShown = true;
-      }
-
-      if (chapter.id !== currentChapterId) {
-        const rendered = chapter.render(renderContext, options);
-        if (rendered.text) {
-          prefix += rendered.text;
-        }
-        currentChapterId = chapter.id;
-      }
 
       text = prefix + text;
 
-      const promptResult = await prompt({ scene, ...renderResult, text });
+      const promptResult = await prompt({ ...renderResult, text });
       const normalizedPromptResult =
         promptResult instanceof FormData ? parseFormData(promptResult, renderResult) : promptResult;
 
