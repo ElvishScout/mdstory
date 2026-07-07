@@ -13,7 +13,7 @@ import { mergeScripts, normalizePath } from "./utils.js";
  * Return `void` or a result with `target` set to `undefined` to advance to the next scene in sequence.
  */
 export type StoryPrompt = (
-  props: RenderResult,
+  props: { type: "story" | "chapter" | "scene" } & RenderResult,
 ) => Promise<{ target?: string | null; inputs?: Scope } | FormData | void>;
 
 export type PlayOptions = RenderOptions & {
@@ -35,7 +35,11 @@ function parstInput(type: InputType, text: string | null) {
 }
 
 function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "inputs">) {
-  const target = (formData.get("@target") as string) || null;
+  // `has` distinguishes "key not present" (→ undefined, fall through) from
+  // "key present but empty" (→ null, explicit end).  `get` alone can't tell
+  // them apart because both cases return `null`.
+  const rawTarget = formData.get("@target") as string;
+  const target = formData.has("@target") ? rawTarget || null : undefined;
   const parsedInputs = Object.fromEntries(
     inputs.map(({ name, type }) => {
       const value = formData.get(name) as string | null;
@@ -159,12 +163,96 @@ export class Story {
   }
 
   /**
-   * Plays the story interactively, looping through scenes until navigation ends.
+   * Resolves a user-supplied target into a concrete destination.
    *
-   * Each iteration renders the current scene, prompts for user input, then navigates:
-   * - A string target jumps to the named scene (resolved via {@link resolveTarget}).
-   * - `null` ends the story.
-   * - `undefined` (or a void prompt return) advances to the next scene in sequence.
+   * - `string` → delegated to {@link resolveTarget} (throws if not found).
+   * - `null` → end of story.
+   * - `undefined` → next scene in sequence when `scene` is provided;
+   *   otherwise null (caller should interpret as "fall through to next stage").
+   */
+  private resolveDestination(
+    target: string | null | undefined,
+    chapter: Chapter,
+    scene: Scene | null,
+  ): { chapter: Chapter; scene: Scene } | null {
+    if (target === null || target === undefined) {
+      return scene ? this.findNextScene(chapter, scene) : null;
+    }
+    const resolved = this.resolveTarget(target, chapter);
+    if (!resolved) {
+      throw new Error(`Target not found: ${target}`);
+    }
+    return resolved;
+  }
+
+  /**
+   * Normalises a raw prompt result, applies submitted inputs to the current
+   * scope, and resolves the target into a concrete destination.
+   *
+   * Returns `isEnd: true` when the user explicitly passed `target: null`.
+   * When `isEnd` is false but `destination` is null the target was
+   * `undefined` — meaning "fall through" (story / chapter stage) or
+   * "no more scenes" (scene stage).
+   */
+  private ingestPrompt(
+    rawResult: Awaited<ReturnType<StoryPrompt>>,
+    renderResult: RenderResult,
+    chapter: Chapter,
+    scene: Scene | null,
+  ): {
+    destination: { chapter: Chapter; scene: Scene } | null;
+    isEnd: boolean;
+  } {
+    // Normalise: void → undefined target, FormData → plain object
+    const result = !rawResult
+      ? { target: undefined as string | null | undefined, inputs: undefined as Scope | undefined }
+      : rawResult instanceof FormData
+        ? parseFormData(rawResult, renderResult)
+        : rawResult;
+
+    // Apply any submitted inputs to the current scope
+    if (result.inputs) {
+      applyInputScopes({ globals: this.globals, locals: chapter.locals }, result.inputs);
+    }
+
+    const destination = this.resolveDestination(result.target, chapter, scene);
+    return { destination, isEnd: result.target === null };
+  }
+
+  /**
+   * Plays the story interactively.
+   *
+   * ## State machine
+   *
+   * Two flags drive the loop:
+   * - `storyStarted` — ensures Stage 1 runs exactly once.
+   * - `activeChapterId` — tracks which chapter last completed Stage 2, so we
+   *   only re-enter a chapter when `chapter.id` changes.
+   *
+   * ## Stage structure
+   *
+   * Each iteration attempts up to three stages in order.  A stage is guarded
+   * so it only fires when its condition is met.  Inside each stage:
+   *
+   * 1. Run lifecycle hooks (if any).
+   * 2. Render the template.
+   * 3. Call `prompt()` so the user / AI can react to the rendered output.
+   * 4. Normalise the return value (void → undefined target, FormData → object).
+   * 5. Apply any submitted inputs to the current scope.
+   * 6. Resolve the target into a concrete `{chapter, scene}` destination
+   *    (or `null` when there is nowhere to go).
+   *
+   * After resolution, each stage handles three outcomes:
+   *
+   * | target      | destination       | behaviour                                |
+   * |-------------|-------------------|------------------------------------------|
+   * | `string`    | `{chapter,scene}` | jump there, `continue` to next iteration |
+   * | `null`      | `null`            | end the story (`break`)                  |
+   * | `undefined` | `null`            | fall through to the next stage           |
+   *
+   * The **scene stage** is the exception: when `target` is `undefined` it
+   * delegates to `findNextScene`, so `destination` is only `null` when there
+   * are no more scenes (→ end of story).
    */
   async play(prompt: StoryPrompt, options: PlayOptions) {
     const entryChapter = this.chapters[0];
@@ -173,12 +261,22 @@ export class Story {
       return;
     }
 
+    // Current position in the story.  These are updated by every stage when a
+    // target redirects, and read by the guards at the top of each iteration.
     let chapter = entryChapter;
     let scene = entryScene;
+
+    // ---- state-machine flags -------------------------------------------
+    // `storyStarted` becomes true after Stage 1 completes (or redirects).
     let storyStarted = false;
+
+    // `activeChapterId` tracks which chapter has already gone through Stage 2.
+    // Starts as `null` so the entry chapter always triggers Stage 2 on the
+    // first visit.  Updated to `chapter.id` when Stage 2 falls through
+    // (undefined target), or immediately on a same-chapter redirect (see below).
     let activeChapterId: string | null = null;
 
-    // ── Main loop ────────────────────────────────────────────
+    // ── Main loop ────────────────────────────────────────────────────────
     while (true) {
       if (options.debug) {
         console.log("--- [debug] chapter:", chapter.id);
@@ -187,10 +285,11 @@ export class Story {
         console.log("--- [debug] locals:", JSON.stringify(chapter.locals, null, 2));
       }
 
-      // ── Story hooks & template (once) ──────────────────────
-      let prefix = "";
-
+      // ═══════════════════════════════════════════════════════════════════
+      // Stage 1 — Story template (runs exactly once, at the very beginning)
+      // ═══════════════════════════════════════════════════════════════════
       if (!storyStarted) {
+        // --- story-level lifecycle hooks ---
         if (this.hooks.globals) {
           const result = await this.hooks.globals();
           if (result) {
@@ -202,14 +301,69 @@ export class Story {
           await this.hooks.onStart({ globals: this.globals });
         }
 
-        prefix += this.render({ ...this.assets, ...this.globals }, options).text;
+        // --- render → prompt → ingest → resolve ---
+        // `null` for scene means "no current scene", so `undefined` target
+        // returns `destination: null` (fall through) rather than `findNextScene`.
+        const renderResult = this.render({ ...this.assets, ...this.globals }, options);
+        const rawResult = await prompt({ ...renderResult, type: "story" });
+        const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, chapter, null);
+
+        // --- outcome: jump to a specific scene ---
+        if (destination) {
+          // Leaving the current chapter?  Fire its onLeave hook.
+          if (destination.chapter !== chapter && chapter.hooks.onLeave) {
+            await chapter.hooks.onLeave({
+              globals: this.globals,
+              locals: chapter.locals,
+              target: `${destination.chapter.id}.${destination.scene.id}`,
+            });
+          }
+
+          // Same-chapter redirect → mark as active so Stage 2 won't re-enter
+          // and reset `chapter.locals` on the next iteration.
+          if (destination.chapter === chapter) {
+            activeChapterId = chapter.id;
+          }
+
+          chapter = destination.chapter;
+          scene = destination.scene;
+          storyStarted = true;
+          continue;
+        }
+
+        // --- outcome: explicit end (target === null) ---
+        if (isEnd) {
+          if (chapter.hooks.onLeave) {
+            await chapter.hooks.onLeave({
+              globals: this.globals,
+              locals: chapter.locals,
+              target: null,
+            });
+          }
+          break;
+        }
+
+        // --- outcome: fall through (target === undefined) ---
         storyStarted = true;
       }
 
-      // ── Chapter enter (on id change) ───────────────────────
+      // ═══════════════════════════════════════════════════════════════════
+      // Stage 2 — Chapter template (runs when `chapter.id` changes)
+      // ═══════════════════════════════════════════════════════════════════
+      //
+      // Guard: `chapter.id !== activeChapterId` ensures we only render the
+      // chapter template and fire its hooks once per chapter entry.
+      // - On the very first iteration `activeChapterId` is `null`, so the
+      //   entry chapter always triggers this stage.
+      // - After a cross-chapter redirect from Stage 1, `activeChapterId` is
+      //   still the old value (or `null`), so the new chapter triggers here.
+      // - After a same-chapter redirect we set `activeChapterId` above, so
+      //   this stage is **skipped** and we go straight to Stage 3.
       if (chapter.id !== activeChapterId) {
+        // Fresh chapter — reset its local scope.
         chapter.locals = {};
 
+        // --- chapter-level lifecycle hooks ---
         if (chapter.hooks.locals) {
           const result = await chapter.hooks.locals({ globals: this.globals });
           if (result) {
@@ -221,11 +375,59 @@ export class Story {
           await chapter.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
         }
 
-        prefix += chapter.render({ ...this.assets, ...this.globals, ...chapter.locals }, options).text;
+        // --- render → prompt → ingest → resolve ---
+        const renderResult = chapter.render({ ...this.assets, ...this.globals, ...chapter.locals }, options);
+        const rawResult = await prompt({ ...renderResult, type: "chapter" });
+        const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, chapter, null);
+
+        // --- outcome: jump to a specific scene ---
+        if (destination) {
+          if (destination.chapter !== chapter && chapter.hooks.onLeave) {
+            await chapter.hooks.onLeave({
+              globals: this.globals,
+              locals: chapter.locals,
+              target: `${destination.chapter.id}.${destination.scene.id}`,
+            });
+          }
+
+          // Same-chapter redirect → mark as active to avoid re-entering
+          // this stage and resetting `chapter.locals` next iteration.
+          if (destination.chapter === chapter) {
+            activeChapterId = chapter.id;
+          }
+
+          chapter = destination.chapter;
+          scene = destination.scene;
+          continue;
+        }
+
+        // --- outcome: explicit end ---
+        if (isEnd) {
+          if (chapter.hooks.onLeave) {
+            await chapter.hooks.onLeave({
+              globals: this.globals,
+              locals: chapter.locals,
+              target: null,
+            });
+          }
+          break;
+        }
+
+        // --- outcome: fall through (target === undefined) ---
+        // Record that this chapter has completed Stage 2, then drop into
+        // Stage 3.  Future iterations will skip Stage 2 until `chapter.id`
+        // changes again.
         activeChapterId = chapter.id;
       }
 
-      // ── Scene enter & render ───────────────────────────────
+      // ═══════════════════════════════════════════════════════════════════
+      // Stage 3 — Scene (runs every iteration that reaches it)
+      // ═══════════════════════════════════════════════════════════════════
+      //
+      // This is the only stage that never falls through — it always produces
+      // a concrete navigation decision (jump, next scene, or end).
+
+      // --- scene-level lifecycle hooks ---
       if (scene.hooks.onEnter) {
         await scene.hooks.onEnter({ globals: this.globals, locals: chapter.locals });
       }
@@ -238,45 +440,19 @@ export class Story {
         }
       }
 
+      // --- render → prompt → ingest → resolve ---
+      // Unlike Stages 1 & 2, we pass the current `scene` so `undefined`
+      // target triggers `findNextScene` (sequential advance).
       const renderContext = { ...this.assets, ...this.globals, ...chapter.locals, ...overrides };
       const renderResult = scene.render(renderContext, options);
-      const text = prefix + renderResult.text;
-
-      // ── Prompt ─────────────────────────────────────────────
-      const rawResult = await prompt({ ...renderResult, text });
-
-      // Normalize: void → advance to next scene (undefined target)
-      const promptResult = !rawResult
-        ? { target: undefined as string | null | undefined, inputs: undefined as Scope | undefined }
-        : rawResult instanceof FormData
-          ? parseFormData(rawResult, renderResult)
-          : rawResult;
-
-      // Apply user inputs into scope
-      if (promptResult.inputs) {
-        applyInputScopes({ globals: this.globals, locals: chapter.locals }, promptResult.inputs);
-      }
-
-      // ── Resolve destination ────────────────────────────────
-      const target = promptResult.target;
-
-      let destination: { chapter: Chapter; scene: Scene } | null;
-
-      if (target === null) {
-        destination = null;
-      } else if (target === undefined) {
-        destination = this.findNextScene(chapter, scene);
-      } else {
-        const resolved = this.resolveTarget(target, chapter);
-        if (!resolved) {
-          throw new Error(`Target not found: ${target}`);
-        }
-        destination = resolved;
-      }
-
+      const rawResult = await prompt({ ...renderResult, type: "scene" });
+      const { destination } = this.ingestPrompt(rawResult, renderResult, chapter, scene);
       const canonicalTarget = destination ? `${destination.chapter.id}.${destination.scene.id}` : null;
 
-      // ── Scene leave ────────────────────────────────────────
+      // --- leave hooks (scene first, then chapter) ---
+
+      // Scene onLeave always fires — we are leaving this scene regardless of
+      // where we go next (even if the story ends).
       if (scene.hooks.onLeave) {
         await scene.hooks.onLeave({
           globals: this.globals,
@@ -285,8 +461,9 @@ export class Story {
         });
       }
 
-      // ── Navigate ───────────────────────────────────────────
-      // Leave current chapter when the story ends or a cross-chapter jump occurs
+      // Chapter onLeave fires when we leave the *current* chapter — either
+      // because the story ends (`!destination`) or we are jumping to a
+      // different chapter.  Staying in the same chapter skips this hook.
       if (!destination || destination.chapter !== chapter) {
         if (chapter.hooks.onLeave) {
           await chapter.hooks.onLeave({
@@ -297,10 +474,17 @@ export class Story {
         }
       }
 
+      // --- navigation ---
+
+      // No destination means end of story (explicit `null` target, or
+      // `undefined` with no more scenes in sequence).
       if (!destination) {
         break;
       }
 
+      // Update position for the next iteration.  If we changed chapters the
+      // next iteration's Stage 2 guard (`chapter.id !== activeChapterId`)
+      // will detect it and fire the new chapter's hooks.
       chapter = destination.chapter;
       scene = destination.scene;
     }
