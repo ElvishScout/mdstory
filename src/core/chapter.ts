@@ -11,15 +11,13 @@ export class Chapter {
   title: string;
   template: string;
   hooks: ChapterHooks;
-  locals: Scope;
   scenes: Scene[];
 
-  constructor({ id, title, template, hooks, locals, scenes }: ChapterInit) {
+  constructor({ id, title, template, hooks, scenes }: ChapterInit) {
     this.id = id;
     this.title = title ?? "";
     this.template = template ?? "";
     this.hooks = hooks ?? {};
-    this.locals = locals ?? {};
     this.scenes = scenes;
   }
 

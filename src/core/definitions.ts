@@ -74,7 +74,6 @@ export type ChapterInit = {
   title?: string;
   template?: string;
   hooks?: ChapterHooks;
-  locals?: Scope;
   scenes: Scene[];
 };
 
