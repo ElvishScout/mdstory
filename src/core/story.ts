@@ -7,14 +7,14 @@ import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
 import { mergeScripts, normalizePath } from "./utils.js";
 
+export type PromptProps = { type: "story" | "chapter" | "scene" } & RenderResult;
+
 /**
  * Prompt function for handling user input during story playback.
  * Receives the current scene and render result, returns navigation target and submitted input values.
  * Return `void` or a result with `target` set to `undefined` to advance to the next scene in sequence.
  */
-export type StoryPrompt = (
-  props: { type: "story" | "chapter" | "scene" } & RenderResult,
-) => Promise<{ target?: string | null; inputs?: Scope } | FormData | void>;
+export type StoryPrompt = (props: PromptProps) => Promise<{ target?: string | null; inputs?: Scope } | FormData | void>;
 
 export type PlayOptions = RenderOptions & {
   debug?: boolean;

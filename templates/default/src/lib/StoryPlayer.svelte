@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import { type Story, type StoryPrompt, type TemplateOptions } from "../../../../";
+  import { type PromptProps, type Story, type StoryPrompt, type TemplateOptions } from "../../../../src";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "./process-html";
 
@@ -14,13 +14,10 @@
 
   let { story, options = {} }: Props = $props();
 
-  type Stage = "ready" | "started" | "ended";
-  type SceneLog = { html: string };
-
-  let stage: Stage = $state("ready");
-  let scenes: SceneLog[] = $state([]);
+  let scenes: PromptProps[] = $state([]);
 
   let lastSceneRef: HTMLDivElement | null = $state(null);
+  let lastFormRef: HTMLFormElement | null = $state(null);
   let lastCoverRef: HTMLDivElement | null = $state(null);
 
   let resolver: ((formData: FormData) => void) | null = null;
@@ -45,8 +42,14 @@
     });
   });
 
-  const prompt: StoryPrompt = async ({ text }) => {
-    scenes.push({ html: text });
+  const prompt: StoryPrompt = async (scene) => {
+    if (!scene.text && scene.inputs.length === 0 && scene.navs.length === 0) {
+      resolver = null;
+      return;
+    }
+
+    scenes.push(scene);
+
     return new Promise<FormData>((resolve) => {
       resolver = resolve;
     });
@@ -54,11 +57,31 @@
 
   $effect(() => {
     const timer = setTimeout(() => {
-      story.play(prompt, { adapter: "html", debug: options.debug }).then(() => (stage = "ended"));
-      stage = "started";
+      story.play(prompt, { adapter: "html", debug: options.debug });
     }, 200);
     return () => clearTimeout(timer);
   });
+
+  function resolveForm(form: HTMLFormElement, submitter?: HTMLElement | null) {
+    if (resolver) {
+      const formData = new FormData(form, submitter);
+      resolver(formData);
+      resolver = null;
+    }
+  }
+
+  function handlePlayerClick() {
+    if (!lastFormRef) {
+      return;
+    }
+
+    const lastScene = scenes[scenes.length - 1];
+    if (lastScene.navs.length) {
+      return;
+    }
+
+    resolveForm(lastFormRef);
+  }
 
   function handleFormKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
@@ -68,12 +91,7 @@
 
   function handleFormSubmit(e: SubmitEvent) {
     e.preventDefault();
-    if (resolver) {
-      const form = e.currentTarget as HTMLFormElement;
-      const formData = new FormData(form, e.submitter);
-      resolver(formData);
-      resolver = null;
-    }
+    resolveForm(e.currentTarget as HTMLFormElement, e.submitter);
   }
 </script>
 
@@ -85,9 +103,11 @@
   {/if}
 </svelte:head>
 
-<div class="px-2 md:px-12 pb-[33vh]">
-  {#each scenes as { html }, i}
-    {@const enabled = stage === "started" && i === scenes.length - 1}
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<div class="px-2 md:px-12 pb-[33vh]" onclick={handlePlayerClick}>
+  {#each scenes as { text }, i}
+    {@const enabled = i === scenes.length - 1}
     <div
       class="scene-container relative px-2 pt-8 first:pt-4 md:first:pt-8 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden {!enabled
         ? 'opacity-50'
@@ -97,10 +117,11 @@
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <form
         class="scene-form"
+        bind:this={lastFormRef}
         onkeydown={handleFormKeyDown}
         onsubmit={enabled ? handleFormSubmit : (e) => e.preventDefault()}
       >
-        {@html processHtml(html, !enabled)}
+        {@html processHtml(text, !enabled)}
       </form>
       {#if enabled}
         <div

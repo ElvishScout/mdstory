@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Story, type TemplateOptions, fromParsed } from "../../../";
+  import { type Story, type TemplateOptions, fromParsed } from "../../../src";
   import StoryPlayer from "./lib/StoryPlayer.svelte";
 
   let story: Story | undefined = $state();
@@ -31,5 +31,7 @@
 </script>
 
 {#if story}
-  <StoryPlayer {story} {options} />
+  <div class="min-h-screen flex flex-col *:grow">
+    <StoryPlayer {story} {options} />
+  </div>
 {/if}
