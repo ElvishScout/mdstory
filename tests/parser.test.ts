@@ -286,6 +286,7 @@ describe("parseStorySource", () => {
 
       // Default chapter
       const defCh = r.chapters[0];
+      expect(defCh.id).toBe("id_0");
       expect(defCh.title).toBe("");
       expect(defCh.template).toBe("");
       expect(defCh.scripts).toEqual([]);
@@ -302,18 +303,80 @@ describe("parseStorySource", () => {
       expect(ch1.scenes).toHaveLength(1);
     });
 
-    it("uses auto-generated id when heading has no explicit id", async () => {
-      const r = await parse("# Story\n\n## Chapter Uno\n\n### Scene One");
-      expect(typeof r.chapters[0].id).toBe("string");
-      expect((r.chapters[0].id as string).length).toBeGreaterThan(0);
-      expect(r.chapters[0].id).not.toContain(".");
-      expect(r.chapters[0].scenes[0].id.length).toBeGreaterThan(0);
+    it("uses stable auto-generated id for headings with empty title (no text, no attrs)", async () => {
+      // Headings without title text and without explicit {#id} get a stable id.
+      // Need at least one character after ## / ### for markdown-it to parse as heading.
+      const r = await parse("# Story\n\n## \n\n### ");
+      expect(r.chapters[0].id).toBe("id_0");
+      expect(r.chapters[0].scenes[0].id).toBe("id_1");
     });
 
     it("derives chapter id from title when no attrs id", async () => {
       const r = await parse("## Chapter Name");
       expect(r.chapters[0].title).toBe("Chapter Name");
       expect(r.chapters[0].id).toBe("Chapter Name");
+    });
+  });
+
+  // -- id generation ----------------------------------------------------------
+  describe("id generation", () => {
+    it("generates sequential stable ids for headings with empty titles", async () => {
+      // Headings without title text get stable placeholder-based ids.
+      const src = ["# Story", "## ", "### ", "### ", "## ", "### "].join("\n");
+      const r = await parse(src);
+      expect(r.chapters[0].id).toBe("id_0");
+      expect(r.chapters[0].scenes[0].id).toBe("id_1");
+      expect(r.chapters[0].scenes[1].id).toBe("id_2");
+      expect(r.chapters[1].id).toBe("id_3");
+      expect(r.chapters[1].scenes[0].id).toBe("id_4");
+    });
+
+    it("skips reserved ids when generating auto ids", async () => {
+      // "id_0" is explicitly reserved, so the first auto-generated chapter gets "id_1".
+      const src = ["# Story", "## Reserved {#id_0}", "## ", "### "].join("\n");
+      const r = await parse(src);
+      expect(r.chapters[0].id).toBe("id_0");
+      expect(r.chapters[1].id).toBe("id_1");
+      expect(r.chapters[1].scenes[0].id).toBe("id_2");
+    });
+
+    it("generates stable id for default chapter with only h3 scenes", async () => {
+      const src = ["# Story", "### Scene 1 {#s1}", "Body 1.", "### Scene 2 {#s2}", "Body 2."].join("\n");
+      const r = await parse(src);
+      expect(r.chapters).toHaveLength(1);
+      expect(r.chapters[0].id).toBe("id_0");
+      expect(r.chapters[0].scenes).toHaveLength(2);
+    });
+
+    it("generates deterministic ids across multiple parses", async () => {
+      const src = "# Story\n\n## \n\n### \n\n## ";
+      const r1 = await parse(src);
+      const r2 = await parse(src);
+      expect(r1.chapters[0].id).toBe(r2.chapters[0].id);
+      expect(r1.chapters[0].scenes[0].id).toBe(r2.chapters[0].scenes[0].id);
+      expect(r1.chapters[1].id).toBe(r2.chapters[1].id);
+    });
+
+    it("does not change explicitly provided ids or title-derived ids", async () => {
+      const src = [
+        "# Story",
+        "## Chapter A {#custom-ch}",
+        "### Scene A1 {#custom-sc}",
+        "## Chapter B",
+        "### Scene B1",
+        "## ",
+        "### ",
+      ].join("\n");
+      const r = await parse(src);
+      // Explicit ids stay
+      expect(r.chapters[0].id).toBe("custom-ch");
+      expect(r.chapters[0].scenes[0].id).toBe("custom-sc");
+      // Title-derived ids stay
+      expect(r.chapters[1].id).toBe("Chapter B");
+      expect(r.chapters[1].scenes[0].id).toBe("Scene B1");
+      // Empty-title headings get stable ids (skip reserved custom-ch, Chapter B, custom-sc, Scene B1)
+      expect(r.chapters[2].id).toBe("id_0");
+      expect(r.chapters[2].scenes[0].id).toBe("id_1");
     });
   });
 
