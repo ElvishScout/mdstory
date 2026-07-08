@@ -2,11 +2,10 @@ import yaml from "js-yaml";
 import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
-import { nanoid } from "nanoid";
 
 import { MetadataSchema, SceneHooksSchema, ChapterHooksSchema, StoryHooksSchema } from "./schema.js";
 import type { Metadata } from "./definitions.js";
-import { loadSource, mergeScripts, normalizePath } from "./utils.js";
+import { loadSource, mergeScripts, normalizePath, StableIdGenerator } from "./utils.js";
 
 type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
 type ScriptBlock = { from: number; to: number; content: string };
@@ -83,6 +82,11 @@ export async function resolveParseOptions(options?: Partial<ParseStoryOptions>):
  */
 export async function parseStorySource(source: string, options?: Partial<ParseStoryOptions>): Promise<ParsedStory> {
   const parseOptions = await resolveParseOptions(options);
+
+  const PLACEHOLDER_PREFIX = "PLACEHOLDER_";
+  const idGenerator = new StableIdGenerator();
+  let placeholderIndex = 0;
+
   source = await expandIncludes(source, parseOptions);
   source = source.replace(/\r\n?/g, "\n");
 
@@ -127,9 +131,13 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
           id ||= title;
         }
 
-        id ||= nanoid();
-        if (id.includes(".")) {
-          throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
+        if (id) {
+          if (id.includes(".")) {
+            throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
+          }
+          idGenerator.reserve(id);
+        } else {
+          id = `${PLACEHOLDER_PREFIX}${placeholderIndex++}`;
         }
 
         if (token.tag === "h2") {
@@ -209,7 +217,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   let chapterOrder: Heading[] = [];
 
   if (defaultScenes.length > 0) {
-    const chapterId = nanoid();
+    const chapterId = `${PLACEHOLDER_PREFIX}${placeholderIndex++}`;
     const scenes: ParsedScene[] = [];
     let entryScene: string | null = null;
 
@@ -286,6 +294,17 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       scenes,
     });
     chapterOrder.push(ch);
+  }
+
+  for (const chapter of chapters) {
+    if (chapter.id.startsWith(PLACEHOLDER_PREFIX)) {
+      chapter.id = idGenerator.next();
+    }
+    for (const scene of chapter.scenes) {
+      if (scene.id.startsWith(PLACEHOLDER_PREFIX)) {
+        scene.id = idGenerator.next();
+      }
+    }
   }
 
   return {
