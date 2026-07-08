@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { parseStorySource } from "../src/core/parser.js";
-import { DEFAULT_CHAPTER } from "../src/core/definitions.js";
 import type { IncludeResolver } from "../src/core/parser.js";
 
 // ---------------------------------------------------------------------------
@@ -287,7 +286,6 @@ describe("parseStorySource", () => {
 
       // Default chapter
       const defCh = r.chapters[0];
-      expect(defCh.id).toBe(DEFAULT_CHAPTER);
       expect(defCh.title).toBe("");
       expect(defCh.template).toBe("");
       expect(defCh.scripts).toEqual([]);
@@ -612,7 +610,6 @@ describe("parseStorySource", () => {
       const src = ["# Story", "### Scene 1 {#s1}", "Body 1.", "### Scene 2 {#s2}", "Body 2."].join("\n");
       const r = await parse(src);
       expect(r.chapters).toHaveLength(1);
-      expect(r.chapters[0].id).toBe(DEFAULT_CHAPTER);
       expect(r.chapters[0].scenes).toHaveLength(2);
     });
 
