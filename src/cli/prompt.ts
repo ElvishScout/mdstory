@@ -8,7 +8,7 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
     console.log();
 
     let inputReplies: Record<string, unknown>;
-    let targetReplies: { target: string } | null;
+    let targetReplies: { target: string | null | undefined };
 
     try {
       inputReplies = await inquirer.prompt<Record<string, unknown>>(
@@ -33,7 +33,14 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
           },
         ]);
       } else {
-        targetReplies = null;
+        targetReplies = await inquirer.prompt<{ target: string }>([
+          {
+            type: "select",
+            name: "target",
+            message: "Choose target",
+            choices: [{ name: "Continue", value: undefined }],
+          },
+        ]);
       }
     } catch (err) {
       if (err instanceof Error && err.name === "ExitPromptError") {
@@ -42,7 +49,7 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
       throw err;
     }
 
-    const { target } = targetReplies ?? { target: null };
+    const target = targetReplies.target;
     const inputs = Object.fromEntries(fields.map(({ name }) => [name, inputReplies[name]])) as Scope;
 
     return { target, inputs };
