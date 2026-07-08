@@ -5,7 +5,6 @@ import pluginAttrs from "markdown-it-attrs";
 import { nanoid } from "nanoid";
 
 import { MetadataSchema, SceneHooksSchema, ChapterHooksSchema, StoryHooksSchema } from "./schema.js";
-import { DEFAULT_CHAPTER } from "./definitions.js";
 import type { Metadata } from "./definitions.js";
 import { loadSource, mergeScripts, normalizePath } from "./utils.js";
 
@@ -210,6 +209,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   let chapterOrder: Heading[] = [];
 
   if (defaultScenes.length > 0) {
+    const chapterId = nanoid();
     const scenes: ParsedScene[] = [];
     let entryScene: string | null = null;
 
@@ -217,7 +217,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       const sh = defaultScenes[si];
       const seEnd = defaultScenes[si + 1]?.lineno ?? firstChapterLine;
       const scScripts = getScriptsInScope(scripts, sh.lineno, seEnd);
-      SceneHooksSchema.parse(await mergeScripts(scScripts, DEFAULT_CHAPTER, sh.id));
+      SceneHooksSchema.parse(await mergeScripts(scScripts, chapterId, sh.id));
 
       const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
       const template = lines
@@ -233,7 +233,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     }
 
     chapters.push({
-      id: DEFAULT_CHAPTER,
+      id: chapterId,
       title: "",
       template: "",
       scripts: [],

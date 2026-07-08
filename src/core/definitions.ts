@@ -60,9 +60,6 @@ export type SceneHooks = {
   onLeave?: (context: LeaveHookContext) => HookResult;
 };
 
-/** Symbol key for the implicit default chapter holding orphan scenes. */
-export const DEFAULT_CHAPTER = "__DEFAULT_CHAPTER__";
-
 /** Structured representation of a scene's content. */
 export type SceneInit = {
   id: string;
