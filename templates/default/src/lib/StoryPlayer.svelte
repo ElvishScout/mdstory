@@ -58,8 +58,13 @@
   $effect(() => {
     const timer = setTimeout(() => {
       story.play(prompt, { adapter: "html", debug: options.debug });
+      document.addEventListener("keydown", handleDocumentKeyDown);
     }, 200);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
+    };
   });
 
   function resolveForm(form: HTMLFormElement, submitter?: HTMLElement | null) {
@@ -70,7 +75,7 @@
     }
   }
 
-  function handlePlayerClick() {
+  function resolveLastForm() {
     if (!lastFormRef) {
       return;
     }
@@ -83,15 +88,25 @@
     resolveForm(lastFormRef);
   }
 
-  function handleFormKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter") {
-      e.preventDefault();
+  function handleDocumentKeyDown(ev: KeyboardEvent) {
+    if (ev.key === "Enter") {
+      resolveLastForm();
     }
   }
 
-  function handleFormSubmit(e: SubmitEvent) {
-    e.preventDefault();
-    resolveForm(e.currentTarget as HTMLFormElement, e.submitter);
+  function handlePlayerClick() {
+    resolveLastForm();
+  }
+
+  function handleFormKeyDown(ev: KeyboardEvent) {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+    }
+  }
+
+  function handleFormSubmit(ev: SubmitEvent) {
+    ev.preventDefault();
+    resolveForm(ev.currentTarget as HTMLFormElement, ev.submitter);
   }
 </script>
 
@@ -119,7 +134,7 @@
         class="scene-form"
         bind:this={lastFormRef}
         onkeydown={handleFormKeyDown}
-        onsubmit={enabled ? handleFormSubmit : (e) => e.preventDefault()}
+        onsubmit={enabled ? handleFormSubmit : (ev) => ev.preventDefault()}
       >
         {@html processHtml(text, !enabled)}
       </form>
