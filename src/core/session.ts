@@ -87,9 +87,11 @@ function applyInputScopes(targets: { globals: Scope; locals: Scope }, inputs: Sc
 export class StorySession {
   story: Story;
   data: StorySessionData;
+  promise: Promise<void> | null;
 
   constructor(story: Story, data?: StorySessionData) {
     this.story = story;
+    this.promise = null;
     this.data = data ?? {
       assets: structuredClone(story.assets),
       globals: structuredClone(story.globals),
@@ -219,7 +221,7 @@ export class StorySession {
    * delegates to `findNextScene`, so `destination` is only `null` when there
    * are no more scenes (→ end of story).
    */
-  async play(prompt: StoryPrompt, options: PlayOptions) {
+  private async runLoop(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
     const entryChapter = this.story.chapters[0];
     const entryScene = entryChapter?.scenes[0];
     if (!entryChapter || !entryScene) {
@@ -462,8 +464,22 @@ export class StorySession {
     }
   }
 
-  /** Dumps session data */
-  dump() {
+  /**
+   * Plays the story interactively.
+   *
+   * At most one play loop may be running at a time — re-entrant calls return
+   * the in-flight promise so multiple callers can safely await the same
+   * execution.
+   */
+  async play(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
+    this.promise ??= this.runLoop(prompt, options).finally(() => {
+      this.promise = null;
+    });
+    return this.promise;
+  }
+
+  /** Saves session data */
+  save() {
     return structuredClone(this.data);
   }
 }

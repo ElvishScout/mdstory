@@ -1,12 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import {
-    type PromptProps,
-    type PromptResult,
-    type Story,
-    type StoryPrompt,
-    type TemplateOptions,
-  } from "../../../../src";
+  import type { PromptProps, PromptResult, Story, StoryPrompt, TemplateOptions } from "../../../../src";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "./process-html";
 
@@ -70,6 +64,10 @@
     return () => {
       clearTimeout(timer);
       document.removeEventListener("keydown", handleDocumentKeyDown);
+      if (resolver) {
+        resolver({ type: "end" });
+        resolver = null;
+      }
     };
   });
 
