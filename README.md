@@ -270,7 +270,7 @@ You found {{coins}} gold pieces!
 
 ### Assets & Styles
 
-Reference assets defined in YAML metadata:
+Define assets in YAML metadata. Assets are spread directly into the template scope, accessible by key name as objects with `url` and `mime` properties:
 
 ```yaml
 assets:
@@ -279,10 +279,12 @@ assets:
 ```
 
 ```markdown
-![]({asset "map"})
-{{asset "bgm"}} → outputs the URL
-{{mime "bgm"}} → outputs "audio/mpeg"
+![]({map.url})
+{{bgm.url}} → outputs the URL
+{{bgm.mime}} → outputs "audio/mpeg"
 ```
+
+When an asset is defined as a string, the MIME type is auto-detected from the file extension.
 
 Add CSS with a `<style>` tag under the story heading:
 

@@ -270,7 +270,7 @@ _空气随着你深入而愈发寒冷。_
 
 ### 资源与样式
 
-引用 YAML 元数据中定义的资源：
+在 YAML 元数据中定义资源。资源会被展开到模板作用域中，通过键名以对象形式（含 `url` 和 `mime` 属性）直接访问：
 
 ```yaml
 assets:
@@ -279,10 +279,12 @@ assets:
 ```
 
 ```markdown
-![]({asset "map"})
-{{asset "bgm"}} → 输出 URL
-{{mime "bgm"}} → 输出 "audio/mpeg"
+![]({map.url})
+{{bgm.url}} → 输出 URL
+{{bgm.mime}} → 输出 "audio/mpeg"
 ```
+
+当资源以字符串形式定义时，MIME 类型会根据文件扩展名自动检测。
 
 在故事标题下用 `<style>` 标签引入 CSS：
 
