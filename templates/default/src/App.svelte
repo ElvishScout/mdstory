@@ -30,8 +30,8 @@
   });
 </script>
 
-{#if story}
-  <div class="min-h-screen flex flex-col *:grow">
+<div class="min-h-screen flex flex-col *:grow">
+  {#if story}
     <StoryPlayer {story} {options} />
-  </div>
-{/if}
+  {/if}
+</div>
