@@ -1,6 +1,12 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import { type PromptProps, type Story, type StoryPrompt, type TemplateOptions } from "../../../../src";
+  import {
+    type PromptProps,
+    type PromptResult,
+    type Story,
+    type StoryPrompt,
+    type TemplateOptions,
+  } from "../../../../src";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "./process-html";
 
@@ -20,7 +26,7 @@
   let lastFormRef: HTMLFormElement | null = $state(null);
   let lastCoverRef: HTMLDivElement | null = $state(null);
 
-  let resolver: ((formData: FormData) => void) | null = null;
+  let resolver: ((result: PromptResult) => void) | null = null;
 
   // Scroll to latest scene + play cover animation when scenes change
   $effect(() => {
@@ -45,12 +51,12 @@
   const prompt: StoryPrompt = async (scene) => {
     if (!scene.text && scene.inputs.length === 0 && scene.navs.length === 0) {
       resolver = null;
-      return;
+      return { type: "continue" };
     }
 
     scenes.push(scene);
 
-    return new Promise<FormData>((resolve) => {
+    return new Promise<PromptResult>((resolve) => {
       resolver = resolve;
     });
   };
@@ -70,7 +76,7 @@
   function resolveForm(form: HTMLFormElement, submitter?: HTMLElement | null) {
     if (resolver) {
       const formData = new FormData(form, submitter);
-      resolver(formData);
+      resolver({ type: "continue", data: formData });
       resolver = null;
     }
   }

@@ -52,6 +52,6 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
     const target = targetReplies.target;
     const inputs = Object.fromEntries(fields.map(({ name }) => [name, inputReplies[name]])) as Scope;
 
-    return { target, inputs };
+    return { type: "continue", data: { target, inputs } };
   };
 }

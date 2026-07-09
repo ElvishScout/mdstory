@@ -18,12 +18,24 @@ export interface StorySessionData {
 
 export type PromptProps = { type: "story" | "chapter" | "scene" } & RenderResult;
 
+export type PromptResultData = { target?: string | null; inputs?: Scope } | FormData;
+
+/**
+ * Normalised result returned by the prompt function after each render.
+ *
+ * - `{ type: "continue", data }` — advance the story; `data` carries the
+ *   optional navigation target and / or submitted inputs.  When `data` is
+ *   omitted the engine falls through to the next stage (or scene in sequence).
+ * - `{ type: "end" }` — stop playback immediately.
+ */
+export type PromptResult = { type: "end" } | { type: "continue"; data?: PromptResultData };
+
 /**
  * Prompt function for handling user input during story playback.
  * Receives the current scene and render result, returns navigation target and submitted input values.
  * Return `void` or a result with `target` set to `undefined` to advance to the next scene in sequence.
  */
-export type StoryPrompt = (props: PromptProps) => Promise<{ target?: string | null; inputs?: Scope } | FormData | void>;
+export type StoryPrompt = (props: PromptProps) => Promise<PromptResult>;
 
 export type PlayOptions = RenderOptions & {
   debug?: boolean;
@@ -132,14 +144,14 @@ export class StorySession {
     return resolved;
   }
 
+  /** Resolves the `data` payload of a `continue` result into a normalised target + inputs. */
   /**
-   * Normalises a raw prompt result, applies submitted inputs to the current
-   * scope, and resolves the target into a concrete destination.
+   * Normalises a {@link PromptResult} into a concrete navigation decision.
    *
-   * Returns `isEnd: true` when the user explicitly passed `target: null`.
-   * When `isEnd` is false but `destination` is null the target was
-   * `undefined` — meaning "fall through" (story / chapter stage) or
-   * "no more scenes" (scene stage).
+   * - `{ type: "end" }` → stop playback (`isEnd: true`).
+   * - `{ type: "continue" }` with `data` present → resolve target / inputs.
+   * - `{ type: "continue" }` without `data` → fall through (advance to next
+   *   stage, or next scene in sequence when a `scene` is provided).
    */
   private ingestPrompt(
     rawResult: Awaited<ReturnType<StoryPrompt>>,
@@ -150,12 +162,19 @@ export class StorySession {
     destination: { chapter: Chapter; scene: Scene } | null;
     isEnd: boolean;
   } {
-    // Normalise: void → undefined target, FormData → plain object
-    const result = !rawResult
-      ? { target: undefined as string | null | undefined, inputs: undefined as Scope | undefined }
-      : rawResult instanceof FormData
-        ? parseFormData(rawResult, renderResult)
-        : rawResult;
+    if (rawResult.type === "end") {
+      return { destination: null, isEnd: true };
+    }
+
+    // `type === "continue"` — normalise the optional `data` payload.
+    let result: { target?: string | null; inputs?: Scope };
+    if (!rawResult.data) {
+      result = { target: undefined, inputs: undefined };
+    } else if (rawResult.data instanceof FormData) {
+      result = parseFormData(rawResult.data, renderResult);
+    } else {
+      result = rawResult.data;
+    }
 
     // Apply any submitted inputs to the current scope
     if (result.inputs) {
