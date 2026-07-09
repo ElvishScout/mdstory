@@ -12,6 +12,12 @@
 npm install @elvishscout/mdstory
 ```
 
+如需全局使用 `mdstory` 命令：
+
+```bash
+npm install -g @elvishscout/mdstory
+```
+
 ## 快速开始
 
 MdStory 文件是一个 Markdown 文档，使用三级标题结构——`#` 故事、`##` 章节、`###` 场景：
@@ -58,48 +64,57 @@ title: 岔路口
 保存为 `story.md`，运行：
 
 ```bash
-npx mdstory play story.md
+mdstory play story.md
 ```
 
 或构建为独立 HTML 文件：
 
 ```bash
-npx mdstory build story.md
+mdstory build story.md
 ```
 
 ## CLI
 
 ```bash
 # 在终端中交互式游玩故事
-npx mdstory play my-story.md
+mdstory play my-story.md
 
 # 带调试输出游玩
-npx mdstory play my-story.md --debug
+mdstory play my-story.md --debug
 
 # 生成独立 HTML 文件并在浏览器中打开
-npx mdstory build my-story.md
+mdstory build my-story.md
 
 # 构建到指定输出路径
-npx mdstory build my-story.md -o dist/story.html
+mdstory build my-story.md -o dist/story.html
 
 # 构建但不自动打开浏览器
-npx mdstory build my-story.md --no-open
+mdstory build my-story.md --no-open
 
 # 构建并在浏览器控制台输出调试信息
-npx mdstory build my-story.md --debug
+mdstory build my-story.md --debug
+
+# 使用指定模板构建（从 templates/ 目录查找）
+mdstory build my-story.md --template default
+
+# 使用自定义模板文件构建
+mdstory build my-story.md --template ./my-theme/dist/index.html
+
+# 传递模板选项（可重复，支持点号分隔的嵌套键）
+mdstory build my-story.md -O debug=true -O theme.color=dark
 
 # 将 MdStory 写作 skill 安装到 coding agent
-npx mdstory skills
+mdstory skills
 
 # 安装到指定 agent（非交互模式）
-npx mdstory skills --agent claude
-npx mdstory skills --agent claude --agent codex
+mdstory skills --agent claude
+mdstory skills --agent claude --agent codex
 
 # 安装到自定义目录
-npx mdstory skills --dir ./my-skills
+mdstory skills --dir ./my-skills
 
 # 跳过确认提示
-npx mdstory skills --agent claude --yes
+mdstory skills --agent claude --yes
 ```
 
 ## Skills

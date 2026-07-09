@@ -12,6 +12,12 @@ Online demo: <https://mdstory.elvish.cc>
 npm install @elvishscout/mdstory
 ```
 
+To use `mdstory` globally:
+
+```bash
+npm install -g @elvishscout/mdstory
+```
+
 ## Quick Start
 
 An MdStory file is a Markdown document with three heading levels — `#` story, `##` chapter, `###` scene:
@@ -58,48 +64,57 @@ On the far side, you see a light.
 Save as `story.md` and run:
 
 ```bash
-npx mdstory play story.md
+mdstory play story.md
 ```
 
 Or build a standalone HTML file:
 
 ```bash
-npx mdstory build story.md
+mdstory build story.md
 ```
 
 ## CLI
 
 ```bash
 # Play a story in the terminal
-npx mdstory play my-story.md
+mdstory play my-story.md
 
 # Play with debug output
-npx mdstory play my-story.md --debug
+mdstory play my-story.md --debug
 
 # Build a standalone HTML file and open in browser
-npx mdstory build my-story.md
+mdstory build my-story.md
 
 # Build to a specific output path
-npx mdstory build my-story.md -o dist/story.html
+mdstory build my-story.md -o dist/story.html
 
 # Build without opening browser
-npx mdstory build my-story.md --no-open
+mdstory build my-story.md --no-open
 
 # Build with debug output in browser console
-npx mdstory build my-story.md --debug
+mdstory build my-story.md --debug
+
+# Build with a named template (from templates/ directory)
+mdstory build my-story.md --template default
+
+# Build with a custom template file
+mdstory build my-story.md --template ./my-theme/dist/index.html
+
+# Pass template options (repeatable, supports dot-separated nesting)
+mdstory build my-story.md -O debug=true -O theme.color=dark
 
 # Install MdStory writing skills to coding agents
-npx mdstory skills
+mdstory skills
 
 # Install to specific agents (non-interactive)
-npx mdstory skills --agent claude
-npx mdstory skills --agent claude --agent codex
+mdstory skills --agent claude
+mdstory skills --agent claude --agent codex
 
 # Install to a custom directory
-npx mdstory skills --dir ./my-skills
+mdstory skills --dir ./my-skills
 
 # Skip confirmation prompt
-npx mdstory skills --agent claude --yes
+mdstory skills --agent claude --yes
 ```
 
 ## Skills
