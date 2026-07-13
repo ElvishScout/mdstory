@@ -11,17 +11,19 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
     let targetReplies: { target: string | null | undefined };
 
     try {
-      inputReplies = await inquirer.prompt<Record<string, unknown>>(
-        fields.map(({ name, type, value }) => {
-          if (type === "number") {
-            return { type: "number", name, message: name, default: Number(value) };
-          } else if (type === "boolean") {
-            return { type: "confirm", name, message: name, default: Boolean(value) };
-          } else {
-            return { type: "input", name, message: name, default: String(value) };
-          }
-        }),
-      );
+      if (fields.length) {
+        inputReplies = await inquirer.prompt<Record<string, unknown>>(
+          fields.map(({ name, type, value }) => {
+            if (type === "number") {
+              return { type: "number", name, message: name, default: Number(value) };
+            } else if (type === "boolean") {
+              return { type: "confirm", name, message: name, default: Boolean(value) };
+            } else {
+              return { type: "input", name, message: name, default: String(value) };
+            }
+          }),
+        );
+      }
 
       if (navs.length) {
         targetReplies = await inquirer.prompt<{ target: string }>([
@@ -33,14 +35,7 @@ export function createPrompt(md: MarkdownIt): StoryPrompt {
           },
         ]);
       } else {
-        targetReplies = await inquirer.prompt<{ target: string }>([
-          {
-            type: "select",
-            name: "target",
-            message: "Choose target",
-            choices: [{ name: "Continue", value: undefined }],
-          },
-        ]);
+        targetReplies = { target: undefined };
       }
     } catch (err) {
       if (err instanceof Error && err.name === "ExitPromptError") {
