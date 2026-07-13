@@ -74,7 +74,7 @@ async function main() {
   const entries = await readdir(TEMPLATES_DIR, { withFileTypes: true });
   const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
 
-  if (dirs.length === 0) {
+  if (!dirs.length) {
     console.log("No template directories found.");
     return;
   }
@@ -86,7 +86,7 @@ async function main() {
   const failed = results.filter((r) => !r.ok);
 
   console.log("");
-  if (failed.length === 0) {
+  if (!failed.length) {
     console.log(`All ${results.length} template(s) built successfully.`);
   } else {
     console.error(`${failed.length} template(s) failed:`);

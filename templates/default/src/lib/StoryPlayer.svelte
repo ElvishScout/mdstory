@@ -14,7 +14,8 @@
 
   let { story, options = {} }: Props = $props();
 
-  let messages: PromptProps[] = $state([]);
+  let messageGroups: PromptProps[][] = $state([]);
+  let messageBuffer: PromptProps[] = [];
 
   let lastSceneRef: HTMLDivElement | null = $state(null);
   let lastFormRef: HTMLFormElement | null = $state(null);
@@ -24,7 +25,7 @@
 
   // Scroll to latest scene + play cover animation when scenes change
   $effect(() => {
-    if (messages.length === 0) {
+    if (!messageGroups.length) {
       return;
     }
 
@@ -42,12 +43,18 @@
   });
 
   const prompt: StoryPrompt = async (message) => {
-    if (!message.text && message.inputs.length === 0 && message.navs.length === 0) {
+    if (!message.inputs.length && !message.navs.length) {
+      if (message.text) {
+        messageBuffer.push(message);
+      }
+
       resolver = null;
       return { type: "continue" };
     }
 
-    messages.push(message);
+    messageBuffer.push(message);
+    messageGroups.push(messageBuffer);
+    messageBuffer = [];
 
     return new Promise<PromptResult>((resolve) => {
       resolver = resolve;
@@ -56,7 +63,12 @@
 
   $effect(() => {
     const timer = setTimeout(() => {
-      story.play(prompt, { adapter: "html", debug: options.debug });
+      story.play(prompt, { adapter: "html", debug: options.debug }).then(() => {
+        if (messageBuffer.length) {
+          messageGroups.push(messageBuffer);
+          messageBuffer = [];
+        }
+      });
       document.addEventListener("keydown", handleDocumentKeyDown);
     }, 200);
 
@@ -83,8 +95,8 @@
       return;
     }
 
-    const lastScene = messages[messages.length - 1];
-    if (lastScene.navs.length) {
+    const lastScene = messageGroups[messageGroups.length - 1];
+    if (lastScene.find((message) => message.navs.length !== 0)) {
       return;
     }
 
@@ -123,9 +135,9 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="px-2 md:px-12 pb-[33vh]" onclick={handlePlayerClick}>
-  {#each messages as { text }, i}
-    {@const enabled = i === messages.length - 1}
+<div class="px-2 md:px-12" onclick={handlePlayerClick}>
+  {#each messageGroups as group, i}
+    {@const enabled = i === messageGroups.length - 1}
     <div
       class="scene-container relative px-2 pt-8 first:pt-4 md:first:pt-8 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden {!enabled
         ? 'opacity-50'
@@ -139,7 +151,9 @@
         onkeydown={handleFormKeyDown}
         onsubmit={enabled ? handleFormSubmit : (ev) => ev.preventDefault()}
       >
-        {@html processHtml(text, !enabled)}
+        {#each group as message}
+          {@html processHtml(message.text, !enabled)}
+        {/each}
       </form>
       {#if enabled}
         <div

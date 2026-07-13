@@ -18,15 +18,15 @@
   }
 
   .scene-form h1 {
-    @apply mb-8 text-3xl text-center;
+    @apply my-8 first:mt-0 text-3xl text-center;
   }
 
   .scene-form h2 {
-    @apply mb-6 text-2xl;
+    @apply my-6 first:mt-0 text-2xl;
   }
 
   .scene-form h3 {
-    @apply mb-4 text-xl;
+    @apply my-4 first:mt-0 text-xl;
   }
 
   .scene-form pre {

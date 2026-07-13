@@ -30,7 +30,7 @@
   });
 </script>
 
-<div class="min-h-screen flex flex-col *:grow">
+<div class="min-h-screen pb-[33vh] flex flex-col *:grow">
   {#if story}
     <StoryPlayer {story} {options} />
   {/if}
