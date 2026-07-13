@@ -44,8 +44,6 @@ export type SectionHooks = {
   scope?: (context: HookContext) => HookResult<Scope | undefined>;
   onEnter?: (context: HookContext) => HookResult;
   onLeave?: (context: LeaveHookContext) => HookResult;
-  /** Returns per-render overrides (not persisted). */
-  view?: (context: HookContext) => HookResult<Scope | undefined>;
 };
 
 /** Structured representation of a section for runtime construction. */

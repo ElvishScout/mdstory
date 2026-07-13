@@ -37,6 +37,5 @@ export const SectionHooksSchema = z
     scope: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
     onEnter: z.function(),
     onLeave: z.function(),
-    view: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
   })
   .partial() as z.ZodType<SectionHooks>;

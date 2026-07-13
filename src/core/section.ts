@@ -33,9 +33,14 @@ export class Section {
 
   /** Construct a Section tree recursively from parser output. */
   static async fromParsed(parsed: ParsedSection, parentPath?: string[]): Promise<Section> {
-    const path = parentPath ? [...parentPath, parsed.id] : [parsed.id];
-    const hooks = await mergeScripts(parsed.scripts, path);
-    const children = await Promise.all(parsed.children.map((child) => Section.fromParsed(child, path)));
+    // Root scripts use no sectionPath so module IDs match parser validation,
+    // avoiding double execution via ES module cache dedup.
+    const hooks = parentPath
+      ? await mergeScripts(parsed.scripts, [...parentPath, parsed.id])
+      : await mergeScripts(parsed.scripts);
+    const children = await Promise.all(
+      parsed.children.map((child) => Section.fromParsed(child, parentPath ? [...parentPath, parsed.id] : [parsed.id])),
+    );
     return new Section({
       id: parsed.id,
       title: parsed.title,

@@ -58,6 +58,8 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
  * Applies input values to the nearest scope layer that owns each key.
  * If no layer owns the key, writes to the leaf layer.
  */
+const hasOwn = (obj: object, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key);
+
 function applyInputs(layers: Scope[], inputs: Scope) {
   if (!layers.length) {
     return;
@@ -66,7 +68,7 @@ function applyInputs(layers: Scope[], inputs: Scope) {
   for (const [name, value] of Object.entries(inputs)) {
     let found = false;
     for (let i = layers.length - 1; i >= 0; i--) {
-      if (name in layers[i]) {
+      if (hasOwn(layers[i], name)) {
         layers[i][name] = value;
         found = true;
         break;
@@ -130,7 +132,7 @@ export class StorySession {
     return new Proxy({} as Scope, {
       get(_target, prop) {
         for (let i = layers.length - 1; i >= 0; i--) {
-          if (prop in layers[i]) {
+          if (hasOwn(layers[i], prop as string)) {
             return layers[i][prop as string];
           }
         }
@@ -138,7 +140,7 @@ export class StorySession {
       },
       set(_target, prop, value) {
         for (let i = layers.length - 1; i >= 0; i--) {
-          if (prop in layers[i]) {
+          if (hasOwn(layers[i], prop as string)) {
             layers[i][prop as string] = value;
             return true;
           }
@@ -149,11 +151,20 @@ export class StorySession {
       },
       has(_target, prop) {
         for (let i = layers.length - 1; i >= 0; i--) {
-          if (prop in layers[i]) {
+          if (hasOwn(layers[i], prop as string)) {
             return true;
           }
         }
         return false;
+      },
+      deleteProperty(_target, prop) {
+        for (let i = layers.length - 1; i >= 0; i--) {
+          if (hasOwn(layers[i], prop as string)) {
+            delete layers[i][prop as string];
+            return true;
+          }
+        }
+        return true;
       },
       ownKeys(_target) {
         const keys = new Set<string>();
@@ -166,7 +177,7 @@ export class StorySession {
       },
       getOwnPropertyDescriptor(_target, prop) {
         for (let i = layers.length - 1; i >= 0; i--) {
-          if (prop in layers[i]) {
+          if (hasOwn(layers[i], prop as string)) {
             return {
               configurable: true,
               enumerable: true,
@@ -285,12 +296,15 @@ export class StorySession {
   /**
    * Runs the "enter stage" for a section (runs once when first entering).
    * Sets up scope, runs onEnter hook, renders template, prompts.
+   * When initOnly is true, only initializes scope — lifecycle hooks and
+   * render are deferred to the target stage (avoids double onEnter).
    * Returns the destination if the user navigated away, or null to fall through.
    */
   private async runEnterStage(
     path: string[],
     prompt: StoryPrompt,
     options: PlayOptions,
+    initOnly = false,
   ): Promise<{ destination: string[] | null; isEnd: boolean }> {
     const pathKey = path.join(".");
     const section = this.story.root.walk(path);
@@ -314,6 +328,12 @@ export class StorySession {
       if (result) {
         Object.assign(this.data.scopes[pathKey], result);
       }
+    }
+
+    // When initOnly, skip lifecycle hooks and render — target stage handles them
+    if (initOnly) {
+      this.data.enteredPaths.push(pathKey);
+      return { destination: null, isEnd: false };
     }
 
     // onEnter
@@ -374,27 +394,12 @@ export class StorySession {
       await section.hooks.onEnter({ scope: enterScope });
     }
 
-    // view — per-render overrides
-    const overrides: Scope = {};
-    if (section.hooks.view) {
-      const result = await section.hooks.view({ scope: enterScope });
-      if (result) {
-        Object.assign(overrides, result);
-      }
-    }
-
-    // Render + prompt (flat scope for Handlebars, with view overrides)
-    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path, overrides) }, options);
+    // Render + prompt
+    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
     const rawResult = await prompt({ ...renderResult, type: "section" });
     const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, path);
 
-    // onLeave for current section (always fires when leaving target)
-    if (section.hooks.onLeave) {
-      const canonicalTarget = destination ? destination.join(".") : null;
-      await section.hooks.onLeave({ scope: enterScope, target: canonicalTarget });
-    }
-
-    // Fire onLeave for ancestors being left
+    // Fire onLeave for current section and ancestors being left
     if (destination) {
       await this.fireLeaveHooks(path, destination);
     } else {
@@ -432,7 +437,9 @@ export class StorySession {
         const ancestorKey = ancestorPath.join(".");
 
         if (!this.data.enteredPaths.includes(ancestorKey)) {
-          const { destination, isEnd } = await this.runEnterStage(ancestorPath, prompt, options);
+          // Deepest element is the target — scope-only init; lifecycle deferred to target stage
+          const isTarget = depth === path.length - 1;
+          const { destination, isEnd } = await this.runEnterStage(ancestorPath, prompt, options, isTarget);
 
           if (isEnd) {
             return;

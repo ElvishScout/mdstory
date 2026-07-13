@@ -192,7 +192,13 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
 
   const lines = source.split("\n");
 
-  function buildSection(heading: Heading, childNodes: HeadingNode[]): ParsedSection {
+  async function buildSection(
+    heading: Heading,
+    childNodes: HeadingNode[],
+    parentPath: string[],
+  ): Promise<ParsedSection> {
+    const path = [...parentPath, heading.id];
+
     // Compute template end line:
     // - If this section has children, end at the first child's heading line
     // - Otherwise, find the next heading at same or higher level
@@ -216,9 +222,16 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     const sectionScripts = getBlocksInScope(scripts, heading.lineno, endLine);
     const sectionStyles = getBlocksInScope(styleBlocks, heading.lineno, endLine);
 
+    // Validate scripts at parse time (same module IDs as Section.fromParsed)
+    if (sectionScripts.length) {
+      SectionHooksSchema.parse(await mergeScripts(sectionScripts, path));
+    }
+
     // Build children recursively
-    const children = childNodes.map(({ heading: childHeading, children: grandChildren }) =>
-      buildSection(childHeading, grandChildren),
+    const children = await Promise.all(
+      childNodes.map(({ heading: childHeading, children: grandChildren }) =>
+        buildSection(childHeading, grandChildren, path),
+      ),
     );
 
     return {
@@ -243,10 +256,14 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   const rootScripts = getBlocksInScope(scripts, 0, firstHeadingLine);
   const rootStyles = getBlocksInScope(styleBlocks, 0, firstHeadingLine);
 
-  // Validate root scripts
-  SectionHooksSchema.parse(await mergeScripts(rootScripts));
+  // Validate root scripts at parse time
+  if (rootScripts.length) {
+    SectionHooksSchema.parse(await mergeScripts(rootScripts));
+  }
 
-  const rootChildren2 = rootChildren.map(({ heading, children }) => buildSection(heading, children));
+  const rootChildren2 = await Promise.all(
+    rootChildren.map(({ heading, children }) => buildSection(heading, children, [])),
+  );
 
   // ── Pass 4: replace placeholder IDs ──────────────────────────────────────
   function replacePlaceholderIds(section: ParsedSection): void {

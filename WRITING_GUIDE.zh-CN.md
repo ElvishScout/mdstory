@@ -1,6 +1,6 @@
 # MdStory 写作规范与 Hooks Best Practice
 
-本文面向 MdStory 作者，说明一篇 `.md` 故事应如何组织，以及什么时候使用 `scope()`、`view()` 和生命周期 hooks。
+本文面向 MdStory 作者，说明一篇 `.md` 故事应如何组织，以及什么时候使用 `scope()` 和生命周期 hooks。
 
 ## 基本原则
 
@@ -10,7 +10,7 @@ MdStory 文件是一篇 Markdown 文档。Section 是故事的基本单元——
 
 - 用标题表达层级结构。
 - 用 Handlebars 表达渲染逻辑：`{{name}}`、`{{#if flag}}...{{/if}}`。
-- 用 hooks 管理状态：变量初始化放在 `scope()`，渲染补充值放在 `view()`，副作用放在 `onEnter()` / `onLeave()`。
+- 用 hooks 管理状态：变量初始化放在 `scope()`，副作用放在 `onEnter()` / `onLeave()`。
 
 ## 文档结构
 
@@ -144,14 +144,13 @@ export default {
 
 ## Hook 速查
 
-每个 Section 的 `<script>` 可以导出以下四种 hook：
+每个 Section 的 `<script>` 可以导出以下三种 hook：
 
-| Hook      | 时机                      | 推荐用途                   |
-| --------- | ------------------------- | -------------------------- |
-| `scope`   | 首次进入 Section 时       | 返回该 Section 的变量      |
-| `onEnter` | 每次进入 Section 时       | 修改状态、记录访问         |
-| `onLeave` | 离开 Section 或故事结束时 | 结算状态、根据目标更新     |
-| `view`    | 每次渲染前                | 返回仅本次渲染使用的临时值 |
+| Hook      | 时机                      | 推荐用途               |
+| --------- | ------------------------- | ---------------------- |
+| `scope`   | 首次进入 Section 时       | 返回该 Section 的变量  |
+| `onEnter` | 每次进入 Section 时       | 修改状态、记录访问     |
+| `onLeave` | 离开 Section 或故事结束时 | 结算状态、根据目标更新 |
 
 `scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。
 
@@ -191,41 +190,6 @@ export default {
 ### 第一间房 {#room}
 
 这是你第 {{attempt}} 次尝试。
-```
-
-### view
-
-`view()` 返回本次渲染使用的临时值，会覆盖同名 scope 变量参与模板渲染，但不会写回状态。
-
-适合放：
-
-- 只在当前场景显示的派生值。
-- 格式化后的文本。
-- 根据当前状态计算的按钮可见性、提示文案。
-
-```markdown
-### 宝箱 {#chest}
-
-<script>
-export default {
-  view({ scope }) {
-    const opened = Boolean(scope.chestOpened);
-    return {
-      alreadyOpened: opened,
-      coins: opened ? 0 : 50,
-    };
-  },
-  onLeave({ scope }) {
-    scope.chestOpened = true;
-  },
-};
-</script>
-
-{{#if alreadyOpened}}
-宝箱是空的。
-{{else}}
-你找到了 {{coins}} 枚金币。
-{{/if}}
 ```
 
 ## 推荐写法
@@ -285,27 +249,6 @@ scope:
     },
   };
 </script>
-```
-
-### view() 不要承担状态写入职责
-
-`view()` 的主要职责是生成渲染模型。状态修改放到 `onEnter()` 或 `onLeave()`。
-
-推荐：
-
-```js
-view({ scope }) {
-  return { hpText: `${scope.hp}/100` };
-}
-```
-
-不推荐：
-
-```js
-view({ scope }) {
-  scope.visits = (scope.visits ?? 0) + 1;
-  return { visits: scope.visits };
-}
 ```
 
 ## 命名规范
@@ -392,14 +335,6 @@ assets:
 ```
 
 ## 常见反模式
-
-### 在 view() 里改 scope
-
-调试时很难判断状态为何变化。把状态变化移到 `onEnter()` 或 `onLeave()`。
-
-### 把临时值放到 scope()
-
-章节内临时值用 `scope()` 没问题（已被该 Section 限定），但仅当次渲染用的展示值用 `view()`。
 
 ### 依赖标题文字作为 id
 
