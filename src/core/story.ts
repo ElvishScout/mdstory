@@ -87,17 +87,20 @@ export class Story {
     return renderTemplate(this.template, scope, options);
   }
 
+  /** Creates and returns a new {@link StorySession} for this story. */
+  session() {
+    return new StorySession(this);
+  }
+
   /**
    * Plays the story interactively.
    *
-   * Creates a new {@link StorySession} and delegates playback to it.
-   * Returns the session so callers can inspect the final state (globals,
-   * locals, last chapter / scene, etc.).
+   * Creates a new session via {@link session} and delegates playback to it.
+   * Returns a promise that resolves when playback completes.
+   * Use {@link session} directly if you need to hold a reference to the session.
    */
   play(prompt: StoryPrompt, options: PlayOptions) {
-    const session = new StorySession(this);
-    session.play(prompt, options);
-    return session;
+    return this.session().play(prompt, options);
   }
 }
 
