@@ -54,9 +54,27 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
   return { target, inputs: parsedInputs };
 }
 
-function applyInputScopes(targets: Scope, inputs: Scope) {
+/**
+ * Applies input values to the nearest scope layer that owns each key.
+ * If no layer owns the key, writes to the leaf layer.
+ */
+function applyInputs(layers: Scope[], inputs: Scope) {
+  if (!layers.length) {
+    return;
+  }
+  const leaf = layers[layers.length - 1];
   for (const [name, value] of Object.entries(inputs)) {
-    targets[name] = value;
+    let found = false;
+    for (let i = layers.length - 1; i >= 0; i--) {
+      if (name in layers[i]) {
+        layers[i][name] = value;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      leaf[name] = value;
+    }
   }
 }
 
@@ -82,20 +100,94 @@ export class StorySession {
     }
   }
 
-  /** Builds the merged scope from root to the given path. */
-  private buildScope(path: string[]): Scope {
-    const result: Scope = {};
-    // Always start with root scope
+  /** Collects scope layers from root to the given path. */
+  private collectScopes(path: string[]): Scope[] {
+    const layers: Scope[] = [];
     const rootScope = this.data.scopes[""];
     if (rootScope) {
-      Object.assign(result, rootScope);
+      layers.push(rootScope);
     }
     for (let i = 0; i < path.length; i++) {
       const key = path.slice(0, i + 1).join(".");
       const sectionScope = this.data.scopes[key];
       if (sectionScope) {
-        Object.assign(result, sectionScope);
+        layers.push(sectionScope);
       }
+    }
+    return layers;
+  }
+
+  /**
+   * Builds a Proxy scope that reads from the nearest layer upwards,
+   * and writes to the layer that already owns the key (or the leaf layer).
+   */
+  private buildScope(path: string[]): Scope {
+    const layers = this.collectScopes(path);
+    if (!layers.length) {
+      return {};
+    }
+
+    return new Proxy({} as Scope, {
+      get(_target, prop) {
+        for (let i = layers.length - 1; i >= 0; i--) {
+          if (prop in layers[i]) {
+            return layers[i][prop as string];
+          }
+        }
+        return undefined;
+      },
+      set(_target, prop, value) {
+        for (let i = layers.length - 1; i >= 0; i--) {
+          if (prop in layers[i]) {
+            layers[i][prop as string] = value;
+            return true;
+          }
+        }
+        // Key doesn't exist anywhere — set on leaf
+        layers[layers.length - 1][prop as string] = value;
+        return true;
+      },
+      has(_target, prop) {
+        for (let i = layers.length - 1; i >= 0; i--) {
+          if (prop in layers[i]) {
+            return true;
+          }
+        }
+        return false;
+      },
+      ownKeys(_target) {
+        const keys = new Set<string>();
+        for (const layer of layers) {
+          for (const key of Object.keys(layer)) {
+            keys.add(key);
+          }
+        }
+        return [...keys];
+      },
+      getOwnPropertyDescriptor(_target, prop) {
+        for (let i = layers.length - 1; i >= 0; i--) {
+          if (prop in layers[i]) {
+            return {
+              configurable: true,
+              enumerable: true,
+              value: layers[i][prop as string],
+              writable: true,
+            };
+          }
+        }
+        return undefined;
+      },
+    });
+  }
+
+  /** Builds a flat merged object for Handlebars rendering (not a proxy). */
+  private buildRenderScope(path: string[], overrides?: Scope): Scope {
+    const result: Scope = {};
+    for (const layer of this.collectScopes(path)) {
+      Object.assign(result, layer);
+    }
+    if (overrides) {
+      Object.assign(result, overrides);
     }
     return result;
   }
@@ -139,13 +231,14 @@ export class StorySession {
       result = rawResult.data;
     }
 
-    // Apply inputs to the deepest section's scope
+    // Apply inputs to the nearest owning scope layer (no $ prefix needed)
     if (result.inputs) {
-      const pathKey = currentPath.join(".");
-      if (!this.data.scopes[pathKey]) {
-        this.data.scopes[pathKey] = {};
+      const layers = this.collectScopes(currentPath);
+      if (!layers.length) {
+        this.data.scopes[""] = {};
+        layers.push(this.data.scopes[""]);
       }
-      applyInputScopes(this.data.scopes[pathKey], result.inputs);
+      applyInputs(layers, result.inputs);
     }
 
     const destination = this.resolveDestination(result.target, currentPath);
@@ -230,8 +323,7 @@ export class StorySession {
     }
 
     // Render + prompt
-    const renderScope = this.buildScope(path);
-    const renderResult = section.render({ ...this.story.assets, ...renderScope }, options);
+    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
     const rawResult = await prompt({ ...renderResult, type: "section" });
     const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, path);
 
@@ -291,13 +383,8 @@ export class StorySession {
       }
     }
 
-    // Render + prompt
-    const renderContext = {
-      ...this.story.assets,
-      ...enterScope,
-      ...overrides,
-    };
-    const renderResult = section.render(renderContext, options);
+    // Render + prompt (flat scope for Handlebars, with view overrides)
+    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path, overrides) }, options);
     const rawResult = await prompt({ ...renderResult, type: "section" });
     const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, path);
 
