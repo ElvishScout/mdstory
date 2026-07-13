@@ -14,7 +14,7 @@
 
   let { story, options = {} }: Props = $props();
 
-  let scenes: PromptProps[] = $state([]);
+  let messages: PromptProps[] = $state([]);
 
   let lastSceneRef: HTMLDivElement | null = $state(null);
   let lastFormRef: HTMLFormElement | null = $state(null);
@@ -24,8 +24,7 @@
 
   // Scroll to latest scene + play cover animation when scenes change
   $effect(() => {
-    const count = scenes.length;
-    if (count === 0) {
+    if (messages.length === 0) {
       return;
     }
 
@@ -42,13 +41,13 @@
     });
   });
 
-  const prompt: StoryPrompt = async (scene) => {
-    if (!scene.text && scene.inputs.length === 0 && scene.navs.length === 0) {
+  const prompt: StoryPrompt = async (message) => {
+    if (!message.text && message.inputs.length === 0 && message.navs.length === 0) {
       resolver = null;
       return { type: "continue" };
     }
 
-    scenes.push(scene);
+    messages.push(message);
 
     return new Promise<PromptResult>((resolve) => {
       resolver = resolve;
@@ -84,7 +83,7 @@
       return;
     }
 
-    const lastScene = scenes[scenes.length - 1];
+    const lastScene = messages[messages.length - 1];
     if (lastScene.navs.length) {
       return;
     }
@@ -125,8 +124,8 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div class="px-2 md:px-12 pb-[33vh]" onclick={handlePlayerClick}>
-  {#each scenes as { text }, i}
-    {@const enabled = i === scenes.length - 1}
+  {#each messages as { text }, i}
+    {@const enabled = i === messages.length - 1}
     <div
       class="scene-container relative px-2 pt-8 first:pt-4 md:first:pt-8 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden {!enabled
         ? 'opacity-50'
