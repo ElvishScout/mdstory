@@ -193,14 +193,13 @@ scope:
 
 ### Hook
 
-Hook 是从 `<script>` 标签导出的 JavaScript 函数。每个 Section 可以使用以下四种 hook：
+Hook 是从 `<script>` 标签导出的 JavaScript 函数。每个 Section 可以使用以下三种 hook：
 
 | Hook      | 签名                  | 用途                     |
 | --------- | --------------------- | ------------------------ |
 | `scope`   | `({ scope })`         | 返回当前 Section 的变量  |
 | `onEnter` | `({ scope })`         | 进入时的副作用           |
 | `onLeave` | `({ scope, target })` | 离开时的副作用           |
-| `view`    | `({ scope })`         | 返回当次渲染的临时覆盖值 |
 
 `scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。`scope.flags.x = true`、`scope.health = 50` 都能正确持久化。
 
@@ -224,20 +223,16 @@ export default {
 
 <script>
 export default {
-  view({ scope }) {
-    const opened = scope.chestOpened || false;
-    return { alreadyOpened: opened, coins: opened ? 0 : 50 };
-  },
   onLeave({ scope }) {
     scope.chestOpened = true;
   },
 };
 </script>
 
-{{#if alreadyOpened}}
+{{#if chestOpened}}
 宝箱是空的。
 {{else}}
-你找到了 {{coins}} 枚金币！
+你找到了 50 枚金币！
 {{/if}}
 ```
 

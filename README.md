@@ -193,14 +193,13 @@ Reference variables with `{{name}}`.
 
 ### Hooks
 
-Hooks are JavaScript functions exported from `<script>` tags. Every Section can use these four hooks:
+Hooks are JavaScript functions exported from `<script>` tags. Every Section can use these three hooks:
 
 | Hook      | Signature             | Purpose                           |
 | --------- | --------------------- | --------------------------------- |
 | `scope`   | `({ scope })`         | Return variables for this Section |
 | `onEnter` | `({ scope })`         | Side effect on enter              |
 | `onLeave` | `({ scope, target })` | Side effect on leave              |
-| `view`    | `({ scope })`         | Return per-render overrides       |
 
 The `scope` parameter is a Proxy — reads walk up layers to find the nearest key; writes modify the owning layer. Both `scope.flags.x = true` and `scope.health = 50` persist correctly.
 
@@ -224,20 +223,16 @@ export default {
 
 <script>
 export default {
-  view({ scope }) {
-    const opened = scope.chestOpened || false;
-    return { alreadyOpened: opened, coins: opened ? 0 : 50 };
-  },
   onLeave({ scope }) {
     scope.chestOpened = true;
   },
 };
 </script>
 
-{{#if alreadyOpened}}
+{{#if chestOpened}}
 The chest is empty.
 {{else}}
-You found {{coins}} gold pieces!
+You found 50 gold pieces!
 {{/if}}
 ```
 
