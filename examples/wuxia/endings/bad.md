@@ -4,12 +4,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "bad";
+    onEnter({ scope }) {
+      scope.flags.ending = "bad";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        withRuyan: !!globals.flags.travelWithRuyan,
+        withRuyan: !!scope.flags.travelWithRuyan,
       };
     },
   };

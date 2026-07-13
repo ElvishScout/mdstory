@@ -2,9 +2,9 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        commanderName: globals.commanderName || "指挥官",
+        commanderName: scope.commanderName || "指挥官",
       };
     },
   };
@@ -16,14 +16,14 @@ _结局_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "true";
-      globals.crewMorale = 100;
+    onEnter({ scope }) {
+      scope.flags.ending = "true";
+      scope.crewMorale = 100;
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
-        boardedShip: !!(globals.flags || {}).boardedShip,
+        commanderName: scope.commanderName,
+        boardedShip: !!(scope.flags || {}).boardedShip,
       };
     },
   };
@@ -61,15 +61,15 @@ _结局_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "good";
-      globals.crewMorale = Math.min(100, (globals.crewMorale || 80) + 20);
+    onEnter({ scope }) {
+      scope.flags.ending = "good";
+      scope.crewMorale = Math.min(100, (scope.crewMorale || 80) + 20);
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
-        knowledge: globals.knowledge || 0,
-        hasHighKnowledge: (globals.knowledge || 0) >= 3,
+        commanderName: scope.commanderName,
+        knowledge: scope.knowledge || 0,
+        hasHighKnowledge: (scope.knowledge || 0) >= 3,
       };
     },
   };
@@ -101,13 +101,13 @@ _结局_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "bad";
-      globals.crewMorale = 0;
+    onEnter({ scope }) {
+      scope.flags.ending = "bad";
+      scope.crewMorale = 0;
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
+        commanderName: scope.commanderName,
       };
     },
   };

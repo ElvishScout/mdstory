@@ -4,14 +4,14 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "good";
+    onEnter({ scope }) {
+      scope.flags.ending = "good";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        repHigh: (globals.reputation || 0) >= 3,
-        ml: globals.martialLevel || 0,
-        withRuyan: !!globals.flags.travelWithRuyan,
+        repHigh: (scope.reputation || 0) >= 3,
+        ml: scope.martialLevel || 0,
+        withRuyan: !!scope.flags.travelWithRuyan,
       };
     },
   };

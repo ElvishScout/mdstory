@@ -2,16 +2,16 @@
 
 <script>
   export default {
-    locals({ globals }) {
-      const flags = globals.flags || {};
+    scope({ scope }) {
+      const flags = scope.flags || {};
       return {
         interrogatedZhao: !!flags.interrogatedZhao,
         interrogatedWife: !!flags.interrogatedWife,
         interrogatedButler: !!flags.interrogatedButler,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter3Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter3Entered = true;
     },
   };
 </script>
@@ -20,8 +20,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.interrogatedZhao = true;
+    onEnter({ scope }) {
+      scope.flags.interrogatedZhao = true;
     },
   };
 </script>
@@ -72,8 +72,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.interrogatedWife = true;
+    onEnter({ scope }) {
+      scope.flags.interrogatedWife = true;
     },
   };
 </script>
@@ -144,10 +144,10 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.interrogatedButler = true;
-      if (!globals.clues.includes("butler-testimony")) {
-        globals.clues.push("butler-testimony");
+    onEnter({ scope }) {
+      scope.flags.interrogatedButler = true;
+      if (!scope.clues.includes("butler-testimony")) {
+        scope.clues.push("butler-testimony");
       }
     },
   };
@@ -199,9 +199,9 @@
 
 <script>
   export default {
-    view({ globals }) {
-      const flags = globals.flags || {};
-      const clues = globals.clues || [];
+    view({ scope }) {
+      const flags = scope.flags || {};
+      const clues = scope.clues || [];
       return {
         interrogatedZhao: !!flags.interrogatedZhao,
         interrogatedWife: !!flags.interrogatedWife,

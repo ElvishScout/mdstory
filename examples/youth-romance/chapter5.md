@@ -2,15 +2,15 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        affection: globals.affection || 0,
-        inventory: globals.inventory || [],
+        readerName: scope.name || "你",
+        affection: scope.affection || 0,
+        inventory: scope.inventory || [],
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter5Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter5Entered = true;
     },
   };
 </script>
@@ -92,9 +92,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.confessed = true;
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.confessed = true;
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -137,8 +137,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.confessed = false;
+    onEnter({ scope }) {
+      scope.flags.confessed = false;
     },
   };
 </script>
@@ -157,10 +157,10 @@
 
 <script>
   export default {
-    view({ globals }) {
-      const inv = globals.inventory || [];
-      const flags = globals.flags || {};
-      const aff = globals.affection || 0;
+    view({ scope }) {
+      const inv = scope.inventory || [];
+      const flags = scope.flags || {};
+      const aff = scope.affection || 0;
       return {
         hasPhoto: inv.includes("旧照片"),
         hasCharm: inv.includes("护身符"),
@@ -195,8 +195,8 @@
 
 <script>
   export default {
-    onLeave({ globals }) {
-      globals.flags.chapter5Complete = true;
+    onLeave({ scope }) {
+      scope.flags.chapter5Complete = true;
     },
   };
 </script>

@@ -1,6 +1,6 @@
 ---
 title: 江湖风雨录
-globals:
+scope:
   name: 侠士
   inventory: []
   qi: 100
@@ -13,7 +13,7 @@ globals:
 
 <script>
   export default {
-    globals() {
+    scope() {
       return {
         inventory: [],
         qi: 100,

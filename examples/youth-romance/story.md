@@ -1,6 +1,6 @@
 ---
 title: 樱花下的约定
-globals:
+scope:
   name: 旅人
   inventory: []
   affection: 0
@@ -11,7 +11,7 @@ globals:
 
 <script>
   export default {
-    globals() {
+    scope() {
       return {
         inventory: [],
         affection: 0,

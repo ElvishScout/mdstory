@@ -2,17 +2,17 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        ml: globals.martialLevel || 1,
-        rep: globals.reputation || 0,
-        qi: globals.qi || 100,
-        masteredUltimate: !!globals.flags.masteredUltimate,
+        readerName: scope.name || "你",
+        ml: scope.martialLevel || 1,
+        rep: scope.reputation || 0,
+        qi: scope.qi || 100,
+        masteredUltimate: !!scope.flags.masteredUltimate,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter4Started = true;
+    onEnter({ scope }) {
+      scope.flags.chapter4Started = true;
     },
   };
 </script>
@@ -107,22 +107,22 @@
 
 <script>
   export default {
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasManual: inv.includes("青云心法"),
-        masteredUltimate: !!globals.flags.masteredUltimate,
-        masteredUltimateOrHigher: !!globals.flags.masteredUltimate, // kept for compat
-        martialHigh: (globals.martialLevel || 0) >= 3,
-        repHigh: (globals.reputation || 0) >= 3,
-        finalMl: globals.martialLevel || 0,
-        finalRep: globals.reputation || 0,
-        canTrueEnding: !!globals.flags.masteredUltimate,
-        canGoodEnding: (globals.martialLevel || 0) >= 3 || (globals.reputation || 0) >= 3,
+        masteredUltimate: !!scope.flags.masteredUltimate,
+        masteredUltimateOrHigher: !!scope.flags.masteredUltimate, // kept for compat
+        martialHigh: (scope.martialLevel || 0) >= 3,
+        repHigh: (scope.reputation || 0) >= 3,
+        finalMl: scope.martialLevel || 0,
+        finalRep: scope.reputation || 0,
+        canTrueEnding: !!scope.flags.masteredUltimate,
+        canGoodEnding: (scope.martialLevel || 0) >= 3 || (scope.reputation || 0) >= 3,
       };
     },
-    onLeave({ globals }) {
-      globals.flags.gameCompleted = true;
+    onLeave({ scope }) {
+      scope.flags.gameCompleted = true;
     },
   };
 </script>

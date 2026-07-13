@@ -1,11 +1,16 @@
 <script lang="ts">
   import { tick } from "svelte";
   import type { PromptProps, PromptResult, Story, StoryPrompt, TemplateOptions } from "../../../../src";
+  import { Section } from "../../../../src";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "./process-html";
 
   // Keep reference to prevent tree-shaking of the custom element registration
   void FcInput;
+
+  function collectStyles(section: Section): string {
+    return section.stylesheets.join("") + section.children.map(collectStyles).join("");
+  }
 
   interface Props {
     story: Story;
@@ -126,9 +131,9 @@
 </script>
 
 <svelte:head>
-  {#if story.stylesheet}
+  {#if story}
     <svelte:element this={"style"}>
-      {@html story.stylesheet}
+      {@html collectStyles(story.root)}
     </svelte:element>
   {/if}
 </svelte:head>

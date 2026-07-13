@@ -2,13 +2,13 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        detectiveName: globals.name || "你",
+        detectiveName: scope.name || "你",
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter1Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter1Entered = true;
     },
   };
 </script>
@@ -177,9 +177,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.clues.includes("pawn-ticket")) {
-        globals.clues.push("pawn-ticket");
+    onEnter({ scope }) {
+      if (!scope.clues.includes("pawn-ticket")) {
+        scope.clues.push("pawn-ticket");
       }
     },
   };
@@ -213,12 +213,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.clues.includes("hidden-passage")) {
-        globals.clues.push("hidden-passage");
+    onEnter({ scope }) {
+      if (!scope.clues.includes("hidden-passage")) {
+        scope.clues.push("hidden-passage");
       }
-      if (!globals.clues.includes("cufflink")) {
-        globals.clues.push("cufflink");
+      if (!scope.clues.includes("cufflink")) {
+        scope.clues.push("cufflink");
       }
     },
   };

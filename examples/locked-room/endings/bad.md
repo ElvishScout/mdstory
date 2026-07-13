@@ -4,14 +4,14 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "bad";
+    onEnter({ scope }) {
+      scope.flags.ending = "bad";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        accusedWife: globals.accusation === "wife",
-        accusedButler: globals.accusation === "butler",
-        accusedZhaoNoEvidence: globals.accusation === "zhao",
+        accusedWife: scope.accusation === "wife",
+        accusedButler: scope.accusation === "butler",
+        accusedZhaoNoEvidence: scope.accusation === "zhao",
       };
     },
   };

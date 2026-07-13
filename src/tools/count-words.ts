@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import { fromPath } from "../index.js";
+import { fromPath, type Section } from "../index.js";
 
 const require = createRequire(import.meta.url);
 const { wordsCount } = require("words-count");
@@ -9,20 +9,21 @@ function countWords(text: string) {
   return wordsCount(cleanText) as number;
 }
 
+function countSectionWords(section: Section): number {
+  let count = 0;
+  count += countWords(section.template);
+  for (const child of section.children) {
+    count += countSectionWords(child);
+  }
+  return count;
+}
+
 async function main() {
   const entryPath = process.argv[2];
   const story = await fromPath(entryPath);
 
-  let count = 0;
-  count += countWords(story.template);
-  for (const chapter of story.chapters) {
-    count += countWords(chapter.template);
-    for (const scene of chapter.scenes) {
-      count += countWords(scene.template);
-    }
-  }
-
-  console.log("Total words:", count);
+  const total = countSectionWords(story.root);
+  console.log("Total words:", total);
 }
 
 main();

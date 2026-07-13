@@ -2,8 +2,8 @@
 
 <script>
   export default {
-    locals({ globals }) {
-      const clues = globals.clues || [];
+    scope({ scope }) {
+      const clues = scope.clues || [];
       const keyClues = ["hidden-passage", "cufflink", "cigarette-ash", "vase-weapon", "mud-shoes", "secret-letters", "butler-testimony"];
       const foundKey = keyClues.filter(c => clues.includes(c)).length;
       return {
@@ -13,8 +13,8 @@
         enoughForGood: foundKey >= 3,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter4Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter4Entered = true;
     },
   };
 </script>
@@ -67,8 +67,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.accusation = "zhao";
+    onEnter({ scope }) {
+      scope.accusation = "zhao";
     },
   };
 </script>
@@ -157,8 +157,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.accusation = "wife";
+    onEnter({ scope }) {
+      scope.accusation = "wife";
     },
   };
 </script>
@@ -203,8 +203,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.accusation = "butler";
+    onEnter({ scope }) {
+      scope.accusation = "butler";
     },
   };
 </script>

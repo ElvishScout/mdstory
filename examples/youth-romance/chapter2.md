@@ -2,15 +2,15 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        affection: globals.affection || 0,
-        inventory: globals.inventory || [],
+        readerName: scope.name || "你",
+        affection: scope.affection || 0,
+        inventory: scope.inventory || [],
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter2Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter2Entered = true;
     },
   };
 </script>
@@ -66,8 +66,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.beenToSea = true;
+    onEnter({ scope }) {
+      scope.flags.beenToSea = true;
     },
   };
 </script>
@@ -100,8 +100,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.beenToSea = false;
+    onEnter({ scope }) {
+      scope.flags.beenToSea = false;
     },
   };
 </script>
@@ -156,8 +156,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.beachActivity = "游泳";
+    onEnter({ scope }) {
+      scope.flags.beachActivity = "游泳";
     },
   };
 </script>
@@ -204,8 +204,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.beachActivity = "捡贝壳";
+    onEnter({ scope }) {
+      scope.flags.beachActivity = "捡贝壳";
     },
   };
 </script>
@@ -244,8 +244,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.beachActivity = "沙滩排球";
+    onEnter({ scope }) {
+      scope.flags.beachActivity = "沙滩排球";
     },
   };
 </script>
@@ -282,7 +282,7 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
+    onEnter({ scope }) {
     },
   };
 </script>
@@ -320,8 +320,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.scaredAtNight = true;
+    onEnter({ scope }) {
+      scope.flags.scaredAtNight = true;
     },
   };
 </script>
@@ -376,8 +376,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.scaredAtNight = false;
+    onEnter({ scope }) {
+      scope.flags.scaredAtNight = false;
     },
   };
 </script>
@@ -412,11 +412,11 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.attendedFireworks = true;
-      if (!Array.isArray(globals.inventory)) globals.inventory = [];
-      if (!globals.inventory.includes("护身符")) {
-        globals.inventory.push("护身符");
+    onEnter({ scope }) {
+      scope.flags.attendedFireworks = true;
+      if (!Array.isArray(scope.inventory)) scope.inventory = [];
+      if (!scope.inventory.includes("护身符")) {
+        scope.inventory.push("护身符");
       }
     },
   };
@@ -578,11 +578,11 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.summerCampComplete = true;
+    onEnter({ scope }) {
+      scope.flags.summerCampComplete = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasCharm: inv.includes("护身符"),
       };

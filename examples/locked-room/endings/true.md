@@ -4,11 +4,11 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "true";
+    onEnter({ scope }) {
+      scope.flags.ending = "true";
     },
-    view({ globals }) {
-      const clues = globals.clues || [];
+    view({ scope }) {
+      const clues = scope.clues || [];
       return {
         hasLetters: clues.includes("secret-letters"),
         hasPawnTicket: clues.includes("pawn-ticket"),

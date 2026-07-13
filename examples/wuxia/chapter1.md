@@ -2,13 +2,13 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
+        readerName: scope.name || "你",
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter1Started = true;
+    onEnter({ scope }) {
+      scope.flags.chapter1Started = true;
     },
   };
 </script>
@@ -50,10 +50,10 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.foughtAtSect = true;
-      globals.reputation += 1;
-      globals.qi = Math.max(0, globals.qi - 20);
+    onEnter({ scope }) {
+      scope.flags.foughtAtSect = true;
+      scope.reputation += 1;
+      scope.qi = Math.max(0, scope.qi - 20);
     },
   };
 </script>
@@ -94,8 +94,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.foughtAtSect = false;
+    onEnter({ scope }) {
+      scope.flags.foughtAtSect = false;
     },
   };
 </script>
@@ -138,19 +138,19 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.escaped = true;
-      if (!globals.inventory.includes("青云心法")) {
-        globals.inventory.push("青云心法");
+    onEnter({ scope }) {
+      scope.flags.escaped = true;
+      if (!scope.inventory.includes("青云心法")) {
+        scope.inventory.push("青云心法");
       }
     },
-    onLeave({ globals }) {
-      globals.flags.chapter1Complete = true;
+    onLeave({ scope }) {
+      scope.flags.chapter1Complete = true;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        fought: !!globals.flags.foughtAtSect,
-        pName: globals.name || "你",
+        fought: !!scope.flags.foughtAtSect,
+        pName: scope.name || "你",
       };
     },
   };

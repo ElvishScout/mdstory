@@ -1,6 +1,6 @@
 ---
 title: 沙海遗踪
-globals:
+scope:
   inventory: []
   health: 100
   knowledge: 0
@@ -11,7 +11,7 @@ globals:
 
 <script>
   export default {
-    globals() {
+    scope() {
       return {
         inventory: [],
         health: 100,
@@ -19,8 +19,8 @@ globals:
         flags: {},
       };
     },
-    onStart({ globals }) {
-      globals.flags.storyStarted = true;
+    onEnter({ scope }) {
+      scope.flags.storyStarted = true;
     },
   };
 </script>
@@ -42,17 +42,17 @@ _"找到楼陀罗的人，可以许一个愿望。但记住——城里的东西
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        currentHealth: globals.health || 100,
-        hasMap: (globals.inventory || []).includes("羊皮地图"),
+        currentHealth: scope.health || 100,
+        hasMap: (scope.inventory || []).includes("羊皮地图"),
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter1Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter1Entered = true;
     },
-    onLeave({ globals, locals }) {
-      globals.health = locals.currentHealth || globals.health;
+    onLeave({ scope }) {
+      scope.health = scope.currentHealth || scope.health;
     },
   };
 </script>
@@ -63,9 +63,9 @@ _第一章标题页 · 大漠边缘_
 
 <script>
   export default {
-    view({ globals }) {
+    view({ scope }) {
       return {
-        hasWater: (globals.inventory || []).includes("水袋"),
+        hasWater: (scope.inventory || []).includes("水袋"),
       };
     },
   };
@@ -98,15 +98,15 @@ _你腰间已经挂着水袋了。_
 
 <script>
   export default {
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
         hasRope: inv.includes("麻绳"),
         hasKnife: inv.includes("短刀"),
-        picked: (globals.flags || {}).suppliesPicked || 0,
-        canPick: ((globals.flags || {}).suppliesPicked || 0) < 2,
+        picked: (scope.flags || {}).suppliesPicked || 0,
+        canPick: ((scope.flags || {}).suppliesPicked || 0) < 2,
       };
     },
   };
@@ -148,14 +148,14 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.inventory.includes("水袋")) {
-        globals.inventory.push("水袋");
+    onEnter({ scope }) {
+      if (!scope.inventory.includes("水袋")) {
+        scope.inventory.push("水袋");
       }
-      globals.flags.suppliesPicked = (globals.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ globals }) {
-      return { picked: globals.flags.suppliesPicked || 0 };
+    view({ scope }) {
+      return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
 </script>
@@ -173,14 +173,14 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.inventory.includes("星盘")) {
-        globals.inventory.push("星盘");
+    onEnter({ scope }) {
+      if (!scope.inventory.includes("星盘")) {
+        scope.inventory.push("星盘");
       }
-      globals.flags.suppliesPicked = (globals.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ globals }) {
-      return { picked: globals.flags.suppliesPicked || 0 };
+    view({ scope }) {
+      return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
 </script>
@@ -198,14 +198,14 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.inventory.includes("麻绳")) {
-        globals.inventory.push("麻绳");
+    onEnter({ scope }) {
+      if (!scope.inventory.includes("麻绳")) {
+        scope.inventory.push("麻绳");
       }
-      globals.flags.suppliesPicked = (globals.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ globals }) {
-      return { picked: globals.flags.suppliesPicked || 0 };
+    view({ scope }) {
+      return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
 </script>
@@ -223,14 +223,14 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.inventory.includes("短刀")) {
-        globals.inventory.push("短刀");
+    onEnter({ scope }) {
+      if (!scope.inventory.includes("短刀")) {
+        scope.inventory.push("短刀");
       }
-      globals.flags.suppliesPicked = (globals.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ globals }) {
-      return { picked: globals.flags.suppliesPicked || 0 };
+    view({ scope }) {
+      return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
 </script>
@@ -248,14 +248,14 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.metSandstorm = true;
-      globals.flags.chapter1Complete = true;
+    onEnter({ scope }) {
+      scope.flags.metSandstorm = true;
+      scope.flags.chapter1Complete = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
         hasKnife: inv.includes("短刀"),
@@ -303,13 +303,13 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter2Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter2Entered = true;
     },
   };
 </script>
@@ -320,10 +320,10 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
       };
     },
@@ -347,8 +347,8 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.enteredTrapRoom = true;
+    onEnter({ scope }) {
+      scope.flags.enteredTrapRoom = true;
     },
   };
 </script>
@@ -361,9 +361,9 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    view({ globals }) {
-      const inv = globals.inventory || [];
-      const health = globals.health || 100;
+    view({ scope }) {
+      const inv = scope.inventory || [];
+      const health = scope.health || 100;
       return {
         hasRope: inv.includes("麻绳"),
         // health will be updated in onLeave based on escape method
@@ -371,7 +371,7 @@ _第二章 · 地下迷宫_
         hasCompass: inv.includes("星盘"),
       };
     },
-    onLeave({ globals }) {
+    onLeave({ scope }) {
       // Health reduction applied via nav choice instead
     },
   };
@@ -384,20 +384,20 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      const inv = globals.inventory || [];
+    onEnter({ scope }) {
+      const inv = scope.inventory || [];
       if (inv.includes("麻绳")) {
-        globals.health = Math.max(0, (globals.health || 100) - 5);
+        scope.health = Math.max(0, (scope.health || 100) - 5);
       } else {
-        globals.health = Math.max(0, (globals.health || 100) - 20);
+        scope.health = Math.max(0, (scope.health || 100) - 20);
       }
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasRope: inv.includes("麻绳"),
-        health: globals.health || 0,
-        explorerName: globals.explorerName || "探险者",
+        health: scope.health || 0,
+        explorerName: scope.explorerName || "探险者",
       };
     },
   };
@@ -423,13 +423,13 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.health = Math.max(0, (globals.health || 100) - 30);
+    onEnter({ scope }) {
+      scope.health = Math.max(0, (scope.health || 100) - 30);
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        health: globals.health || 0,
-        explorerName: globals.explorerName || "探险者",
+        health: scope.health || 0,
+        explorerName: scope.explorerName || "探险者",
       };
     },
   };
@@ -453,17 +453,17 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
-      globals.flags.visitedMuralHall = true;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.flags.visitedMuralHall = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
-        health: globals.health || 0,
-        knowledge: globals.knowledge || 0,
+        health: scope.health || 0,
+        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -495,18 +495,18 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasRope: inv.includes("麻绳"),
-        knowledge: globals.knowledge || 0,
-        health: globals.health || 0,
-        highKnowledge: (globals.knowledge || 0) >= 2,
+        knowledge: scope.knowledge || 0,
+        health: scope.health || 0,
+        highKnowledge: (scope.knowledge || 0) >= 2,
       };
     },
-    onLeave({ globals }) {
-      globals.flags.chapter2Complete = true;
+    onLeave({ scope }) {
+      scope.flags.chapter2Complete = true;
     },
   };
 </script>
@@ -530,15 +530,15 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
-        currentHealth: globals.health || 100,
-        currentKnowledge: globals.knowledge || 0,
+        explorerName: scope.explorerName || "探险者",
+        currentHealth: scope.health || 100,
+        currentKnowledge: scope.knowledge || 0,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter3Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter3Entered = true;
     },
   };
 </script>
@@ -549,21 +549,21 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.choseLeftPath = true;
-      globals.knowledge = (globals.knowledge || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.choseLeftPath = true;
+      scope.knowledge = (scope.knowledge || 0) + 1;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasWater: inv.includes("水袋"),
-        health: globals.health || 0,
-        knowledge: globals.knowledge || 0,
+        health: scope.health || 0,
+        knowledge: scope.knowledge || 0,
       };
     },
-    onLeave({ globals }) {
-      globals.flags.leftPathComplete = true;
+    onLeave({ scope }) {
+      scope.flags.leftPathComplete = true;
     },
   };
 </script>
@@ -589,14 +589,14 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.skippedBox = true;
+    onEnter({ scope }) {
+      scope.flags.skippedBox = true;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
-        health: globals.health || 0,
-        knowledge: globals.knowledge || 0,
+        explorerName: scope.explorerName || "探险者",
+        health: scope.health || 0,
+        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -614,27 +614,27 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.choseRightPath = true;
-      globals.knowledge = (globals.knowledge || 0) + 2;
-      const inv = globals.inventory || [];
+    onEnter({ scope }) {
+      scope.flags.choseRightPath = true;
+      scope.knowledge = (scope.knowledge || 0) + 2;
+      const inv = scope.inventory || [];
       if (inv.includes("短刀")) {
         if (!inv.includes("赤珠")) {
           inv.push("赤珠");
         }
       }
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
-        health: globals.health || 0,
-        knowledge: globals.knowledge || 0,
+        health: scope.health || 0,
+        knowledge: scope.knowledge || 0,
       };
     },
-    onLeave({ globals }) {
-      globals.flags.rightPathComplete = true;
+    onLeave({ scope }) {
+      scope.flags.rightPathComplete = true;
     },
   };
 </script>
@@ -657,16 +657,16 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.metGuardian = true;
+    onEnter({ scope }) {
+      scope.flags.metGuardian = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
-      const health = globals.health || 100;
-      const knowledge = globals.knowledge || 0;
-      const flags = globals.flags || {};
+    view({ scope }) {
+      const inv = scope.inventory || [];
+      const health = scope.health || 100;
+      const knowledge = scope.knowledge || 0;
+      const flags = scope.flags || {};
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
         hasRope: inv.includes("麻绳"),
         hasWater: inv.includes("水袋"),
@@ -717,17 +717,17 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.reachedTreasureRoom = true;
-      globals.flags.chapter3Complete = true;
+    onEnter({ scope }) {
+      scope.flags.reachedTreasureRoom = true;
+      scope.flags.chapter3Complete = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
-      const knowledge = globals.knowledge || 0;
-      const health = globals.health || 0;
-      const flags = globals.flags || {};
+    view({ scope }) {
+      const inv = scope.inventory || [];
+      const knowledge = scope.knowledge || 0;
+      const health = scope.health || 0;
+      const flags = scope.flags || {};
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
         inventory: inv,
         knowledge,
         health,
@@ -779,9 +779,9 @@ _"给所有来到此处的人：楼陀罗在等待。它在等你提出一个愿
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
       };
     },
   };
@@ -793,13 +793,13 @@ _结局_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "true";
+    onEnter({ scope }) {
+      scope.flags.ending = "true";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
-        choseRight: !!(globals.flags || {}).choseRightPath,
+        explorerName: scope.explorerName || "探险者",
+        choseRight: !!(scope.flags || {}).choseRightPath,
       };
     },
   };
@@ -843,15 +843,15 @@ _结局_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "good";
+    onEnter({ scope }) {
+      scope.flags.ending = "good";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
-        hasWater: (globals.inventory || []).includes("水袋"),
-        hasCompass: (globals.inventory || []).includes("星盘"),
-        knowledge: globals.knowledge || 0,
+        explorerName: scope.explorerName || "探险者",
+        hasWater: (scope.inventory || []).includes("水袋"),
+        hasCompass: (scope.inventory || []).includes("星盘"),
+        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -883,12 +883,12 @@ _结局_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "bad";
+    onEnter({ scope }) {
+      scope.flags.ending = "bad";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        explorerName: globals.explorerName || "探险者",
+        explorerName: scope.explorerName || "探险者",
       };
     },
   };

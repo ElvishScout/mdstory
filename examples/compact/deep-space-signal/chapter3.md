@@ -2,16 +2,16 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        commanderName: globals.commanderName || "指挥官",
-        currentKnowledge: globals.knowledge || 0,
-        currentMorale: globals.crewMorale || 80,
-        boardedShip: !!(globals.flags || {}).boardedShip,
+        commanderName: scope.commanderName || "指挥官",
+        currentKnowledge: scope.knowledge || 0,
+        currentMorale: scope.crewMorale || 80,
+        boardedShip: !!(scope.flags || {}).boardedShip,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter3Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter3Entered = true;
     },
   };
 </script>
@@ -22,16 +22,16 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
-      globals.flags.exploredShip = true;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.flags.exploredShip = true;
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
-        knowledge: globals.knowledge || 0,
-        crewMorale: globals.crewMorale || 80,
-        boardedShip: locals.boardedShip,
+        commanderName: scope.commanderName,
+        knowledge: scope.knowledge || 0,
+        crewMorale: scope.crewMorale || 80,
+        boardedShip: scope.boardedShip,
       };
     },
   };
@@ -63,13 +63,13 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        knowledge: globals.knowledge || 0,
-        crewMorale: globals.crewMorale || 80,
+        knowledge: scope.knowledge || 0,
+        crewMorale: scope.crewMorale || 80,
       };
     },
   };
@@ -93,17 +93,17 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
-      globals.flags.reachedCore = true;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.flags.reachedCore = true;
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
-        knowledge: globals.knowledge || 0,
-        crewMorale: globals.crewMorale || 80,
-        boardedShip: locals.boardedShip,
-        highKnowledge: (globals.knowledge || 0) >= 3,
+        commanderName: scope.commanderName,
+        knowledge: scope.knowledge || 0,
+        crewMorale: scope.crewMorale || 80,
+        boardedShip: scope.boardedShip,
+        highKnowledge: (scope.knowledge || 0) >= 3,
       };
     },
   };
@@ -144,23 +144,23 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.madeFinalDecision = true;
+    onEnter({ scope }) {
+      scope.flags.madeFinalDecision = true;
     },
-    view({ globals, locals }) {
-      const boarded = !!(globals.flags || {}).boardedShip;
-      const knowledge = globals.knowledge || 0;
+    view({ scope }) {
+      const boarded = !!(scope.flags || {}).boardedShip;
+      const knowledge = scope.knowledge || 0;
       return {
-        commanderName: locals.commanderName,
+        commanderName: scope.commanderName,
         knowledge,
-        crewMorale: globals.crewMorale || 80,
+        crewMorale: scope.crewMorale || 80,
         boardedShip: boarded,
         canTrueEnding: knowledge >= 4 && boarded,
         canGoodEnding: knowledge >= 2,
       };
     },
-    onLeave({ globals }) {
-      globals.flags.chapter3Complete = true;
+    onLeave({ scope }) {
+      scope.flags.chapter3Complete = true;
     },
   };
 </script>

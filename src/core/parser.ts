@@ -3,12 +3,13 @@ import MarkdownIt from "markdown-it";
 import pluginFrontMatter from "markdown-it-front-matter";
 import pluginAttrs from "markdown-it-attrs";
 
-import { MetadataSchema, SceneHooksSchema, ChapterHooksSchema, StoryHooksSchema } from "./schema.js";
+import { MetadataSchema, SectionHooksSchema } from "./schema.js";
 import type { Metadata } from "./definitions.js";
 import { loadSource, mergeScripts, normalizePath, StableIdGenerator } from "./utils.js";
 
-type Heading = { tag: "h1" | "h2" | "h3"; id: string; title: string; lineno: number };
+type Heading = { depth: number; id: string; title: string; lineno: number };
 type ScriptBlock = { from: number; to: number; content: string };
+type StyleBlock = { from: number; to: number; content: string };
 
 export type IncludeResolver = (path: string) => string | Promise<string>;
 export type ParseStoryOptions = {
@@ -16,28 +17,20 @@ export type ParseStoryOptions = {
   resolveInclude: IncludeResolver;
 };
 
-export type ParsedScene = {
+/** A parsed section node — recursive, mirrors the heading hierarchy. */
+export type ParsedSection = {
   id: string;
   title: string;
   template: string;
+  stylesheets: string[];
   scripts: string[];
+  children: ParsedSection[];
 };
 
-export type ParsedChapter = {
-  id: string;
-  title: string;
-  template: string;
-  scripts: string[];
-  scenes: ParsedScene[];
-};
-
+/** Top-level parse result. */
 export type ParsedStory = {
   metadata: Metadata;
-  title: string;
-  template: string;
-  chapters: ParsedChapter[];
-  stylesheet: string;
-  scripts: string[];
+  root: ParsedSection;
 };
 
 async function expandIncludes(source: string, options: ParseStoryOptions, stack: string[] = []): Promise<string> {
@@ -58,8 +51,10 @@ async function expandIncludes(source: string, options: ParseStoryOptions, stack:
       throw new Error(`Circular include detected: ${[...stack, normalizedPath].join(" -> ")}`);
     }
 
-    const source = await options.resolveInclude(normalizedPath);
-    expanded.push(await expandIncludes(source, { ...options, base: normalizedPath }, [...stack, normalizedPath]));
+    const includedSource = await options.resolveInclude(normalizedPath);
+    expanded.push(
+      await expandIncludes(includedSource, { ...options, base: normalizedPath }, [...stack, normalizedPath]),
+    );
   }
 
   return expanded.join("\n");
@@ -73,12 +68,15 @@ export async function resolveParseOptions(options?: Partial<ParseStoryOptions>):
 }
 
 /**
- * Parses a Markdown-formatted story source string into a structured StoryInit.
+ * Parses a Markdown-formatted story source into a recursive Section tree.
  *
- * Document structure:
- * - `#` (h1): Optional story title — its `<script>` is story hooks
- * - `##` (h2): Chapters — with chapter hooks, contain scenes
- * - `###` (h3): Scenes — with scene hooks and Handlebars templates
+ * Heading levels map to nesting depth:
+ * - h1 → depth 1 (child of root)
+ * - h2 → depth 2 (child of h1)
+ * - h3 → depth 3 (child of h2)
+ * - ... and so on (h4/h5/h6 supported)
+ *
+ * Content before the first h1 belongs to the root section.
  */
 export async function parseStorySource(source: string, options?: Partial<ParseStoryOptions>): Promise<ParsedStory> {
   const parseOptions = await resolveParseOptions(options);
@@ -88,238 +86,207 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   let placeholderIndex = 0;
 
   source = await expandIncludes(source, parseOptions);
-  source = source.replace(/\r\n?/g, "\n");
+  source = source.replace(/^﻿/, "").replace(/\r\n?/g, "\n");
 
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
   const tokens = md.parse(source, {});
 
   let metadata = MetadataSchema.parse({});
-  let stylesheet = "";
 
   const headings: Heading[] = [];
   const scripts: ScriptBlock[] = [];
-  const styleRanges: [number, number][] = [];
+  const styleBlocks: StyleBlock[] = [];
   const frontMatterRanges: [number, number][] = [];
 
-  // Track seen IDs across all headings so duplicates are caught immediately.
-  // The chapter-id state is scoped tightly — it is only valid during the token
-  // pass below and must not be read after the forEach completes.
-  {
-    let chapterId: string | null = null;
-    const chapterIdSet = new Set<string>();
-    const fullSceneIdSet = new Set<string>();
-
-    tokens.forEach((token, i) => {
-      if (token.type === "front_matter" && token.meta) {
-        const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
-        Object.assign(metadata, frontMatter);
-        if (token.map) {
-          frontMatterRanges.push([token.map[0], token.map[1]]);
+  // ── Pass 1: collect tokens ──────────────────────────────────────────────
+  tokens.forEach((token, i) => {
+    if (token.type === "front_matter" && token.meta) {
+      const frontMatter = MetadataSchema.parse(yaml.load(token.meta));
+      Object.assign(metadata, frontMatter);
+      if (token.map) {
+        frontMatterRanges.push([token.map[0], token.map[1]]);
+      }
+    } else if (token.type === "heading_open" && /^h[1-6]$/.test(token.tag) && token.level === 0 && token.map) {
+      const depth = parseInt(token.tag.charAt(1), 10);
+      let id = token.attrGet("id");
+      let title = "";
+      const nextToken = tokens[i + 1];
+      if (nextToken && nextToken.type === "inline") {
+        const content = nextToken.content.trim();
+        title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
+        if (!id) {
+          id = title;
         }
-      } else if (
-        token.type === "heading_open" &&
-        ["h1", "h2", "h3"].includes(token.tag) &&
-        token.level === 0 &&
-        token.map
-      ) {
-        let id = token.attrGet("id");
-        let title = "";
-        const nextToken = tokens[i + 1];
-        if (nextToken && nextToken.type === "inline") {
-          const content = nextToken.content.trim();
-          title = content.replace(/(\s*\{[^{}]*\})+$/, "").trim();
-          id ||= title;
-        }
+      }
 
-        if (id) {
-          if (id.includes(".")) {
-            throw new Error(`Chapter or scene id must not contain "." to avoid ambiguity: ${id}`);
-          }
-          idGenerator.reserve(id);
-        } else {
-          id = `${PLACEHOLDER_PREFIX}${placeholderIndex++}`;
+      if (id) {
+        if (id.includes(".")) {
+          throw new Error(`Section id must not contain "." to avoid ambiguity: ${id}`);
         }
+        idGenerator.reserve(id);
+      } else {
+        id = `${PLACEHOLDER_PREFIX}${placeholderIndex++}`;
+      }
 
-        if (token.tag === "h2") {
-          if (chapterIdSet.has(id)) {
-            throw new Error(`Duplicated chapter id found: ${id}`);
-          }
-          chapterId = id;
-          chapterIdSet.add(id);
-        } else if (token.tag === "h3") {
-          const fullSceneId = `${chapterId ?? ""}.${id}`;
-          if (fullSceneIdSet.has(fullSceneId)) {
-            throw new Error(`Duplicated scene id found: ${fullSceneId}`);
-          }
-          fullSceneIdSet.add(fullSceneId);
+      headings.push({ depth, id, title, lineno: token.map[0] });
+    } else if (token.type === "html_block" && token.map) {
+      const matchScript = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content);
+      if (matchScript) {
+        const content = matchScript[1].trim();
+        if (content) {
+          scripts.push({ from: token.map[0], to: token.map[1], content });
         }
-
-        headings.push({ tag: token.tag as "h1" | "h2" | "h3", id, title, lineno: token.map[0] });
-      } else if (token.type === "html_block" && token.map) {
-        let match;
-        if ((match = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content))) {
-          const script = match[1].trim();
-          if (script) {
-            scripts.push({ from: token.map[0], to: token.map[1], content: script });
-          }
-        } else if ((match = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content))) {
-          const style = match[1].trim();
-          if (style) {
-            stylesheet += style;
-            styleRanges.push(token.map);
+      } else {
+        const matchStyle = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content);
+        if (matchStyle) {
+          const content = matchStyle[1].trim();
+          if (content) {
+            styleBlocks.push({ from: token.map[0], to: token.map[1], content });
           }
         }
       }
-    });
+    }
+  });
+
+  // Filter out headings that fall within frontmatter ranges
+  // (markdown-it may still tokenize frontmatter content as setext headings)
+  const filteredHeadings = headings.filter((h) => {
+    return !frontMatterRanges.some(([from, to]) => h.lineno >= from && h.lineno < to);
+  });
+
+  // ── Pass 2: build heading tree ───────────────────────────────────────────
+  type HeadingNode = { heading: Heading; children: HeadingNode[] };
+
+  const rootChildren: HeadingNode[] = [];
+  const stack: { depth: number; node: HeadingNode }[] = [];
+
+  for (const heading of filteredHeadings) {
+    // Pop until we find a parent (stack top has depth < heading.depth)
+    while (stack.length && stack[stack.length - 1].depth >= heading.depth) {
+      stack.pop();
+    }
+
+    const node: HeadingNode = { heading, children: [] };
+
+    if (!stack.length) {
+      rootChildren.push(node);
+    } else {
+      stack[stack.length - 1].node.children.push(node);
+    }
+
+    stack.push({ depth: heading.depth, node });
   }
 
-  const storyHeading = headings.find((h) => h.tag === "h1");
-  const chapterHeadings = headings.filter((h) => h.tag === "h2");
-  const sceneHeadings = headings.filter((h) => h.tag === "h3");
-
-  // Collect all script ranges and style ranges into a set for filtering
+  // ── Pass 3: build ParsedSection tree ──────────────────────────────────────
+  // Compute ignored line set (scripts + styles + frontmatter)
   const ignoredLines = new Set<number>();
   for (const [from, to] of [
     ...scripts.map(({ from, to }) => [from, to] as [number, number]),
-    ...styleRanges,
+    ...styleBlocks.map(({ from, to }) => [from, to] as [number, number]),
     ...frontMatterRanges,
   ]) {
-    for (let i = from; i < to; i++) ignoredLines.add(i);
+    for (let i = from; i < to; i++) {
+      ignoredLines.add(i);
+    }
   }
 
   const lines = source.split("\n");
-  const storyEnd = chapterHeadings[0]?.lineno ?? sceneHeadings[0]?.lineno ?? lines.length;
 
-  // Story template from h1 heading to the first h2 or h3 (whichever comes first)
-  const storyTemplateEnd = Math.min(chapterHeadings[0]?.lineno ?? Infinity, sceneHeadings[0]?.lineno ?? Infinity);
-  const storyTemplate = (() => {
-    if (!isFinite(storyTemplateEnd)) {
-      return "";
+  function buildSection(heading: Heading, childNodes: HeadingNode[]): ParsedSection {
+    // Compute template end line:
+    // - If this section has children, end at the first child's heading line
+    // - Otherwise, find the next heading at same or higher level
+    let endLine: number;
+    if (childNodes.length) {
+      endLine = childNodes[0].heading.lineno;
+    } else {
+      // Find the next heading after this one with depth <= this depth
+      const nextSibling = filteredHeadings.find((h) => h.lineno > heading.lineno && h.depth <= heading.depth);
+      endLine = nextSibling ? nextSibling.lineno : lines.length;
     }
-    const start = storyHeading?.lineno ?? 0;
-    return lines
-      .slice(start, storyTemplateEnd)
-      .filter((_, i) => !ignoredLines.has(start + i))
+
+    const templateStart = heading.title ? heading.lineno : heading.lineno + 1;
+    const template = lines
+      .slice(templateStart, endLine)
+      .filter((_, i) => !ignoredLines.has(templateStart + i))
       .join("\n")
       .replace(/^\n+/, "");
-  })();
 
-  // Story scripts
-  const storyScripts = getScriptsInScope(scripts, storyHeading?.lineno ?? 0, storyEnd);
-  StoryHooksSchema.parse(await mergeScripts(storyScripts));
+    // Scope scripts and styles to this section
+    const sectionScripts = getBlocksInScope(scripts, heading.lineno, endLine);
+    const sectionStyles = getBlocksInScope(styleBlocks, heading.lineno, endLine);
 
-  // Orphan h3s before the first h2 get a default chapter
-  const firstChapterLine = chapterHeadings[0]?.lineno ?? Infinity;
-  const defaultScenes = sceneHeadings.filter((sh) => sh.lineno < firstChapterLine);
+    // Build children recursively
+    const children = childNodes.map(({ heading: childHeading, children: grandChildren }) =>
+      buildSection(childHeading, grandChildren),
+    );
 
-  // Build all chapters (default first, then parsed ones)
-  const chapters: ParsedChapter[] = [];
-  let chapterOrder: Heading[] = [];
-
-  if (defaultScenes.length > 0) {
-    const chapterId = `${PLACEHOLDER_PREFIX}${placeholderIndex++}`;
-    const scenes: ParsedScene[] = [];
-    let entryScene: string | null = null;
-
-    for (let si = 0; si < defaultScenes.length; si++) {
-      const sh = defaultScenes[si];
-      const seEnd = defaultScenes[si + 1]?.lineno ?? firstChapterLine;
-      const scScripts = getScriptsInScope(scripts, sh.lineno, seEnd);
-      SceneHooksSchema.parse(await mergeScripts(scScripts, chapterId, sh.id));
-
-      const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
-      const template = lines
-        .slice(templateStart, seEnd)
-        .filter((_, i) => !ignoredLines.has(templateStart + i))
-        .join("\n")
-        .replace(/^\n+/, "");
-
-      scenes.push({ id: sh.id, title: sh.title, template, scripts: scScripts });
-      if (entryScene === null) {
-        entryScene = sh.id;
-      }
-    }
-
-    chapters.push({
-      id: chapterId,
-      title: "",
-      template: "",
-      scripts: [],
-      scenes,
-    });
+    return {
+      id: heading.id,
+      title: heading.title,
+      template,
+      stylesheets: sectionStyles,
+      scripts: sectionScripts,
+      children,
+    };
   }
 
-  for (let ci = 0; ci < chapterHeadings.length; ci++) {
-    const ch = chapterHeadings[ci];
-    const chEnd = chapterHeadings[ci + 1]?.lineno ?? lines.length;
-    const chapterScenes = sceneHeadings.filter((sh) => sh.lineno > ch.lineno && sh.lineno < chEnd);
-    // Chapter script ends before the first scene heading
-    const chScriptEnd = chapterScenes[0]?.lineno ?? chEnd;
-    const chTemplateStart = ch.title ? ch.lineno : ch.lineno + 1;
-    const chTemplate = lines
-      .slice(chTemplateStart, chScriptEnd)
-      .filter((_, i) => !ignoredLines.has(chTemplateStart + i))
-      .join("\n")
-      .replace(/^\n+/, "");
-    const chScripts = getScriptsInScope(scripts, ch.lineno, chScriptEnd);
-    ChapterHooksSchema.parse(await mergeScripts(chScripts, ch.id));
+  // ── Root section ──────────────────────────────────────────────────────────
+  const firstHeadingLine = filteredHeadings.length ? filteredHeadings[0].lineno : lines.length;
+  const rootTemplateStart = 0;
+  const rootTemplate = lines
+    .slice(rootTemplateStart, firstHeadingLine)
+    .filter((_, i) => !ignoredLines.has(rootTemplateStart + i))
+    .join("\n")
+    .replace(/^\n+/, "");
 
-    const scenes: ParsedScene[] = [];
-    let entryScene: string | null = null;
+  const rootScripts = getBlocksInScope(scripts, 0, firstHeadingLine);
+  const rootStyles = getBlocksInScope(styleBlocks, 0, firstHeadingLine);
 
-    for (let si = 0; si < chapterScenes.length; si++) {
-      const sh = chapterScenes[si];
-      const seEnd = chapterScenes[si + 1]?.lineno ?? chEnd;
-      const scScripts = getScriptsInScope(scripts, sh.lineno, seEnd);
-      SceneHooksSchema.parse(await mergeScripts(scScripts, ch.id, sh.id));
+  // Validate root scripts
+  SectionHooksSchema.parse(await mergeScripts(rootScripts));
 
-      const templateStart = sh.title ? sh.lineno : sh.lineno + 1;
-      const template = lines
-        .slice(templateStart, seEnd)
-        .filter((_, i) => !ignoredLines.has(templateStart + i))
-        .join("\n")
-        .replace(/^\n+/, "");
+  const rootChildren2 = rootChildren.map(({ heading, children }) => buildSection(heading, children));
 
-      scenes.push({ id: sh.id, title: sh.title, template, scripts: scScripts });
-      if (entryScene === null) {
-        entryScene = sh.id;
-      }
+  // ── Pass 4: replace placeholder IDs ──────────────────────────────────────
+  function replacePlaceholderIds(section: ParsedSection): void {
+    if (section.id.startsWith(PLACEHOLDER_PREFIX)) {
+      section.id = idGenerator.next();
     }
-
-    chapters.push({
-      id: ch.id,
-      title: ch.title,
-      template: chTemplate,
-      scripts: chScripts,
-      scenes,
-    });
-    chapterOrder.push(ch);
-  }
-
-  for (const chapter of chapters) {
-    if (chapter.id.startsWith(PLACEHOLDER_PREFIX)) {
-      chapter.id = idGenerator.next();
-    }
-    for (const scene of chapter.scenes) {
-      if (scene.id.startsWith(PLACEHOLDER_PREFIX)) {
-        scene.id = idGenerator.next();
-      }
+    for (const child of section.children) {
+      replacePlaceholderIds(child);
     }
   }
 
-  return {
-    metadata,
-    title: storyHeading?.title ?? "",
-    template: storyTemplate,
-    chapters,
-    stylesheet,
-    scripts: storyScripts,
+  const root: ParsedSection = {
+    id: idGenerator.next(),
+    title: "",
+    template: rootTemplate,
+    stylesheets: rootStyles,
+    scripts: rootScripts,
+    children: rootChildren2,
   };
+  replacePlaceholderIds(root);
+
+  // ── Pass 5: validate full-path uniqueness ──────────────────────────────────
+  (function validatePaths(section: ParsedSection, parentPath: string, seen: Set<string>): void {
+    const fullPath = parentPath ? `${parentPath}.${section.id}` : section.id;
+    if (seen.has(fullPath)) {
+      throw new Error(`Duplicated section path found: ${fullPath}`);
+    }
+    seen.add(fullPath);
+    for (const child of section.children) {
+      validatePaths(child, fullPath, seen);
+    }
+  })(root, "", new Set());
+
+  return { metadata, root };
 }
 
-function getScriptsInScope(scripts: ScriptBlock[], from: number, to: number) {
-  const scopedScripts = scripts
-    .filter((script) => script.from >= from && script.to <= to)
-    .map((script) => script.content);
-  return scopedScripts;
+function getBlocksInScope(
+  blocks: { from: number; to: number; content: string }[],
+  scopeStart: number,
+  scopeEnd: number,
+): string[] {
+  return blocks.filter((block) => block.from >= scopeStart && block.to <= scopeEnd).map((block) => block.content);
 }

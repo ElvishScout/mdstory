@@ -1,6 +1,6 @@
 ---
 title: 深空信号
-globals:
+scope:
   knowledge: 0
   crewMorale: 80
   inventory: []
@@ -11,7 +11,7 @@ globals:
 
 <script>
   export default {
-    globals() {
+    scope() {
       return {
         knowledge: 0,
         crewMorale: 80,
@@ -19,8 +19,8 @@ globals:
         flags: {},
       };
     },
-    onStart({ globals }) {
-      globals.flags.storyStarted = true;
+    onEnter({ scope }) {
+      scope.flags.storyStarted = true;
     },
   };
 </script>

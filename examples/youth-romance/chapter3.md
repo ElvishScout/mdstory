@@ -2,15 +2,15 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        affection: globals.affection || 0,
-        inventory: globals.inventory || [],
+        readerName: scope.name || "你",
+        affection: scope.affection || 0,
+        inventory: scope.inventory || [],
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter3Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter3Entered = true;
     },
   };
 </script>
@@ -47,11 +47,11 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.festivalProject = "鬼屋";
+    onEnter({ scope }) {
+      scope.flags.festivalProject = "鬼屋";
     },
-    view({ globals }) {
-      return { myHobby: (globals.flags || {}).taskGroup || "" };
+    view({ scope }) {
+      return { myHobby: (scope.flags || {}).taskGroup || "" };
     },
   };
 </script>
@@ -76,8 +76,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.festivalProject = "舞台剧";
+    onEnter({ scope }) {
+      scope.flags.festivalProject = "舞台剧";
     },
   };
 </script>
@@ -98,8 +98,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.festivalProject = "女仆咖啡厅";
+    onEnter({ scope }) {
+      scope.flags.festivalProject = "女仆咖啡厅";
     },
   };
 </script>
@@ -124,8 +124,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.taskGroup = "装饰组";
+    onEnter({ scope }) {
+      scope.flags.taskGroup = "装饰组";
     },
   };
 </script>
@@ -166,8 +166,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.taskGroup = "餐点组";
+    onEnter({ scope }) {
+      scope.flags.taskGroup = "餐点组";
     },
   };
 </script>
@@ -218,8 +218,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.taskGroup = "饮品组";
+    onEnter({ scope }) {
+      scope.flags.taskGroup = "饮品组";
     },
   };
 </script>
@@ -262,8 +262,8 @@
 
 <script>
   export default {
-    view({ globals }) {
-      const project = (globals.flags || {}).festivalProject || "女仆咖啡厅";
+    view({ scope }) {
+      const project = (scope.flags || {}).festivalProject || "女仆咖啡厅";
       return {
         isCafe: project === "女仆咖啡厅",
       };
@@ -329,12 +329,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.festivalDayReached = true;
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.festivalDayReached = true;
+      scope.affection = (scope.affection || 0) + 1;
     },
-    view({ globals }) {
-      const proj = (globals.flags || {}).festivalProject || "女仆咖啡厅";
+    view({ scope }) {
+      const proj = (scope.flags || {}).festivalProject || "女仆咖啡厅";
       return {
         projectName: proj,
       };
@@ -417,9 +417,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.crisisChoice = "help";
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.crisisChoice = "help";
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -450,9 +450,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.crisisChoice = "fix";
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.crisisChoice = "fix";
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -483,12 +483,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.rooftopReached = true;
+    onEnter({ scope }) {
+      scope.flags.rooftopReached = true;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        joinedLit: !!(globals.flags || {}).joinedLiterature,
+        joinedLit: !!(scope.flags || {}).joinedLiterature,
       };
     },
   };
@@ -541,12 +541,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.acceptedDig = true;
-      globals.affection = (globals.affection || 0) + 1;
-      if (!Array.isArray(globals.inventory)) globals.inventory = [];
-      if (!globals.inventory.includes("手写信")) {
-        globals.inventory.push("手写信");
+    onEnter({ scope }) {
+      scope.flags.acceptedDig = true;
+      scope.affection = (scope.affection || 0) + 1;
+      if (!Array.isArray(scope.inventory)) scope.inventory = [];
+      if (!scope.inventory.includes("手写信")) {
+        scope.inventory.push("手写信");
       }
     },
   };
@@ -576,8 +576,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.acceptedDig = false;
+    onEnter({ scope }) {
+      scope.flags.acceptedDig = false;
     },
   };
 </script>
@@ -612,11 +612,11 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.transferNewsReached = true;
+    onEnter({ scope }) {
+      scope.flags.transferNewsReached = true;
     },
-    view({ globals }) {
-      const proj = (globals.flags || {}).festivalProject || "女仆咖啡厅";
+    view({ scope }) {
+      const proj = (scope.flags || {}).festivalProject || "女仆咖啡厅";
       return {
         projectName: proj,
       };
@@ -696,8 +696,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.chapter3Complete = true;
+    onEnter({ scope }) {
+      scope.flags.chapter3Complete = true;
     },
   };
 </script>

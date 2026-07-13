@@ -1,94 +1,100 @@
-import type { StoryInit, StoryHooks, Scope, Metadata, Asset } from "./definitions.js";
-import { Scene } from "./scene.js";
-import { Chapter } from "./chapter.js";
-import { renderTemplate } from "./render.js";
-import type { RenderOptions, RenderResult } from "./render.js";
+import type { Metadata } from "./definitions.js";
+import { Section } from "./section.js";
 import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
-import { mergeScripts, normalizePath } from "./utils.js";
+import { normalizePath } from "./utils.js";
 import { PlayOptions, StoryPrompt, StorySession } from "./session.js";
 
 /**
  * Story runtime containing core playback logic.
- * Construct via `fromSource(source)`, `fromPath(path)`,
- * `fromParsed(parsedStory)`, or manually with a parsed StoryInit.
+ * Wraps a root Section tree. Construct via `fromSource(source)`,
+ * `fromPath(path)`, `fromParsed(parsedStory)`, or manually.
  */
 export class Story {
   metadata: Metadata;
-  title: string;
-  template: string;
-  globals: Scope;
-  assets: Record<string, Asset>;
-  hooks: StoryHooks;
-  stylesheet: string;
-  chapters: Chapter[];
+  root: Section;
+  assets: Record<string, { url: string; mime?: string }>;
 
-  constructor(init: StoryInit) {
-    this.title = (init.title || init.metadata?.title) ?? "";
-    this.template = init.template ?? "";
-    this.chapters = init.chapters;
-    this.metadata = init.metadata ?? {};
-    this.globals = this.metadata.globals ?? {};
+  get title(): string {
+    return this.metadata.title ?? this.root.title;
+  }
+
+  constructor(root: Section, metadata?: Metadata) {
+    this.root = root;
+    this.metadata = metadata ?? {};
     this.assets = this.metadata.assets ?? {};
-    this.hooks = init.hooks ?? {};
-    this.stylesheet = init.stylesheet ?? "";
   }
 
-  /** Get chapter by chapter id */
-  getChapter(id: string) {
-    return this.chapters.find((chapter) => chapter.id === id) ?? null;
-  }
-
-  resolveTarget(target: string, currentChapter: Chapter): { chapter: Chapter; scene: Scene } | null {
-    const dot = target.indexOf(".");
-    if (dot !== -1) {
-      // Cross-chapter scene: "chapterId.sceneId"
-      const chapterId = target.slice(0, dot);
-      const sceneId = target.slice(dot + 1);
-      const chapter = this.getChapter(chapterId);
-      if (chapter) {
-        const scene = chapter.getScene(sceneId);
-        if (scene) {
-          return { chapter, scene };
-        }
-      }
+  /**
+   * Resolves a target string into a section path from root.
+   *
+   * - `"a.b.c"` → walked from root as an absolute path
+   * - `"b.c"`   → tried relative to current path first, then absolute
+   * - `"c"`     → searched: current children → siblings → global
+   * - `null`    → end of story (returns null)
+   *
+   * Returns the path array (from root) or null for end-of-story.
+   */
+  resolveTarget(target: string | null, currentPath: string[]): string[] | null {
+    if (target === null) {
       return null;
     }
 
-    // Local scene in current chapter
-    {
-      const chapter = currentChapter.getScene(target);
-      if (chapter) {
-        return { chapter: currentChapter, scene: chapter };
+    const segments = target.split(".");
+
+    // Multi-segment: try as absolute path from root, then relative, then up ancestors
+    if (segments.length > 1) {
+      const resolved = this.root.walk(segments);
+      if (resolved) {
+        return segments;
+      }
+      // Try relative to current, then walk up ancestors
+      const current = this.root.walk(currentPath);
+      if (current) {
+        const fromCurrent = current.walk(segments);
+        if (fromCurrent) {
+          return [...currentPath, ...segments];
+        }
+        // Walk up ancestors to find a match (handles sibling targets like "sibling.child")
+        let ancestor = current.parent;
+        while (ancestor) {
+          const fromAncestor = ancestor.walk(segments);
+          if (fromAncestor) {
+            return [...ancestor.getPath(), ...segments];
+          }
+          ancestor = ancestor.parent;
+        }
+      }
+      throw new Error(`Target not found: ${target}`);
+    }
+
+    // Single segment
+    const id = segments[0];
+    const current = this.root.walk(currentPath);
+
+    // 1. Search current section's children
+    if (current) {
+      const child = current.getChild(id);
+      if (child) {
+        return [...currentPath, id];
+      }
+
+      // 2. Search current's siblings
+      if (current.parent) {
+        const sibling = current.parent.getChild(id);
+        if (sibling) {
+          const parentPath = currentPath.slice(0, -1);
+          return [...parentPath, id];
+        }
       }
     }
 
-    // Global scene lookup across all chapters
-    for (const chapter of this.chapters) {
-      const scene = chapter.getScene(target);
-      if (scene) {
-        return { chapter: chapter, scene: scene };
-      }
-    }
-
-    // Chapter id → entry scene
-    {
-      const chapter = this.getChapter(target);
-      if (chapter && chapter.scenes.length > 0) {
-        return { chapter, scene: chapter.scenes[0] };
-      }
-    }
-
-    return null;
-  }
-
-  /** Renders the story template with the given scope and render options. */
-  render(scope: Scope, options: RenderOptions): RenderResult {
-    return renderTemplate(this.template, scope, options);
+    // 3. Not found locally — ambiguous or non-existent
+    throw new Error(`Target not found: ${target}`);
   }
 
   /** Creates and returns a new {@link StorySession} for this story. */
-  session() {
+  session(): StorySession {
     return new StorySession(this);
   }
 
@@ -97,39 +103,30 @@ export class Story {
    *
    * Creates a new session via {@link session} and delegates playback to it.
    * Returns a promise that resolves when playback completes.
-   * Use {@link session} directly if you need to hold a reference to the session.
    */
-  play(prompt: StoryPrompt, options: PlayOptions) {
+  play(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
     return this.session().play(prompt, options);
   }
 }
 
 /** Creates a Story instance from a parsed story object. */
-export async function fromParsed(story: ParsedStory) {
-  return new Story({
-    metadata: story.metadata,
-    title: story.title,
-    template: story.template,
-    chapters: await Promise.all(story.chapters.map((chapter) => Chapter.fromParsed(chapter))),
-    stylesheet: story.stylesheet,
-    hooks: await mergeScripts(story.scripts),
-  });
+export async function fromParsed(parsed: ParsedStory): Promise<Story> {
+  const root = await Section.fromParsed(parsed.root);
+  return new Story(root, parsed.metadata);
 }
 
 /** Parses a story source string and creates a Story instance. */
-export async function fromSource(source: string, options?: Partial<ParseStoryOptions>) {
+export async function fromSource(source: string, options?: Partial<ParseStoryOptions>): Promise<Story> {
   const parseOptions = await resolveParseOptions(options);
   const parsedStory = await parseStorySource(source, parseOptions);
-
   return fromParsed(parsedStory);
 }
 
 /** Loads a story from a path or URL and resolves includes relative to each containing resource. */
-export async function fromPath(path: string, options?: Partial<ParseStoryOptions>) {
+export async function fromPath(path: string, options?: Partial<ParseStoryOptions>): Promise<Story> {
   const normalizedPath = await normalizePath(path, options?.base);
   const parseOptions = await resolveParseOptions({ ...options, base: normalizedPath });
   const source = await parseOptions.resolveInclude(normalizedPath);
   const parsedStory = await parseStorySource(source, parseOptions);
-
   return fromParsed(parsedStory);
 }

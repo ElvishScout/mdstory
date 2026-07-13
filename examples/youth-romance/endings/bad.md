@@ -2,12 +2,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "bad";
-      globals.flags.gameCompleted = true;
+    onEnter({ scope }) {
+      scope.flags.ending = "bad";
+      scope.flags.gameCompleted = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasCharm: inv.includes("护身符"),
       };

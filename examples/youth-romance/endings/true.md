@@ -2,12 +2,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "true";
-      globals.flags.gameCompleted = true;
+    onEnter({ scope }) {
+      scope.flags.ending = "true";
+      scope.flags.gameCompleted = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasPhoto: inv.includes("旧照片"),
         hasBookmark: inv.includes("樱花书签"),

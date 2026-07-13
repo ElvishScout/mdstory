@@ -1,6 +1,6 @@
 ---
 title: 雾隐庄谜案
-globals:
+scope:
   name: 侦探
   clues: []
   flags: {}
@@ -16,7 +16,7 @@ globals:
 
 <script>
   export default {
-    globals() {
+    scope() {
       return {
         clues: [],
         flags: {},
@@ -24,8 +24,8 @@ globals:
         reasoningPoints: 0,
       };
     },
-    onStart({ globals }) {
-      globals.flags.started = true;
+    onEnter({ scope }) {
+      scope.flags.started = true;
     },
   };
 </script>

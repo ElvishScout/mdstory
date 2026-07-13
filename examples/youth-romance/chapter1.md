@@ -2,9 +2,9 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
+        readerName: scope.name || "你",
       };
     },
   };
@@ -62,9 +62,9 @@
 
 <script>
   export default {
-    view({ globals }) {
+    view({ scope }) {
       return {
-        playerName: globals.name || "你",
+        playerName: scope.name || "你",
       };
     },
   };
@@ -141,9 +141,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.acceptedTour = true;
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.acceptedTour = true;
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -178,8 +178,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.acceptedTour = false;
+    onEnter({ scope }) {
+      scope.flags.acceptedTour = false;
     },
   };
 </script>
@@ -298,8 +298,8 @@
 
 <script>
   export default {
-    view({ globals, locals }) {
-      return { myHobby: locals.hobby || "" };
+    view({ scope }) {
+      return { myHobby: scope.hobby || "" };
     },
   };
 </script>
@@ -367,10 +367,10 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.joinedLiterature = true;
-      globals.flags.joinedClub = "文艺部";
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.joinedLiterature = true;
+      scope.flags.joinedClub = "文艺部";
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -442,9 +442,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.joinedSports = true;
-      globals.flags.joinedClub = "篮球部";
+    onEnter({ scope }) {
+      scope.flags.joinedSports = true;
+      scope.flags.joinedClub = "篮球部";
     },
   };
 </script>
@@ -481,8 +481,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.noClub = true;
+    onEnter({ scope }) {
+      scope.flags.noClub = true;
     },
   };
 </script>
@@ -515,10 +515,10 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!Array.isArray(globals.inventory)) globals.inventory = [];
-      if (!globals.inventory.includes("旧照片")) {
-        globals.inventory.push("旧照片");
+    onEnter({ scope }) {
+      if (!Array.isArray(scope.inventory)) scope.inventory = [];
+      if (!scope.inventory.includes("旧照片")) {
+        scope.inventory.push("旧照片");
       }
     },
   };
@@ -577,13 +577,13 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.acceptedLibrary = true;
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.acceptedLibrary = true;
+      scope.affection = (scope.affection || 0) + 1;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        wasTourAccepted: !!(globals.flags || {}).acceptedTour,
+        wasTourAccepted: !!(scope.flags || {}).acceptedTour,
       };
     },
   };
@@ -688,8 +688,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.acceptedLibrary = false;
+    onEnter({ scope }) {
+      scope.flags.acceptedLibrary = false;
     },
   };
 </script>
@@ -720,11 +720,11 @@
 
 <script>
   export default {
-    onLeave({ globals }) {
-      globals.flags.chapter1Complete = true;
+    onLeave({ scope }) {
+      scope.flags.chapter1Complete = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasPhoto: inv.includes("旧照片"),
       };

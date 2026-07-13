@@ -4,13 +4,13 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.ending = "true";
+    onEnter({ scope }) {
+      scope.flags.ending = "true";
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        withRuyan: !!globals.flags.travelWithRuyan,
-        fought: !!globals.flags.foughtAtSect,
+        withRuyan: !!scope.flags.travelWithRuyan,
+        fought: !!scope.flags.foughtAtSect,
       };
     },
   };

@@ -1,11 +1,9 @@
-import type { Chapter } from "./chapter.js";
-import type { Scene } from "./scene.js";
+import type { Section } from "./section.js";
 
 type JsonPrimitive = number | string | boolean | null;
 type JsonArray = JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 type JsonValue = JsonPrimitive | JsonArray | JsonObject;
-type HookResult<T = void> = T | Promise<T>;
 
 export type { JsonValue };
 
@@ -18,21 +16,21 @@ export type Asset = {
   url: string;
   mime?: string;
 };
-/** Story metadata. */
+/** Story metadata (front-matter). */
 export type Metadata = {
   title?: string;
   author?: string;
   email?: string;
-  globals?: Scope;
+  scope?: Scope;
   assets?: Record<string, Asset>;
 };
 
+type HookResult<T = void> = T | Promise<T>;
+
 export type HookContext = {
-  globals: Scope;
-  locals: Scope;
+  scope: Scope;
 };
 
-export type StoryHookContext = Pick<HookContext, "globals">;
 export type LeaveHookContext = HookContext & {
   target: string | null;
 };
@@ -40,51 +38,24 @@ export type LeaveHookContext = HookContext & {
 /** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";
 
-/** Story-level lifecycle hooks. */
-export type StoryHooks = {
-  globals?: () => HookResult<Scope | undefined>;
-  onStart?: (context: StoryHookContext) => HookResult;
-};
-
-/** Chapter-level lifecycle hooks. */
-export type ChapterHooks = {
-  locals?: (context: StoryHookContext) => HookResult<Scope | undefined>;
+/** Section-level lifecycle hooks — unified, no globals/locals distinction. */
+export type SectionHooks = {
+  /** Returns variables that take effect within this section's scope and cascade to descendants. */
+  scope?: (context: HookContext) => HookResult<Scope | undefined>;
   onEnter?: (context: HookContext) => HookResult;
   onLeave?: (context: LeaveHookContext) => HookResult;
-};
-
-/** Scene-level lifecycle hooks. */
-export type SceneHooks = {
+  /** Returns per-render overrides (not persisted). */
   view?: (context: HookContext) => HookResult<Scope | undefined>;
-  onEnter?: (context: HookContext) => HookResult;
-  onLeave?: (context: LeaveHookContext) => HookResult;
 };
 
-/** Structured representation of a scene's content. */
-export type SceneInit = {
-  id: string;
-  title?: string;
-  template: string;
-  hooks?: SceneHooks;
-};
-
-/** Structured representation of a chapter. */
-export type ChapterInit = {
+/** Structured representation of a section for runtime construction. */
+export type SectionInit = {
   id: string;
   title?: string;
   template?: string;
-  hooks?: ChapterHooks;
-  scenes: Scene[];
-};
-
-/** Structured representation of the full story. */
-export type StoryInit = {
-  metadata?: Metadata;
-  title?: string;
-  template?: string;
-  chapters: Chapter[];
-  stylesheet?: string;
-  hooks?: StoryHooks;
+  stylesheets?: string[];
+  hooks?: SectionHooks;
+  children: Section[];
 };
 
 /** Base options for HTML templates */

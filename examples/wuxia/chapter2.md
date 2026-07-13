@@ -2,15 +2,15 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        currentQi: globals.qi || 100,
-        fought: !!(globals.flags || {}).foughtAtSect,
+        readerName: scope.name || "你",
+        currentQi: scope.qi || 100,
+        fought: !!(scope.flags || {}).foughtAtSect,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter2Started = true;
+    onEnter({ scope }) {
+      scope.flags.chapter2Started = true;
     },
   };
 </script>
@@ -49,9 +49,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.metLiuruyan = true;
-      globals.reputation += 1;
+    onEnter({ scope }) {
+      scope.flags.metLiuruyan = true;
+      scope.reputation += 1;
     },
   };
 </script>
@@ -100,9 +100,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.revealedToLiuruyan = true;
-      globals.reputation += 1;
+    onEnter({ scope }) {
+      scope.flags.revealedToLiuruyan = true;
+      scope.reputation += 1;
     },
   };
 </script>
@@ -139,8 +139,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.revealedToLiuruyan = false;
+    onEnter({ scope }) {
+      scope.flags.revealedToLiuruyan = false;
     },
   };
 </script>
@@ -165,10 +165,10 @@
 
 <script>
   export default {
-    view({ globals }) {
+    view({ scope }) {
       return {
-        metRuyan: !!globals.flags.metLiuruyan,
-        revealed: !!globals.flags.revealedToLiuruyan,
+        metRuyan: !!scope.flags.metLiuruyan,
+        revealed: !!scope.flags.revealedToLiuruyan,
       };
     },
   };
@@ -215,9 +215,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.travelWithRuyan = true;
-      globals.reputation += 1;
+    onEnter({ scope }) {
+      scope.flags.travelWithRuyan = true;
+      scope.reputation += 1;
     },
   };
 </script>
@@ -238,8 +238,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.travelWithRuyan = false;
+    onEnter({ scope }) {
+      scope.flags.travelWithRuyan = false;
     },
   };
 </script>

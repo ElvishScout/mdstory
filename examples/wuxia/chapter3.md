@@ -2,14 +2,14 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        withRuyan: !!globals.flags.travelWithRuyan,
+        readerName: scope.name || "你",
+        withRuyan: !!scope.flags.travelWithRuyan,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter3Started = true;
+    onEnter({ scope }) {
+      scope.flags.chapter3Started = true;
     },
   };
 </script>
@@ -85,12 +85,12 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.practicedPatient = true;
-      globals.flags.masteredUltimate = true;
-      globals.martialLevel += 2;
-      if (!globals.inventory.includes("剑意")) {
-        globals.inventory.push("剑意");
+    onEnter({ scope }) {
+      scope.flags.practicedPatient = true;
+      scope.flags.masteredUltimate = true;
+      scope.martialLevel += 2;
+      if (!scope.inventory.includes("剑意")) {
+        scope.inventory.push("剑意");
       }
     },
   };
@@ -116,10 +116,10 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.practicedPatient = false;
-      globals.flags.masteredUltimate = false;
-      globals.martialLevel += 1;
+    onEnter({ scope }) {
+      scope.flags.practicedPatient = false;
+      scope.flags.masteredUltimate = false;
+      scope.martialLevel += 1;
     },
   };
 </script>

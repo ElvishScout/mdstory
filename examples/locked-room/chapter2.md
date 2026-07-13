@@ -2,19 +2,19 @@
 
 <script>
   export default {
-    locals({ globals }) {
-      const hasPassage = globals.clues.includes("hidden-passage");
-      const hasCufflink = globals.clues.includes("cufflink");
-      const hasPawnTicket = globals.clues.includes("pawn-ticket");
+    scope({ scope }) {
+      const hasPassage = scope.clues.includes("hidden-passage");
+      const hasCufflink = scope.clues.includes("cufflink");
+      const hasPawnTicket = scope.clues.includes("pawn-ticket");
       return {
         hasPassage,
         hasCufflink,
         hasPawnTicket,
-        clueCount: globals.clues.length,
+        clueCount: scope.clues.length,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter2Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter2Entered = true;
     },
   };
 </script>
@@ -27,9 +27,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.clues.includes("cigarette-ash")) {
-        globals.clues.push("cigarette-ash");
+    onEnter({ scope }) {
+      if (!scope.clues.includes("cigarette-ash")) {
+        scope.clues.push("cigarette-ash");
       }
     },
   };
@@ -70,9 +70,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.clues.includes("secret-letters")) {
-        globals.clues.push("secret-letters");
+    onEnter({ scope }) {
+      if (!scope.clues.includes("secret-letters")) {
+        scope.clues.push("secret-letters");
       }
     },
   };
@@ -128,9 +128,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.clues.includes("vase-weapon")) {
-        globals.clues.push("vase-weapon");
+    onEnter({ scope }) {
+      if (!scope.clues.includes("vase-weapon")) {
+        scope.clues.push("vase-weapon");
       }
     },
   };
@@ -150,9 +150,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!globals.clues.includes("mud-shoes")) {
-        globals.clues.push("mud-shoes");
+    onEnter({ scope }) {
+      if (!scope.clues.includes("mud-shoes")) {
+        scope.clues.push("mud-shoes");
       }
     },
   };
@@ -308,8 +308,8 @@
 
 <script>
   export default {
-    view({ globals }) {
-      const clues = globals.clues || [];
+    view({ scope }) {
+      const clues = scope.clues || [];
       return {
         hasPawnTicket: clues.includes("pawn-ticket"),
         hasHiddenPassage: clues.includes("hidden-passage"),

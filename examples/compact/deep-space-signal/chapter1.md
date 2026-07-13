@@ -2,13 +2,13 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        moraleOk: (globals.crewMorale || 80) >= 50,
+        moraleOk: (scope.crewMorale || 80) >= 50,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter1Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter1Entered = true;
     },
   };
 </script>
@@ -19,11 +19,11 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        moraleOk: locals.moraleOk || false,
-        crewMorale: globals.crewMorale || 80,
-        knowledge: globals.knowledge || 0,
+        moraleOk: scope.moraleOk || false,
+        crewMorale: scope.crewMorale || 80,
+        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -66,13 +66,13 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
-      globals.flags.analyzedSignal = true;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.flags.analyzedSignal = true;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        knowledge: globals.knowledge || 0,
+        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -104,18 +104,18 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.courseSet = true;
+    onEnter({ scope }) {
+      scope.flags.courseSet = true;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        knowledge: globals.knowledge || 0,
-        highKnowledge: (globals.knowledge || 0) >= 1,
-        crewMorale: globals.crewMorale || 80,
+        knowledge: scope.knowledge || 0,
+        highKnowledge: (scope.knowledge || 0) >= 1,
+        crewMorale: scope.crewMorale || 80,
       };
     },
-    onLeave({ globals }) {
-      globals.flags.chapter1Complete = true;
+    onLeave({ scope }) {
+      scope.flags.chapter1Complete = true;
     },
   };
 </script>

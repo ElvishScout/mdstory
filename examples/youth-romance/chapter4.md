@@ -2,15 +2,15 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        readerName: globals.name || "你",
-        affection: globals.affection || 0,
-        inventory: globals.inventory || [],
+        readerName: scope.name || "你",
+        affection: scope.affection || 0,
+        inventory: scope.inventory || [],
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter4Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter4Entered = true;
     },
   };
 </script>
@@ -65,8 +65,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.christmasReached = true;
+    onEnter({ scope }) {
+      scope.flags.christmasReached = true;
     },
   };
 </script>
@@ -136,9 +136,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.gaveChristmasGift = true;
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.gaveChristmasGift = true;
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -177,8 +177,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.gaveChristmasGift = false;
+    onEnter({ scope }) {
+      scope.flags.gaveChristmasGift = false;
     },
   };
 </script>
@@ -197,10 +197,10 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      if (!Array.isArray(globals.inventory)) globals.inventory = [];
-      if (!globals.inventory.includes("樱花书签")) {
-        globals.inventory.push("樱花书签");
+    onEnter({ scope }) {
+      if (!Array.isArray(scope.inventory)) scope.inventory = [];
+      if (!scope.inventory.includes("樱花书签")) {
+        scope.inventory.push("樱花书签");
       }
     },
   };
@@ -286,9 +286,9 @@
 
 <script>
   export default {
-    view({ globals }) {
+    view({ scope }) {
       return {
-        gaveGift: !!(globals.flags || {}).gaveChristmasGift,
+        gaveGift: !!(scope.flags || {}).gaveChristmasGift,
       };
     },
   };
@@ -315,9 +315,9 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.studiedTogether = true;
-      globals.affection = (globals.affection || 0) + 1;
+    onEnter({ scope }) {
+      scope.flags.studiedTogether = true;
+      scope.affection = (scope.affection || 0) + 1;
     },
   };
 </script>
@@ -370,8 +370,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.studiedTogether = false;
+    onEnter({ scope }) {
+      scope.flags.studiedTogether = false;
     },
   };
 </script>
@@ -436,11 +436,11 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.goodbyeReached = true;
+    onEnter({ scope }) {
+      scope.flags.goodbyeReached = true;
     },
-    view({ globals }) {
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const inv = scope.inventory || [];
       return {
         hasSakuraBookmark: inv.includes("樱花书签"),
       };
@@ -498,9 +498,9 @@
 
 <script>
   export default {
-    view({ globals }) {
-      const flags = globals.flags || {};
-      const inv = globals.inventory || [];
+    view({ scope }) {
+      const flags = scope.flags || {};
+      const inv = scope.inventory || [];
       return {
         gaveGift: !!flags.gaveChristmasGift,
         studiedTogether: !!flags.studiedTogether,
@@ -508,7 +508,7 @@
         hasCharm: inv.includes("护身符"),
         hasLetter: inv.includes("手写信"),
         hasBookmark: inv.includes("樱花书签"),
-        affection: globals.affection || 0,
+        affection: scope.affection || 0,
       };
     },
   };
@@ -540,8 +540,8 @@
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.flags.chapter4Complete = true;
+    onEnter({ scope }) {
+      scope.flags.chapter4Complete = true;
     },
   };
 </script>

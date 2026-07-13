@@ -2,15 +2,15 @@
 
 <script>
   export default {
-    locals({ globals }) {
+    scope({ scope }) {
       return {
-        commanderName: globals.commanderName || "指挥官",
-        currentKnowledge: globals.knowledge || 0,
-        currentMorale: globals.crewMorale || 80,
+        commanderName: scope.commanderName || "指挥官",
+        currentKnowledge: scope.knowledge || 0,
+        currentMorale: scope.crewMorale || 80,
       };
     },
-    onEnter({ globals }) {
-      globals.flags.chapter2Entered = true;
+    onEnter({ scope }) {
+      scope.flags.chapter2Entered = true;
     },
   };
 </script>
@@ -21,16 +21,16 @@ _第二章 · 黑暗中的残骸_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
-      globals.flags.arrivedAtK427 = true;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.flags.arrivedAtK427 = true;
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
-        knowledge: globals.knowledge || 0,
-        crewMorale: globals.crewMorale || 80,
-        highKnowledge: (globals.knowledge || 0) >= 2,
+        commanderName: scope.commanderName,
+        knowledge: scope.knowledge || 0,
+        crewMorale: scope.crewMorale || 80,
+        highKnowledge: (scope.knowledge || 0) >= 2,
       };
     },
   };
@@ -62,14 +62,14 @@ _第二章 · 黑暗中的残骸_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        knowledge: globals.knowledge || 0,
-        crewMorale: globals.crewMorale || 80,
-        hasArmoryAccess: (globals.inventory || []).includes("武装小队"),
+        knowledge: scope.knowledge || 0,
+        crewMorale: scope.crewMorale || 80,
+        hasArmoryAccess: (scope.inventory || []).includes("武装小队"),
       };
     },
   };
@@ -96,19 +96,19 @@ _第二章 · 黑暗中的残骸_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      const inv = globals.inventory || [];
+    onEnter({ scope }) {
+      const inv = scope.inventory || [];
       if (!inv.includes("登舰小队")) {
         inv.push("登舰小队");
       }
-      globals.inventory = inv;
-      globals.flags.boardedShip = true;
+      scope.inventory = inv;
+      scope.flags.boardedShip = true;
     },
-    view({ globals, locals }) {
+    view({ scope }) {
       return {
-        commanderName: locals.commanderName,
-        crewMorale: globals.crewMorale || 80,
-        knowledge: globals.knowledge || 0,
+        commanderName: scope.commanderName,
+        crewMorale: scope.crewMorale || 80,
+        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -136,14 +136,14 @@ _第二章 · 黑暗中的残骸_
 
 <script>
   export default {
-    onEnter({ globals }) {
-      globals.knowledge = (globals.knowledge || 0) + 1;
-      globals.flags.remoteScanOnly = true;
+    onEnter({ scope }) {
+      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.flags.remoteScanOnly = true;
     },
-    view({ globals }) {
+    view({ scope }) {
       return {
-        knowledge: globals.knowledge || 0,
-        crewMorale: globals.crewMorale || 80,
+        knowledge: scope.knowledge || 0,
+        crewMorale: scope.crewMorale || 80,
       };
     },
   };

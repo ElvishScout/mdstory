@@ -18,13 +18,10 @@ function isUrl(path: string) {
   return /^https?:\/\//.test(path);
 }
 
-function getScriptModuleId(index: number, chapterId?: string, sceneId?: string) {
-  let moduleId = "story";
-  if (chapterId) {
-    moduleId += `.chapter.${chapterId}`;
-  }
-  if (sceneId) {
-    moduleId += `.scene.${sceneId}`;
+function getScriptModuleId(index: number, sectionPath?: string[]) {
+  let moduleId = "section";
+  if (sectionPath && sectionPath.length) {
+    moduleId += `.${sectionPath.join(".")}`;
   }
   moduleId += `.index.${index}`;
   return moduleId;
@@ -42,11 +39,11 @@ async function importScriptModule(script: string, id?: string) {
   return module.default ?? {};
 }
 
-export async function mergeScripts(scripts: string[], chapterId?: string, sceneId?: string) {
+export async function mergeScripts(scripts: string[], sectionPath?: string[]) {
   const modules = await Promise.all(
     scripts.map(async (script, i) => {
-      const moduelId = getScriptModuleId(i, chapterId, sceneId);
-      return await importScriptModule(script, moduelId);
+      const moduleId = getScriptModuleId(i, sectionPath);
+      return await importScriptModule(script, moduleId);
     }),
   );
   return Object.assign({}, ...modules);
