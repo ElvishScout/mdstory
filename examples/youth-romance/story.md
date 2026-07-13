@@ -9,17 +9,6 @@ scope:
 
 # 樱花下的约定
 
-<script>
-  export default {
-    scope() {
-      return {
-        inventory: [],
-        affection: 0,
-        flags: {},
-      };
-    },
-  };
-</script>
 
 !include("./chapter1.md")
 !include("./chapter2.md")

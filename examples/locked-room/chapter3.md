@@ -207,8 +207,6 @@
         interrogatedWife: !!flags.interrogatedWife,
         interrogatedButler: !!flags.interrogatedButler,
         allInterrogated: !!(flags.interrogatedZhao && flags.interrogatedWife && flags.interrogatedButler),
-        hasCufflink: clues.includes("cufflink"),
-        hasPassage: clues.includes("hidden-passage"),
       };
     },
   };

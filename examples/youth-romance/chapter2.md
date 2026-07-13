@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         affection: scope.affection || 0,
         inventory: scope.inventory || [],
       };

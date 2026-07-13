@@ -2,11 +2,6 @@
 
 <script>
   export default {
-    scope({ scope }) {
-      return {
-        readerName: scope.name || "你",
-      };
-    },
     onEnter({ scope }) {
       scope.flags.chapter1Started = true;
     },
@@ -150,7 +145,6 @@
     view({ scope }) {
       return {
         fought: !!scope.flags.foughtAtSect,
-        pName: scope.name || "你",
       };
     },
   };

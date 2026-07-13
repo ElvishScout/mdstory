@@ -10,7 +10,6 @@
         clueCount: clues.length,
         foundKey,
         enoughForTrue: foundKey >= 5,
-        enoughForGood: foundKey >= 3,
       };
     },
     onEnter({ scope }) {

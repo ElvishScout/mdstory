@@ -1,6 +1,6 @@
 ## 好结局：半真半疑 {#ending-good}
 
-### {#partial-truth}
+### 半真半疑 {#partial-truth}
 
 <script>
   export default {

@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         affection: scope.affection || 0,
         inventory: scope.inventory || [],
       };
@@ -159,17 +158,9 @@
   export default {
     view({ scope }) {
       const inv = scope.inventory || [];
-      const flags = scope.flags || {};
-      const aff = scope.affection || 0;
       return {
-        hasPhoto: inv.includes("旧照片"),
-        hasCharm: inv.includes("护身符"),
-        hasLetter: inv.includes("手写信"),
-        hasBookmark: inv.includes("樱花书签"),
         canTrueEnding: inv.includes("旧照片") && inv.includes("樱花书签"),
-        canGoodEnding: aff >= 3,
-        finalAffection: aff,
-        confessed: !!flags.confessed,
+        canGoodEnding: (scope.affection || 0) >= 3,
       };
     },
   };

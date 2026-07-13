@@ -1,6 +1,6 @@
 ## 坏结局：冤案 {#ending-bad}
 
-### {#wrong-accusation}
+### 冤案 {#wrong-accusation}
 
 <script>
   export default {

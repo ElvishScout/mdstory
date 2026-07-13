@@ -1,6 +1,6 @@
 ## 真结局：雾散天明 {#ending-true}
 
-### {#truth-revealed}
+### 真相大白 {#truth-revealed}
 
 <script>
   export default {

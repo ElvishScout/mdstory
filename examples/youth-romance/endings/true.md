@@ -6,15 +6,6 @@
       scope.flags.ending = "true";
       scope.flags.gameCompleted = true;
     },
-    view({ scope }) {
-      const inv = scope.inventory || [];
-      return {
-        hasPhoto: inv.includes("旧照片"),
-        hasBookmark: inv.includes("樱花书签"),
-        hasCharm: inv.includes("护身符"),
-        hasLetter: inv.includes("手写信"),
-      };
-    },
   };
 </script>
 

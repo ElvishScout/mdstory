@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         affection: scope.affection || 0,
         inventory: scope.inventory || [],
       };
@@ -439,12 +438,6 @@
     onEnter({ scope }) {
       scope.flags.goodbyeReached = true;
     },
-    view({ scope }) {
-      const inv = scope.inventory || [];
-      return {
-        hasSakuraBookmark: inv.includes("樱花书签"),
-      };
-    },
   };
 </script>
 
@@ -495,24 +488,6 @@
 {{#nav "chapter4.final-words"}}听她说下去{{/nav}}
 
 ### 最后的话 {#final-words}
-
-<script>
-  export default {
-    view({ scope }) {
-      const flags = scope.flags || {};
-      const inv = scope.inventory || [];
-      return {
-        gaveGift: !!flags.gaveChristmasGift,
-        studiedTogether: !!flags.studiedTogether,
-        hasPhoto: inv.includes("旧照片"),
-        hasCharm: inv.includes("护身符"),
-        hasLetter: inv.includes("手写信"),
-        hasBookmark: inv.includes("樱花书签"),
-        affection: scope.affection || 0,
-      };
-    },
-  };
-</script>
 
 "所以——我希望你好好地过完剩下的高中时光。"她的声音平稳了一些，但在风里还是能听出轻微的颤抖。"好好上课，好好参加社团活动，好好交朋友。你不太主动——这没什么不好的——但偶尔也可以试着主动一些。认识新的朋友。做你想做的事。考你想去的学校。"
 

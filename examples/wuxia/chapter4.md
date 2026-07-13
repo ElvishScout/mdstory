@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         ml: scope.martialLevel || 1,
         rep: scope.reputation || 0,
         qi: scope.qi || 100,

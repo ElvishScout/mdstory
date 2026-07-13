@@ -2,17 +2,6 @@
 
 <script>
   export default {
-    scope({ scope }) {
-      const hasPassage = scope.clues.includes("hidden-passage");
-      const hasCufflink = scope.clues.includes("cufflink");
-      const hasPawnTicket = scope.clues.includes("pawn-ticket");
-      return {
-        hasPassage,
-        hasCufflink,
-        hasPawnTicket,
-        clueCount: scope.clues.length,
-      };
-    },
     onEnter({ scope }) {
       scope.flags.chapter2Entered = true;
     },

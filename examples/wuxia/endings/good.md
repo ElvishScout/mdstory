@@ -1,6 +1,6 @@
 ## 好结局：江湖行 {#ending-good}
 
-### {#wander}
+### 浪迹 {#wander}
 
 <script>
   export default {

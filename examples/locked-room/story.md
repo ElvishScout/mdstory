@@ -6,7 +6,7 @@ scope:
   flags: {}
 ---
 
-# 雾隐庄谜案
+# 雾隐庄谜案 {#story-root}
 
 <style>
   .clue { color: #d4a017; font-style: italic; }
@@ -21,7 +21,6 @@ scope:
         clues: [],
         flags: {},
         accusation: null,
-        reasoningPoints: 0,
       };
     },
     onEnter({ scope }) {

@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         withRuyan: !!scope.flags.travelWithRuyan,
       };
     },

@@ -9,8 +9,6 @@
     view({ scope }) {
       const inv = scope.inventory || [];
       return {
-        hasLetter: inv.includes("手写信"),
-        hasPhoto: inv.includes("旧照片"),
         hasCharm: inv.includes("护身符"),
       };
     },

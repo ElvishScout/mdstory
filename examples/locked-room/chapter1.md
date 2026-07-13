@@ -2,11 +2,6 @@
 
 <script>
   export default {
-    scope({ scope }) {
-      return {
-        detectiveName: scope.name || "你",
-      };
-    },
     onEnter({ scope }) {
       scope.flags.chapter1Entered = true;
     },

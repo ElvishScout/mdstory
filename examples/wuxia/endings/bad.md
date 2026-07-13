@@ -1,6 +1,6 @@
 ## 坏结局：一蓑烟雨 {#ending-bad}
 
-### {#leave}
+### 下山 {#leave}
 
 <script>
   export default {

@@ -5,8 +5,6 @@
     scope({ scope }) {
       return {
         commanderName: scope.commanderName || "指挥官",
-        currentKnowledge: scope.knowledge || 0,
-        currentMorale: scope.crewMorale || 80,
       };
     },
     onEnter({ scope }) {
@@ -69,7 +67,6 @@ _第二章 · 黑暗中的残骸_
       return {
         knowledge: scope.knowledge || 0,
         crewMorale: scope.crewMorale || 80,
-        hasArmoryAccess: (scope.inventory || []).includes("武装小队"),
       };
     },
   };

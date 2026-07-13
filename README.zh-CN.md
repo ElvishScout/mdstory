@@ -191,9 +191,9 @@ scope:
 
 模板中用 `{{name}}` 引用变量。
 
-### 钩子
+### Hook
 
-钩子是从 `<script>` 标签导出的 JavaScript 函数。所有 Section 共享同一套钩子：
+Hook 是从 `<script>` 标签导出的 JavaScript 函数。每个 Section 可以使用以下四种 hook：
 
 | Hook      | 签名                  | 用途                     |
 | --------- | --------------------- | ------------------------ |

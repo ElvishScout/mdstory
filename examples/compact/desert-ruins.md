@@ -81,7 +81,7 @@ _第一章标题页 · 大漠边缘_
 
 "你叫什么名字，年轻人？"
 
-{{input "string" $explorerName="探险者"}}
+{{input "string" explorerName="探险者"}}
 
 <span class="clue">老韩打量了你一会儿。</span>
 

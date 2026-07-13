@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         affection: scope.affection || 0,
         inventory: scope.inventory || [],
       };
@@ -49,9 +48,6 @@
   export default {
     onEnter({ scope }) {
       scope.flags.festivalProject = "鬼屋";
-    },
-    view({ scope }) {
-      return { myHobby: (scope.flags || {}).taskGroup || "" };
     },
   };
 </script>
@@ -333,12 +329,6 @@
       scope.flags.festivalDayReached = true;
       scope.affection = (scope.affection || 0) + 1;
     },
-    view({ scope }) {
-      const proj = (scope.flags || {}).festivalProject || "女仆咖啡厅";
-      return {
-        projectName: proj,
-      };
-    },
   };
 </script>
 
@@ -486,11 +476,6 @@
     onEnter({ scope }) {
       scope.flags.rooftopReached = true;
     },
-    view({ scope }) {
-      return {
-        joinedLit: !!(scope.flags || {}).joinedLiterature,
-      };
-    },
   };
 </script>
 
@@ -614,12 +599,6 @@
   export default {
     onEnter({ scope }) {
       scope.flags.transferNewsReached = true;
-    },
-    view({ scope }) {
-      const proj = (scope.flags || {}).festivalProject || "女仆咖啡厅";
-      return {
-        projectName: proj,
-      };
     },
   };
 </script>

@@ -193,7 +193,7 @@ Reference variables with `{{name}}`.
 
 ### Hooks
 
-Hooks are JavaScript functions exported from `<script>` tags. All Sections share the same hooks:
+Hooks are JavaScript functions exported from `<script>` tags. Every Section can use these four hooks:
 
 | Hook      | Signature             | Purpose                           |
 | --------- | --------------------- | --------------------------------- |

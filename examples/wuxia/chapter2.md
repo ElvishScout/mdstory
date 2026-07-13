@@ -4,7 +4,6 @@
   export default {
     scope({ scope }) {
       return {
-        readerName: scope.name || "你",
         currentQi: scope.qi || 100,
         fought: !!(scope.flags || {}).foughtAtSect,
       };

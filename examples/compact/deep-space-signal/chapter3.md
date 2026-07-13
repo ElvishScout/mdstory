@@ -5,8 +5,6 @@
     scope({ scope }) {
       return {
         commanderName: scope.commanderName || "指挥官",
-        currentKnowledge: scope.knowledge || 0,
-        currentMorale: scope.crewMorale || 80,
         boardedShip: !!(scope.flags || {}).boardedShip,
       };
     },
