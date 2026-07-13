@@ -20,34 +20,35 @@ npm install -g @elvishscout/mdstory
 
 ## Quick Start
 
-An MdStory file is a Markdown document with three heading levels — `#` story, `##` chapter, `###` scene:
+An MdStory file is a Markdown document. Each file is a Section; heading levels (`#` `##` `###` …) produce nested child Sections with unlimited depth:
 
 ```markdown
 ---
 title: The Crossing
+scope:
+  name: traveler
 ---
 
 # The Crossing
 
-### Crossroads {#start}
-
-A stranger approaches you.
-
-{{input "string" $name="traveler"}}
-
-{{#nav "forest.path"}}Enter the forest{{/nav}}
-{{#nav "river.bridge"}}Cross the bridge{{/nav}}
+<script>
+export default {
+  scope() {
+    return { gold: 10 };
+  },
+};
+</script>
 
 ## Forest {#forest}
 
 ### Deep Woods {#path}
 
-You walk among ancient trees, {{name}}.
+A stranger approaches you.
 
-The forest whispers your name.
+{{input "string" name="traveler"}}
 
-{{#nav "start"}}Turn back{{/nav}}
-{{#nav null}}Rest here forever{{/nav}}
+{{#nav "river.bridge"}}Cross the bridge{{/nav}}
+{{#nav "forest.path"}}Enter the forest{{/nav}}
 
 ## River {#river}
 
@@ -55,9 +56,7 @@ The forest whispers your name.
 
 The wooden bridge creaks under your weight, {{name}}.
 
-On the far side, you see a light.
-
-{{#nav "start"}}Go back{{/nav}}
+{{#nav "forest.path"}}Go back{{/nav}}
 {{#nav null}}Cross into the light{{/nav}}
 ```
 
@@ -122,143 +121,117 @@ mdstory skills --agent claude --yes
 After installing skills, use `/mdstory-write` in your coding agent to create interactive stories:
 
 ```
-/mdstory-write Write a mystery set in an abandoned space station. The player discovers clues about what happened to the crew. Include 3 chapters with multiple endings.
+/mdstory-write Write a mystery set in an abandoned space station. Include deeply nested sections and multiple endings.
 ```
 
-The agent will design the structure, write each chapter, run validation checks, and deliver a complete playable story.
+The agent will design the structure, write each file, run validations, and deliver a complete playable story.
 
 ## Guide
 
-### Story Structure
+### Section Structure
 
-| Level | Heading     | Purpose                                        |
-| ----- | ----------- | ---------------------------------------------- |
-| `#`   | Story title | Optional. Holds story-level `<script>` hooks.  |
-| `##`  | Chapter     | Groups scenes. Has its own hooks and `locals`. |
-| `###` | Scene       | A renderable unit with a Handlebars template.  |
+Everything in MdStory is a **Section**. The file itself is the root Section; heading levels create nested children:
 
-**Frontmatter** — YAML at the top of the file sets static metadata and initial globals:
+| Heading | Depth | Relationship        |
+| ------- | ----- | ------------------- |
+| File    | root  | The entire document |
+| `#`     | 1     | Child of root       |
+| `##`    | 2     | Child of `#`        |
+| `###`   | 3     | Child of `##`       |
+| `####+` | 4+    | And so on           |
+
+**First entrance**: When jumping into a deep Section from outside, un-entered ancestors render outside-in (root → mid → target). Ancestor templates with `{{#nav}}` can intercept and redirect here.
+
+**Leaving**: `onLeave` fires inside-out (deepest → ancestors).
+
+**Within the same branch**: Jumping within a branch (e.g. `a.b.c` → `a.b.d`) only enters the new `a.b.d` — the common prefix is skipped.
+
+**Frontmatter** — YAML at the top sets metadata and root scope:
 
 ```yaml
 ---
 title: My Story
-globals:
+scope:
   name: Alice
+  flags: {}
 ---
 ```
 
-If no `#` heading is present, the story title comes from metadata `title`, or is empty. Scenes before any `##` are grouped into an implicit default chapter.
-
-**Story & chapter templates** — content between `#` and the first `##`/`###` renders once at story start. Content between `##` and its first `###` renders once when entering that chapter.
+**Explicit IDs**: Always give Sections an explicit id to keep navigation stable when renaming:
 
 ```markdown
-# The Dungeon
+## Forest {#forest}
 
-_You open a dusty tome..._
-
-## Chapter One {#ch1}
-
-_The air grows cold as you descend._
-
-### The Entrance {#entrance}
-
-You stand before a massive iron door.
+### Deep Woods {#path}
 ```
+
+IDs must be unique within the same parent Section. The same id under different parents is allowed.
 
 ### Navigation
 
-Use `{{#nav target}}label{{/nav}}` to move between scenes:
+Use `{{#nav target}}label{{/nav}}` to move between Sections:
 
 ```markdown
-{{#nav "forest"}} Go back to the forest {{/nav}} ← same chapter
-{{#nav "chap2.cave"}} Enter the cave {{/nav}} ← cross-chapter
-{{#nav "chap2"}} Go to Chapter 2 {{/nav}} ← chapter entry scene
-{{#nav null}} The end {{/nav}} ← end story
+{{#nav "path"}} Child under same parent {{/nav}}
+{{#nav "forest.path"}} Multi-segment path {{/nav}}
+{{#nav null}} End story {{/nav}}
 ```
+
+Multi-segment paths (containing `.`) are resolved: absolute from root → relative to current → up through ancestors.
 
 ### Input & Variables
 
-`input` does not pause the story where it appears. When the reader leaves the scene, all inputs are submitted together with the chosen navigation target.
-
-Inputs write to chapter `locals` by default. Prefix the variable name with `$` to write to `globals`:
+Inputs are submitted together when leaving a Section. Values are written to the nearest scope layer that owns the key:
 
 ```markdown
-{{input "string"  name="Alice"}} ← local text input
-{{input "number"  age=30}} ← local number input
-{{input "boolean" brave=true}} ← local checkbox
-{{input "string"  $name="Alice"}} ← global text input
+{{input "string" name="Alice"}}
+{{input "number" age=30}}
+{{input "boolean" brave=true}}
 ```
 
-Reference variables in templates with `{{name}}`.
-
-### Conditionals
-
-Use `{{#if}}` for branching:
-
-```markdown
-{{#if hasKey}}
-You unlock the door.
-{{else}}
-The door is locked.
-{{/if}}
-```
-
-- **Globals** — persist across the whole story. Set via frontmatter, `$`-prefixed inputs, or hook side effects.
-- **Locals** — reset and re-computed each time a chapter is entered. Set via `locals()`.
-- **View values** — computed on each scene render. Set via `view()`. Read-only display helpers.
+Reference variables with `{{name}}`.
 
 ### Hooks
 
-Hooks are JavaScript functions exported from `<script>` tags. Multiple `<script>` tags per scope are merged — later exports take precedence for same-named hooks.
+Hooks are JavaScript functions exported from `<script>` tags. All Sections share the same hooks:
 
-| Scope   | Hook      | Signature                       | Purpose                           |
-| ------- | --------- | ------------------------------- | --------------------------------- |
-| Story   | `globals` | `()`                            | Return initial global variables   |
-| Story   | `onStart` | `({ globals })`                 | Side effect when story begins     |
-| Chapter | `locals`  | `({ globals })`                 | Return chapter-local variables    |
-| Chapter | `onEnter` | `({ globals, locals })`         | Side effect when entering chapter |
-| Chapter | `onLeave` | `({ globals, locals, target })` | Side effect when leaving chapter  |
-| Scene   | `view`    | `({ globals, locals })`         | Return render-only values         |
-| Scene   | `onEnter` | `({ globals, locals })`         | Side effect when entering scene   |
-| Scene   | `onLeave` | `({ globals, locals, target })` | Side effect when leaving scene    |
+| Hook      | Signature             | Purpose                           |
+| --------- | --------------------- | --------------------------------- |
+| `scope`   | `({ scope })`         | Return variables for this Section |
+| `onEnter` | `({ scope })`         | Side effect on enter              |
+| `onLeave` | `({ scope, target })` | Side effect on leave              |
+| `view`    | `({ scope })`         | Return per-render overrides       |
 
-Hooks with return values support both sync and `async`. `globals()` receives no arguments. `view()` receives the current scopes; its return value is only used for the current render.
+The `scope` parameter is a Proxy — reads walk up layers to find the nearest key; writes modify the owning layer. Both `scope.flags.x = true` and `scope.health = 50` persist correctly.
 
-**Example** — chapter locals with a counter:
+**Example**:
 
 ```markdown
 ## The Dungeon {#dungeon}
 
 <script>
-  let attempts = 0;
-  export default {
-    locals() {
-      attempts++;
-      return { attempt: attempts };
-    },
-  };
+export default {
+  scope() {
+    return { difficulty: 3 };
+  },
+  onEnter({ scope }) {
+    scope.flags.entered = true;
+  },
+};
 </script>
 
-### First Room {#room}
-
-This is your {{attempt}}th attempt.
-```
-
-**Example** — scene view hook for conditional display:
-
-```markdown
 ### Treasure Chest {#chest}
 
 <script>
-  export default {
-    view({ globals }) {
-      const opened = globals.chestOpened || false;
-      return { alreadyOpened: opened, coins: opened ? 0 : 50 };
-    },
-    onLeave({ globals }) {
-      globals.chestOpened = true;
-    },
-  };
+export default {
+  view({ scope }) {
+    const opened = scope.chestOpened || false;
+    return { alreadyOpened: opened, coins: opened ? 0 : 50 };
+  },
+  onLeave({ scope }) {
+    scope.chestOpened = true;
+  },
+};
 </script>
 
 {{#if alreadyOpened}}
@@ -268,25 +241,9 @@ You found {{coins}} gold pieces!
 {{/if}}
 ```
 
-### Assets & Styles
+### Styles
 
-Define assets in YAML metadata. Assets are spread directly into the template scope, accessible by key name as objects with `url` and `mime` properties:
-
-```yaml
-assets:
-  map: "https://example.com/map.png"
-  bgm: { url: "https://example.com/audio.mp3", mime: "audio/mpeg" }
-```
-
-```markdown
-![]({map.url})
-{{bgm.url}} → outputs the URL
-{{bgm.mime}} → outputs "audio/mpeg"
-```
-
-When an asset is defined as a string, the MIME type is auto-detected from the file extension.
-
-Add CSS with a `<style>` tag under the story heading:
+`<style>` tags belong to their containing Section:
 
 ```html
 <style>
@@ -298,24 +255,19 @@ Add CSS with a `<style>` tag under the story heading:
 
 ### File Includes
 
-Use `!include("target")` to splice another Markdown source before parsing:
-
 ```markdown
 !include("./chapter-1.md")
-!include("/stories/common.md")
 !include("https://example.com/shared.md")
 ```
 
-Includes are resolved relative to the file that contains them. For custom include loading, pass `base` or `resolveInclude` to `fromPath()`, `fromSource()`, or `parseStorySource()`.
+Includes resolve relative to the containing file.
 
 ### Line Breaks
 
 ```markdown
-{{linebreak}} ← one blank line
-{{linebreak 3}} ← three blank lines
+{{linebreak}}
+{{linebreak 3}}
 ```
-
-Produces `<br>` in both terminal and HTML output.
 
 ## More Resources
 

@@ -20,34 +20,35 @@ npm install -g @elvishscout/mdstory
 
 ## 快速开始
 
-MdStory 文件是一个 Markdown 文档，使用三级标题结构——`#` 故事、`##` 章节、`###` 场景：
+MdStory 文件是一个 Markdown 文档。每个文件是一个 Section，标题层级（`#` `##` `###` …）产生嵌套子 Section，支持无限层级：
 
 ```markdown
 ---
 title: 岔路口
+scope:
+  name: 旅人
 ---
 
 # 岔路口
 
-### 十字路口 {#start}
-
-一个陌生人朝你走来。
-
-{{input "string" $name="旅人"}}
-
-{{#nav "forest.path"}}走进森林{{/nav}}
-{{#nav "river.bridge"}}过桥{{/nav}}
+<script>
+export default {
+  scope() {
+    return { gold: 10 };
+  },
+};
+</script>
 
 ## 森林 {#forest}
 
 ### 密林深处 {#path}
 
-你在古树间穿行，{{name}}。
+一个陌生人朝你走来。
 
-森林低语着你的名字。
+{{input "string" name="旅人"}}
 
-{{#nav "start"}}原路返回{{/nav}}
-{{#nav null}}在此长眠{{/nav}}
+{{#nav "river.bridge"}}过桥{{/nav}}
+{{#nav "forest.path"}}走进森林{{/nav}}
 
 ## 河流 {#river}
 
@@ -55,9 +56,7 @@ title: 岔路口
 
 木桥在你脚下吱嘎作响，{{name}}。
 
-对岸有一点光亮。
-
-{{#nav "start"}}往回走{{/nav}}
+{{#nav "forest.path"}}往回走{{/nav}}
 {{#nav null}}走向光明{{/nav}}
 ```
 
@@ -122,143 +121,117 @@ mdstory skills --agent claude --yes
 安装 skill 后，在 coding agent 中使用 `/mdstory-write` 创建互动故事：
 
 ```
-/mdstory-write 写一个发生在废弃空间站上的悬疑故事。玩家发现船员失踪的线索。包含 3 个章节和多个结局。
+/mdstory-write 写一个发生在废弃空间站上的悬疑故事。玩家发现船员失踪的线索。包含多层嵌套结构和多个结局。
 ```
 
 agent 会设计故事结构、逐章编写、执行检查清单，并交付完整可玩的故事。
 
 ## 指南
 
-### 故事结构
+### Section 结构
 
-| 层级  | 标题     | 作用                                    |
-| ----- | -------- | --------------------------------------- |
-| `#`   | 故事标题 | 可选。放置故事级 `<script>` 钩子。      |
-| `##`  | 章节     | 将场景分组。拥有自己的钩子和 `locals`。 |
-| `###` | 场景     | 可渲染单元，包含 Handlebars 模板。      |
+MdStory 中一切皆是 **Section**——文件本身是根 Section，标题层级产生嵌套：
 
-**Frontmatter** — 文件顶部的 YAML 块，设置静态元数据和初始全局变量：
+| 标题    | 层级 | 关系              |
+| ------- | ---- | ----------------- |
+| 文件    | 根   | 整个文档          |
+| `#`     | 1    | 根的子 Section    |
+| `##`    | 2    | `#` 的子 Section  |
+| `###`   | 3    | `##` 的子 Section |
+| `####+` | 4+   | 以此类推          |
+
+**首次进入**：从外部跳转到深层 Section 时，沿路径未进入过的祖先从外向内（根 → 中层 → 目标）依次渲染模板。祖先模板中的 `{{#nav}}` 可在此拦截跳转。
+
+**离开**：`onLeave` 从内向外（最深层 → 祖先）依次触发。
+
+**同分支内跳转**：已在某分支内部时（如 `a.b.c` → `a.b.d`），共同前缀不重进，只进新的 `a.b.d`。
+
+**Frontmatter** — 文件顶部的 YAML 块，设置元数据和根 Section 初始 scope：
 
 ```yaml
 ---
 title: 我的故事
-globals:
+scope:
   name: 小明
+  flags: {}
 ---
 ```
 
-如果没有 `#` 标题，故事标题取自 metadata 的 `title`；若都未设置则为空。任何 `##` 之前的 `###` 归入隐式默认章节。
-
-**故事模板和章节模板** — `#` 到第一个 `##`/`###` 之间的内容在故事开始时渲染一次。`##` 到第一个 `###` 之间的内容在进入该章节时渲染一次：
+**显式 id**：推荐为 Section 写显式 id，避免改名导致导航失效：
 
 ```markdown
-# 地下城
+## 森林 {#forest}
 
-_你翻开一本落满灰尘的古书……_
-
-## 第一章 {#ch1}
-
-_空气随着你深入而愈发寒冷。_
-
-### 入口 {#entrance}
-
-你站在一扇巨大的铁门前。
+### 密林深处 {#path}
 ```
+
+同一个父 Section 下 id 不能重复，不同父 Section 下可以相同。
 
 ### 导航
 
-用 `{{#nav target}}标签{{/nav}}` 在场景间移动：
+用 `{{#nav target}}标签{{/nav}}` 在 Section 间移动：
 
 ```markdown
-{{#nav "forest"}} 回到森林{{/nav}} ← 同一章节
-{{#nav "chap2.cave"}} 进入洞穴{{/nav}} ← 跨章节
-{{#nav "chap2"}} 前往第二章{{/nav}} ← 章节入口场景
-{{#nav null}} 故事结束{{/nav}} ← 结束故事
+{{#nav "path"}} 同父下的子节点 {{/nav}}
+{{#nav "forest.path"}} 多段路径 {{/nav}}
+{{#nav null}} 结束故事 {{/nav}}
 ```
+
+多段路径（含 `.`）解析时按绝对路径→相对当前→向上查找祖先的顺序匹配。
 
 ### 输入与变量
 
-`input` 不会在出现的位置暂停故事；读者离开场景时，场景内的所有输入与导航目标一并提交。
-
-输入默认写入章节 `locals`。变量名前加 `$` 写入 `globals`：
+`input` 不会暂停故事；离开 Section 时所有输入与导航目标一并提交。变量自动写入拥有该 key 的最近 scope 层：
 
 ```markdown
-{{input "string"  name="小明"}} ← 局部文本输入
-{{input "number"  age=30}} ← 局部数字输入
-{{input "boolean" brave=true}} ← 局部复选框
-{{input "string"  $name="小明"}} ← 全局文本输入
+{{input "string" name="小明"}}
+{{input "number" age=30}}
+{{input "boolean" brave=true}}
 ```
 
-在模板中用 `{{name}}` 引用变量。
-
-### 条件与分支
-
-用 `{{#if}}` 实现分支：
-
-```markdown
-{{#if hasKey}}
-你打开了门。
-{{else}}
-门锁着。
-{{/if}}
-```
-
-- **Globals** — 整个故事周期持久。通过 frontmatter、`$` 前缀 input、或钩子副作用设置。
-- **Locals** — 每次进入章节时重置。通过 `locals()` 返回。
-- **View 值** — 每次渲染场景时计算。通过 `view()` 返回，只读。
+模板中用 `{{name}}` 引用变量。
 
 ### 钩子
 
-钩子是从 `<script>` 标签导出的 JavaScript 函数。每个作用域支持多个 `<script>`——同名钩子后者覆盖前者。
+钩子是从 `<script>` 标签导出的 JavaScript 函数。所有 Section 共享同一套钩子：
 
-| 作用域  | 钩子      | 签名                            | 用途                 |
-| ------- | --------- | ------------------------------- | -------------------- |
-| Story   | `globals` | `()`                            | 返回初始全局变量     |
-| Story   | `onStart` | `({ globals })`                 | 故事开始时的副作用   |
-| Chapter | `locals`  | `({ globals })`                 | 返回章节局部变量     |
-| Chapter | `onEnter` | `({ globals, locals })`         | 进入章节时的副作用   |
-| Chapter | `onLeave` | `({ globals, locals, target })` | 离开章节时的副作用   |
-| Scene   | `view`    | `({ globals, locals })`         | 返回本次渲染的临时值 |
-| Scene   | `onEnter` | `({ globals, locals })`         | 进入场景时的副作用   |
-| Scene   | `onLeave` | `({ globals, locals, target })` | 离开场景时的副作用   |
+| Hook      | 签名                  | 用途                     |
+| --------- | --------------------- | ------------------------ |
+| `scope`   | `({ scope })`         | 返回当前 Section 的变量  |
+| `onEnter` | `({ scope })`         | 进入时的副作用           |
+| `onLeave` | `({ scope, target })` | 离开时的副作用           |
+| `view`    | `({ scope })`         | 返回当次渲染的临时覆盖值 |
 
-有返回值的钩子支持同步和 `async`。`globals()` 不接收参数。`view()` 的返回值仅用于当前渲染。
+`scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。`scope.flags.x = true`、`scope.health = 50` 都能正确持久化。
 
-**示例** — 章节 locals 计数器：
+**示例**：
 
 ```markdown
 ## 地下城 {#dungeon}
 
 <script>
-  let attempts = 0;
-  export default {
-    locals() {
-      attempts++;
-      return { attempt: attempts };
-    },
-  };
+export default {
+  scope() {
+    return { difficulty: 3 };
+  },
+  onEnter({ scope }) {
+    scope.flags.entered = true;
+  },
+};
 </script>
 
-### 第一间房 {#room}
-
-这是你第 {{attempt}} 次尝试。
-```
-
-**示例** — 场景 view 钩子条件显示：
-
-```markdown
 ### 宝箱 {#chest}
 
 <script>
-  export default {
-    view({ globals }) {
-      const opened = globals.chestOpened || false;
-      return { alreadyOpened: opened, coins: opened ? 0 : 50 };
-    },
-    onLeave({ globals }) {
-      globals.chestOpened = true;
-    },
-  };
+export default {
+  view({ scope }) {
+    const opened = scope.chestOpened || false;
+    return { alreadyOpened: opened, coins: opened ? 0 : 50 };
+  },
+  onLeave({ scope }) {
+    scope.chestOpened = true;
+  },
+};
 </script>
 
 {{#if alreadyOpened}}
@@ -268,25 +241,9 @@ _空气随着你深入而愈发寒冷。_
 {{/if}}
 ```
 
-### 资源与样式
+### 样式
 
-在 YAML 元数据中定义资源。资源会被展开到模板作用域中，通过键名以对象形式（含 `url` 和 `mime` 属性）直接访问：
-
-```yaml
-assets:
-  map: "https://example.com/map.png"
-  bgm: { url: "https://example.com/audio.mp3", mime: "audio/mpeg" }
-```
-
-```markdown
-![]({map.url})
-{{bgm.url}} → 输出 URL
-{{bgm.mime}} → 输出 "audio/mpeg"
-```
-
-当资源以字符串形式定义时，MIME 类型会根据文件扩展名自动检测。
-
-在故事标题下用 `<style>` 标签引入 CSS：
+`<style>` 标签归属于所在 Section：
 
 ```html
 <style>
@@ -298,24 +255,19 @@ assets:
 
 ### 文件引入
 
-用 `!include("target")` 在解析前插入另一段 Markdown 源码：
-
 ```markdown
 !include("./chapter-1.md")
-!include("/stories/common.md")
 !include("https://example.com/shared.md")
 ```
 
-引入路径相对于包含它的文件解析。需要自定义加载行为时，向 `fromPath()`、`fromSource()` 或 `parseStorySource()` 传入 `base` 或 `resolveInclude`。
+引入路径相对于包含它的文件解析。
 
 ### 空行
 
 ```markdown
-{{linebreak}} ← 一个空行
-{{linebreak 3}} ← 三个空行
+{{linebreak}}
+{{linebreak 3}}
 ```
-
-在终端和 HTML 输出中均产生 `<br>` 换行。
 
 ## 更多资源
 
