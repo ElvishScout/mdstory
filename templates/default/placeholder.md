@@ -1,21 +1,8 @@
 ---
 title: MdStory
-globals:
-  flags: {}
-  inventory: []
-  reputation: 0
 ---
 
-<style>
-  h3 {
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
-    font-weight: bold;
-    line-height: 1.33;
-  }
-</style>
-
-### 📖 MdStory
+## 📖 MdStory
 
 <script>
   export default {
