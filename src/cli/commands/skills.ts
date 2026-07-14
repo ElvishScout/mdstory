@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile, mkdir, cp } from "node:fs/promises";
+import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import inquirer from "inquirer";
@@ -45,12 +45,26 @@ function resolvePlaceholders(content: string, packageRoot: string, isRelative: b
 }
 
 /**
+ * Remove all entries inside a directory without deleting the directory itself.
+ * Does nothing if the directory doesn't exist.
+ */
+async function clearDirectory(dir: string): Promise<void> {
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return; // directory doesn't exist — nothing to clear
+  }
+  await Promise.all(entries.map((entry) => fs.rm(path.join(dir, entry.name), { recursive: true, force: true })));
+}
+
+/**
  * Recursively copy a skill directory tree, replacing `@!PLACEHOLDER` tokens in
  * `.md` (and `.yaml`/`.yml`) files.
  */
 async function copySkillTree(srcDir: string, destDir: string, packageRoot: string, isRelative: boolean): Promise<void> {
-  await mkdir(destDir, { recursive: true });
-  const entries = await readdir(srcDir, { withFileTypes: true });
+  await fs.mkdir(destDir, { recursive: true });
+  const entries = await fs.readdir(srcDir, { withFileTypes: true });
   for (const entry of entries) {
     const srcPath = path.join(srcDir, entry.name);
     const destPath = path.join(destDir, entry.name);
@@ -59,10 +73,10 @@ async function copySkillTree(srcDir: string, destDir: string, packageRoot: strin
     } else {
       const ext = path.extname(entry.name).toLowerCase();
       if (ext === ".md" || ext === ".yaml" || ext === ".yml") {
-        const raw = await readFile(srcPath, "utf-8");
-        await writeFile(destPath, resolvePlaceholders(raw, packageRoot, isRelative), "utf-8");
+        const raw = await fs.readFile(srcPath, "utf-8");
+        await fs.writeFile(destPath, resolvePlaceholders(raw, packageRoot, isRelative), "utf-8");
       } else {
-        await cp(srcPath, destPath);
+        await fs.cp(srcPath, destPath);
       }
     }
   }
@@ -111,7 +125,7 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
   const skillsDir = path.join(packageRoot, "skills");
 
   // Discover available skills (each subdirectory under skills/ is a skill)
-  const entries = await readdir(skillsDir, { withFileTypes: true });
+  const entries = await fs.readdir(skillsDir, { withFileTypes: true });
   const skillNames = entries.filter((e) => e.isDirectory()).map((e) => e.name);
 
   if (!skillNames.length) {
@@ -237,6 +251,7 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
       const src = path.join(skillsDir, skillName);
       const dest = path.join(targetDir, skillName);
       console.log(`  Copying "${skillName}"...`);
+      await clearDirectory(dest);
       await copySkillTree(src, dest, packageRoot, inNodeModules);
     }
   }

@@ -1,4 +1,4 @@
-import { access, readFile, writeFile } from "node:fs/promises";
+import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import open, { apps } from "open";
@@ -55,7 +55,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
   // Parse the story to a serializable structure
   const resolvedPath = path.resolve(storyPath);
   const parseOptions = await resolveParseOptions({ base: resolvedPath });
-  const source = await readFile(resolvedPath, "utf-8");
+  const source = await fs.readFile(resolvedPath, "utf-8");
   const parsedStory = await parseStorySource(source, parseOptions);
 
   // Build template options
@@ -74,7 +74,8 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
 
   // 1. Look for a subdirectory under templates/
   const candidateDir = path.join(templatesDir, templateName, "dist", "index.html");
-  const exists = await access(candidateDir)
+  const exists = await fs
+    .access(candidateDir)
     .then(() => true)
     .catch(() => false);
 
@@ -83,7 +84,8 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
   } else {
     // 2. Try treating the value as a direct path to an HTML file
     const candidateFile = path.resolve(templateName);
-    const fileExists = await access(candidateFile)
+    const fileExists = await fs
+      .access(candidateFile)
       .then(() => true)
       .catch(() => false);
 
@@ -94,7 +96,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
     }
   }
 
-  const template = await readFile(templatePath, "utf-8");
+  const template = await fs.readFile(templatePath, "utf-8");
 
   // Inject the parsed story JSON and template options into the template
   const html = template
@@ -103,7 +105,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
 
   // Write the output file
   const outputPath = options.output ?? resolvedPath.replace(/\.[^.]+$/, "") + ".html";
-  await writeFile(outputPath, html, "utf-8");
+  await fs.writeFile(outputPath, html, "utf-8");
   console.log(`Generated: ${outputPath}`);
 
   // Open in browser (default: open)
