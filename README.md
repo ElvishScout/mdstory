@@ -33,7 +33,7 @@ scope:
 
 <script>
 export default {
-  scope() {
+  data() {
     return { gold: 10 };
   },
 };
@@ -195,11 +195,11 @@ Reference variables with `{{name}}`.
 
 Hooks are JavaScript functions exported from `<script>` tags. Every Section can use these three hooks:
 
-| Hook      | Signature             | Purpose                           |
-| --------- | --------------------- | --------------------------------- |
-| `scope`   | `({ scope })`         | Return variables for this Section |
-| `onEnter` | `({ scope })`         | Side effect on enter              |
-| `onLeave` | `({ scope, target })` | Side effect on leave              |
+| Hook      | Signature             | Purpose                               |
+| --------- | --------------------- | ------------------------------------- |
+| `data`    | `({ scope })`         | Initialize variables for this Section |
+| `onEnter` | `({ scope })`         | Side effect on enter                  |
+| `onLeave` | `({ scope, target })` | Side effect on leave                  |
 
 The `scope` parameter is a Proxy — reads walk up layers to find the nearest key; writes modify the owning layer. Both `scope.flags.x = true` and `scope.health = 50` persist correctly.
 
@@ -210,7 +210,7 @@ The `scope` parameter is a Proxy — reads walk up layers to find the nearest ke
 
 <script>
 export default {
-  scope() {
+  data() {
     return { difficulty: 3 };
   },
   onEnter({ scope }) {

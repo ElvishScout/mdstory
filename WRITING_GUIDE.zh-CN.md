@@ -1,6 +1,6 @@
 # MdStory 写作规范与 Hooks Best Practice
 
-本文面向 MdStory 作者，说明一篇 `.md` 故事应如何组织，以及什么时候使用 `scope()` 和生命周期 hooks。
+本文面向 MdStory 作者，说明一篇 `.md` 故事应如何组织，以及什么时候使用 `data()` 和生命周期 hooks。
 
 ## 基本原则
 
@@ -10,7 +10,7 @@ MdStory 文件是一篇 Markdown 文档。Section 是故事的基本单元——
 
 - 用标题表达层级结构。
 - 用 Handlebars 表达渲染逻辑：`{{name}}`、`{{#if flag}}...{{/if}}`。
-- 用 hooks 管理状态：变量初始化放在 `scope()`，副作用放在 `onEnter()` / `onLeave()`。
+- 用 hooks 管理状态：变量初始化放在 `data()`，副作用放在 `onEnter()` / `onLeave()`。
 
 ## 文档结构
 
@@ -127,14 +127,9 @@ Section 标题到第一个子标题之间的内容是它的**模板**。
 
 <script>
 export default {
-  view({ scope }) {
-    return { opened: Boolean(scope.chestOpened) };
+  data({ scope }) {
+    return { opened: false };
   },
-};
-</script>
-
-<script>
-export default {
   onLeave({ scope }) {
     scope.chestOpened = true;
   },
@@ -146,11 +141,11 @@ export default {
 
 每个 Section 的 `<script>` 可以导出以下三种 hook：
 
-| Hook      | 时机                      | 推荐用途               |
-| --------- | ------------------------- | ---------------------- |
-| `scope`   | 首次进入 Section 时       | 返回该 Section 的变量  |
-| `onEnter` | 每次进入 Section 时       | 修改状态、记录访问     |
-| `onLeave` | 离开 Section 或故事结束时 | 结算状态、根据目标更新 |
+| Hook      | 时机                      | 推荐用途                |
+| --------- | ------------------------- | ----------------------- |
+| `data`    | 首次进入 Section 时       | 初始化该 Section 的变量 |
+| `onEnter` | 每次进入 Section 时       | 修改状态、记录访问      |
+| `onLeave` | 离开 Section 或故事结束时 | 结算状态、根据目标更新  |
 
 `scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。
 
@@ -161,28 +156,39 @@ export default {
 
 所有 hook 都可以是同步或 `async` 函数。
 
+### Scope 层级规则
+
+每个 Section 拥有自己的一层 scope，从根到叶逐层级联。子 Section 可以覆盖祖先的同名变量（shadowing）。
+
+**读取**（`scope.key`）：从当前 Section 往根方向查找，返回第一个存在的值。
+
+**写入**（`scope.key = value`）：从当前 Section 往根方向查找 key——找到了就写入那一层，找不到就写入当前 Section 自己的层。
+
+**`data()` 的返回值**：始终 merge 到**当前 Section** 的 scope 层，不会影响祖先。这意味着即使祖先已定义同名 key，返回值也会在当前层覆盖它。
+
+**`{{input}}` 提交**：规则同写入——找到拥有该 key 的最近层并写入。
+
+| 操作                     | 目标 key 已存在于祖先  | 目标 key 不存在 |
+| ------------------------ | ---------------------- | --------------- |
+| `data()` 返回 `{ k: v }` | 写入当前层（覆盖祖先） | 写入当前层      |
+| `scope.k = v`            | 写入**祖先**层         | 写入当前层      |
+| `{{input}}` 提交 `k`     | 写入**祖先**层         | 写入当前层      |
+
+> **注意**：`data()` 返回值的行为与直接写 `scope` 不同。当 key 已在祖先定义时，返回值在当前层覆盖祖先，而 `scope.k = v` 直接修改祖先层。为避免混淆，推荐在 `data()` 中用返回值初始化，在 `onEnter()` / `onLeave()` 中直接操作 `scope`。
+
 ## 状态分层
 
-### scope
+### data
 
-`scope()` 返回该 Section 的变量，沿路径从根到叶逐层级联。子 Section 可以覆盖祖先的同名变量。
-
-适合放：
-
-- 跨 Section 共享的状态：金币、背包、线索、成就。
-- 影响结局的长期选择。
-- 本章节内反复使用的派生值。
+`data()` 在首次进入 Section 时调用，接收 `{ scope }`（与 `onEnter` 相同的全量 Proxy）。推荐通过返回值初始化变量，由引擎 merge 到当前 Section 的 scope 中：
 
 ```markdown
 ## 地下城 {#dungeon}
 
 <script>
-let attempts = 0;
-
 export default {
-  scope() {
-    attempts++;
-    return { attempt: attempts };
+  data({ scope }) {
+    return { attempt: (scope.attempt || 0) + 1 };
   },
 };
 </script>
@@ -194,9 +200,9 @@ export default {
 
 ## 推荐写法
 
-### 初始值：静态放 frontmatter，动态放 scope()
+### 初始值：根 Section 用 frontmatter，其他 Section 用 data()
 
-静态初始值优先写 YAML frontmatter：
+根 Section 的静态初始值可以写在 YAML frontmatter：
 
 ```yaml
 ---
@@ -206,12 +212,12 @@ scope:
 ---
 ```
 
-需要运行时计算时使用 `scope()`：
+需要运行时计算时使用 `data()`（任意 Section 均可）：
 
 ```html
 <script>
   export default {
-    scope() {
+    data() {
       return { seed: Math.floor(Math.random() * 10000) };
     },
   };
@@ -229,9 +235,6 @@ scope:
       const clues = new Set(scope.clues ?? []);
       clues.add("letter");
       scope.clues = [...clues];
-    },
-    view({ scope }) {
-      return { clueCount: (scope.clues ?? []).length };
     },
   };
 </script>
@@ -357,7 +360,7 @@ scope:
 
 <script>
 export default {
-  scope() {
+  data() {
     return { gold: 10 };
   },
   onEnter({ scope }) {
@@ -370,7 +373,7 @@ export default {
 
 <script>
 export default {
-  scope() {
+  data() {
     return { difficulty: 1 };
   },
   onEnter({ scope }) {
@@ -383,7 +386,7 @@ export default {
 
 <script>
 export default {
-  view({ scope }) {
+  data({ scope }) {
     return { greeting: scope.gold >= 10 ? "你看起来很从容。" : "你需要更多资源。" };
   },
   onLeave({ scope, target }) {
