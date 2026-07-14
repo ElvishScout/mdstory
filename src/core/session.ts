@@ -84,12 +84,6 @@ function writeToLayer(layers: Scope[], key: string, value: JsonValue): void {
   }
 }
 
-function applyInputs(layers: Scope[], inputs: Scope) {
-  for (const [name, value] of Object.entries(inputs)) {
-    writeToLayer(layers, name, value);
-  }
-}
-
 export class StorySession {
   story: Story;
   data: StorySessionData;
@@ -233,45 +227,19 @@ export class StorySession {
       result.target = null;
     }
 
-    // Apply inputs to the nearest owning scope layer (no $ prefix needed)
+    // Apply inputs to the nearest owning scope layer
     if (result.inputs) {
       const layers = this.collectScopes(currentPath);
       if (!layers.length) {
         this.data.scopes[""] = {};
         layers.push(this.data.scopes[""]);
       }
-      applyInputs(layers, result.inputs);
+      for (const [name, value] of Object.entries(result.inputs)) {
+        writeToLayer(layers, name, value);
+      }
     }
 
     return this.resolveDestination(result.target, currentPath);
-  }
-
-  /**
-   * Fires onLeave hooks for sections being left (from deepest to common ancestor).
-   */
-  private async fireLeaveHooks(oldPath: string[], newPath: string[] | null): Promise<void> {
-    const commonLen = newPath ? commonPrefixLength(oldPath, newPath) : 0;
-    const canonicalTarget = newPath ? newPath.join(".") : null;
-
-    // Fire onLeave from deepest to the one just after common prefix
-    for (let i = oldPath.length - 1; i >= commonLen; i--) {
-      const leavingPath = oldPath.slice(0, i + 1);
-      const section = this.story.root.walk(leavingPath);
-      if (!section) {
-        continue;
-      }
-
-      if (section.hooks.onLeave) {
-        const leaveScope = this.buildScope(leavingPath);
-        await section.hooks.onLeave({ scope: leaveScope, target: canonicalTarget });
-      }
-    }
-
-    // Fire root's onLeave when story ends (root is never in oldPath)
-    if (newPath === null && this.story.root.hooks.onLeave) {
-      const rootScope = this.buildScope([]);
-      await this.story.root.hooks.onLeave({ scope: rootScope, target: null });
-    }
   }
 
   /**
@@ -318,10 +286,13 @@ export class StorySession {
   }
 
   /** Fire onLeave for a single section. */
-  private async leaveOne(path: string[], target: string | null): Promise<void> {
+  private async leaveSection(path: string[], targetPath: string[] | null): Promise<void> {
     const section = this.story.root.walk(path);
     if (section?.hooks.onLeave) {
-      await section.hooks.onLeave({ scope: this.buildScope(path), target });
+      await section.hooks.onLeave({
+        scope: this.buildScope(path),
+        target: targetPath ? targetPath.join(".") : null,
+      });
     }
   }
 
@@ -332,20 +303,20 @@ export class StorySession {
     // `null` → enter root; `[]` → enter root; `["a"]` → enter "a" from root.
     const savedPath = this.data.currentPath?.slice() ?? null;
     let currentPath: string[] | null = savedPath && savedPath.length > 0 ? savedPath.slice(0, -1) : null;
-    let targetPath: string[] = savedPath ?? [];
-    // When resuming, skip initSection on the first entry to preserve saved scope,
-    // data() and onEnter state.
+    let targetPath: string[] | null = savedPath ?? [];
+    // When resuming, skip initSection on the first entry to preserve saved scope.
     let resuming = savedPath !== null;
 
     while (true) {
-      // ── Enter: current is a STRICT prefix of target (or null → enter root) ─
-      // Equality is NOT an enter — it falls through to leave so the section is
-      // exited to its parent first, then re-entered (onLeave → onEnter cycle).
+      // ── Enter: walk deeper along targetPath ──
+      // A null targetPath means the story is ending — fall through to leave.
       if (
-        currentPath === null ||
-        (currentPath.length < targetPath.length && commonPrefixLength(currentPath, targetPath) === currentPath.length)
+        targetPath !== null &&
+        (currentPath === null ||
+          (currentPath.length < targetPath.length &&
+            commonPrefixLength(currentPath, targetPath) === currentPath.length))
       ) {
-        const nextPath: string[] = currentPath ? targetPath.slice(0, currentPath.length + 1) : []; // enter root
+        const nextPath: string[] = currentPath ? targetPath.slice(0, currentPath.length + 1) : [];
         this.data.currentPath = nextPath;
         if (resuming) {
           resuming = false;
@@ -354,17 +325,15 @@ export class StorySession {
         }
         const destination = await this.renderSection(nextPath, prompt, options);
         currentPath = nextPath;
-
-        if (!destination) {
-          await this.fireLeaveHooks(currentPath, null);
-          return;
-        }
-        targetPath = destination;
+        targetPath = destination; // null → story end, string[] → navigate
+      } else if (currentPath) {
+        // ── Leave: step back one section, deepest first ──
+        // Handles both cross-branch jumps and story ending (targetPath === null).
+        await this.leaveSection(currentPath, targetPath);
+        currentPath = currentPath.length > 0 ? currentPath.slice(0, -1) : null;
       } else {
-        // ── Leave: step back one section; parent is NOT re-entered ──
-        // When already at root, go to null so the next iteration re-enters root.
-        await this.leaveOne(currentPath!, targetPath.join("."));
-        currentPath = currentPath!.length > 0 ? currentPath!.slice(0, -1) : null;
+        // currentPath is null and targetPath is null — nowhere to go
+        break;
       }
     }
   }
