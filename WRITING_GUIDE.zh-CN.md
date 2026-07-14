@@ -37,11 +37,11 @@ scope:
 
 Section 标题到第一个子标题之间的内容是它的**模板**。
 
-**首次进入**：从外部跳转到某个深层子 Section 时，沿路径的祖先 Section 如果尚未进入，会从外向内（根 → 中层 → 目标）依次渲染模板、执行 `onEnter`。祖先模板中的 `{{#nav}}` 可以在此拦截跳转，将导航改到完全不同的位置。
+**进入**：跳转到某个深层子 Section 时，沿路径从外向内（根 → 中层 → 目标）依次渲染模板。每个 Section 进入时 scope 重置、`data()` 执行、`onEnter()` 执行。祖先模板中的 `{{#nav}}` 可以在此拦截跳转，将导航改到完全不同的位置。
 
-**同分支内跳转**：如果当前已在某个分支内部（如 `a.b.c` → `a.b.d`），共同前缀 `a` 和 `a.b` 不会重复进入——只进入新的 `a.b.d`。离开的 Section 从内向外触发 `onLeave`。
+**同分支内跳转**：如果当前已在某个分支内部（如 `a.b.c` → `a.b.d`），共同前缀 `a` 和 `a.b` 不会重复进入——只进入新的 `a.b.d`。离开的 Section 从内向外触发 `onLeave`。若跳转到父 Section（如 `a.b.c` → `a.b`），会依次离开 `c` 和 `b`，然后重新进入 `b`（scope 重置 + `data()` + `onEnter()`）。
 
-**跨分支跳转**：从 `a.b.c` 跳到 `x.y.z` 时，离开路径从内向外（`a.b.c` → `a.b` → `a`）依次 `onLeave`，新路径从外向内（`x` → `x.y` → `x.y.z`）依次 `onEnter`。
+**跨分支跳转**：从 `a.b.c` 跳到 `x.y.z` 时，离开路径从内向外（`a.b.c` → `a.b` → `a`）依次 `onLeave`，新路径从外向内（`x` → `x.y` → `x.y.z`）依次 `onEnter`。注意 `a` 会触发 `onLeave`。这也是"离开当前分支"的唯一方式。
 
 ## 模板语法
 
@@ -118,6 +118,16 @@ Section 标题到第一个子标题之间的内容是它的**模板**。
 - 跨分支跳转写完整路径。
 - 结束故事写 `null`。
 
+### 隐式导航规则
+
+以下行为由引擎自动处理，不依赖模板中的 `{{#nav}}`：
+
+**无 nav 的自动前进**：如果 Section 模板中没有 `{{#nav}}`（或没有任何可点击的导航），引擎自动沿深度优先序前进到下一个 Section。如果是最后一个 Section，则故事结束。这使纯展示型 Section 可以"直通"而不需要手动写导航。
+
+**重入当前 Section**：如果导航目标解析后等于当前所在 Section（例如显式写了 `{{#nav}}` 指向自己），引擎会先执行 `onLeave` 退回到父 Section，再重新进入当前 Section（scope 重置 → `data()` → `onEnter()`）。这是一种"刷新当前场景"的语义。
+
+**故事结束**：在模板中写 `{{#nav null}}` 结束故事。引擎从当前 Section 向外逐级触发 `onLeave`，最后触发 root 的 `onLeave`。`onLeave` 的 `target` 参数为 `null` 时表示故事结束。
+
 ## Script 规范
 
 每个 Section 允许写多个 `<script>` 标签。多个脚本的 hook 导出会被合并，同名 hook 后面的覆盖前面的。
@@ -143,9 +153,11 @@ export default {
 
 | Hook      | 时机                      | 推荐用途                |
 | --------- | ------------------------- | ----------------------- |
-| `data`    | 首次进入 Section 时       | 初始化该 Section 的变量 |
-| `onEnter` | 每次进入 Section 时       | 修改状态、记录访问      |
+| `data`    | 每次进入 Section 时       | 初始化该 Section 的变量 |
+| `onEnter` | `data()` 执行完毕后       | 修改状态、副作用        |
 | `onLeave` | 离开 Section 或故事结束时 | 结算状态、根据目标更新  |
+
+> **每次进入都会重置**：Section 的 scope 在每次进入时会被清空，然后重新执行 `data()` → `onEnter()`。这意味着离开后再回到同一个 Section，之前的局部状态不会保留。需要跨进入持久化的状态应写在祖先 Section 的 scope 里。
 
 `scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。
 
@@ -153,6 +165,8 @@ export default {
 - `scope.health = 50` → 找到最近一层有 `health` 的 scope，写回，持久化 ✓
 
 因此不再需要区分"全局变量"和"局部变量"——变量在哪一层定义，修改就在哪一层生效。
+
+root Section 例外：其 scope 来自 frontmatter 且永不清空，适合存放全局状态。
 
 所有 hook 都可以是同步或 `async` 函数。
 
@@ -180,7 +194,7 @@ export default {
 
 ### data
 
-`data()` 在首次进入 Section 时调用，接收 `{ scope }`（与 `onEnter` 相同的全量 Proxy）。推荐通过返回值初始化变量，由引擎 merge 到当前 Section 的 scope 中：
+`data()` 在每次进入 Section 时调用（scope 先被重置），接收 `{ scope }`（与 `onEnter` 相同的全量 Proxy）。推荐通过返回值初始化变量，由引擎 merge 到当前 Section 的 scope 中：
 
 ```markdown
 ## 地下城 {#dungeon}
@@ -300,9 +314,11 @@ onLeave({ scope }) {
 }
 ```
 
-## 进阶功能
+## 资源与样式
 
-### 资源与多媒体
+### 资源
+
+在 frontmatter 中声明资源，模板中通过 `{key}` 引用：
 
 ```yaml
 assets:
@@ -313,14 +329,13 @@ assets:
 ```markdown
 ![]({map.url})
 {{bgm.url}}
-{{bgm.mime}}
 ```
 
 字符串形式定义时，MIME 类型根据文件扩展名自动检测。
 
 ### 样式
 
-`<style>` 标签归属于所在 Section：
+`<style>` 标签归属于所在 Section，作用于其模板范围：
 
 ```html
 <style>
@@ -328,13 +343,6 @@ assets:
     color: #ffd700;
   }
 </style>
-```
-
-### 空行
-
-```markdown
-{{linebreak}}
-{{linebreak 3}}
 ```
 
 ## 常见反模式

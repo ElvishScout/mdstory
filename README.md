@@ -125,11 +125,11 @@ Everything in MdStory is a **Section**. The file itself is the root Section; hea
 | `###`   | 3     | Child of `##`       |
 | `####+` | 4+    | And so on           |
 
-**First entrance**: When jumping into a deep Section from outside, un-entered ancestors render outside-in (root → mid → target). Ancestor templates with `{{#nav}}` can intercept and redirect here.
+**Entering**: Jumping to a deep Section renders ancestors outside-in (root → mid → target). Each Section's scope resets on entry, then `data()` and `onEnter()` run. Ancestor templates with `{{#nav}}` can intercept here.
 
-**Leaving**: `onLeave` fires inside-out (deepest → ancestors).
+**Leaving**: `onLeave` fires inside-out (deepest → ancestors), then the engine enters the target from the common ancestor outward.
 
-**Within the same branch**: Jumping within a branch (e.g. `a.b.c` → `a.b.d`) only enters the new `a.b.d` — the common prefix is skipped.
+**Same branch**: Jumping within a branch (e.g. `a.b.c` → `a.b.d`) only enters the new `a.b.d` — the common prefix is skipped. Jumping to the current Section triggers leave-then-re-enter (a "refresh").
 
 **Frontmatter** — YAML at the top sets metadata and root scope:
 
@@ -162,7 +162,9 @@ Use `{{#nav target}}label{{/nav}}` to move between Sections:
 {{#nav null}} End story {{/nav}}
 ```
 
-Multi-segment paths (containing `.`) are resolved: absolute from root → relative to current → up through ancestors.
+Multi-segment paths (containing `.`) are resolved: absolute from root → relative to current → up through ancestors. `null` or `""` ends the story.
+
+Sections with no `{{#nav}}` auto-advance depth-first. Selecting the current Section re-enters it (leave → parent → re-enter).
 
 ### Input & Variables
 
@@ -178,13 +180,13 @@ Reference variables with `{{name}}`.
 
 ### Hooks
 
-Hooks are JavaScript functions exported from `<script>` tags. Every Section can use these three hooks:
+Hooks are JavaScript functions exported from `<script>` tags. They run on every entry:
 
-| Hook      | Signature             | Purpose                               |
-| --------- | --------------------- | ------------------------------------- |
-| `data`    | `({ scope })`         | Initialize variables for this Section |
-| `onEnter` | `({ scope })`         | Side effect on enter                  |
-| `onLeave` | `({ scope, target })` | Side effect on leave                  |
+| Hook      | Signature             | When                            |
+| --------- | --------------------- | ------------------------------- |
+| `data`    | `({ scope })`         | Every entry (scope reset first) |
+| `onEnter` | `({ scope })`         | After `data()` returns          |
+| `onLeave` | `({ scope, target })` | Leaving Section / story end     |
 
 The `scope` parameter is a Proxy — reads walk up layers to find the nearest key; writes modify the owning layer. Both `scope.flags.x = true` and `scope.health = 50` persist correctly.
 
@@ -219,34 +221,6 @@ The chest is empty.
 {{else}}
 You found 50 gold pieces!
 {{/if}}
-```
-
-### Styles
-
-`<style>` tags belong to their containing Section:
-
-```html
-<style>
-  .clue {
-    color: #ffd700;
-  }
-</style>
-```
-
-### File Includes
-
-```markdown
-!include("./chapter-1.md")
-!include("https://example.com/shared.md")
-```
-
-Includes resolve relative to the containing file.
-
-### Line Breaks
-
-```markdown
-{{linebreak}}
-{{linebreak 3}}
 ```
 
 ## More Resources

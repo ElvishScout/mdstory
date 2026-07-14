@@ -125,11 +125,11 @@ MdStory 中一切皆是 **Section**——文件本身是根 Section，标题层�
 | `###`   | 3    | `##` 的子 Section |
 | `####+` | 4+   | 以此类推          |
 
-**首次进入**：从外部跳转到深层 Section 时，沿路径未进入过的祖先从外向内（根 → 中层 → 目标）依次渲染模板。祖先模板中的 `{{#nav}}` 可在此拦截跳转。
+**进入**：跳转到深层 Section 时，沿路径从外向内（根 → 中层 → 目标）依次渲染模板。每个 Section 进入时 scope 重置、`data()` 执行、`onEnter()` 执行。祖先模板中的 `{{#nav}}` 可在此拦截跳转。
 
-**离开**：`onLeave` 从内向外（最深层 → 祖先）依次触发。
+**离开**：`onLeave` 从内向外（最深层 → 祖先）依次触发，随后引擎从共同祖先向外进入目标。
 
-**同分支内跳转**：已在某分支内部时（如 `a.b.c` → `a.b.d`），共同前缀不重进，只进新的 `a.b.d`。
+**同分支内跳转**：已在某分支内部时（如 `a.b.c` → `a.b.d`），共同前缀不重进，只进新的 `a.b.d`。跳转到当前 Section 会先离开再重进（"刷新"当前场景）。
 
 **Frontmatter** — 文件顶部的 YAML 块，设置元数据和根 Section 初始 scope：
 
@@ -162,7 +162,9 @@ scope:
 {{#nav null}} 结束故事 {{/nav}}
 ```
 
-多段路径（含 `.`）解析时按绝对路径→相对当前→向上查找祖先的顺序匹配。
+多段路径（含 `.`）解析时按绝对路径→相对当前→向上查找祖先的顺序匹配。`null` 或 `""` 结束故事。
+
+无 `{{#nav}}` 的 Section 自动按深度优先前进到下一节。选中当前 Section 会先离开再重进（"刷新"）。
 
 ### 输入与变量
 
@@ -178,13 +180,13 @@ scope:
 
 ### Hook
 
-Hook 是从 `<script>` 标签导出的 JavaScript 函数。每个 Section 可以使用以下三种 hook：
+Hook 是从 `<script>` 标签导出的 JavaScript 函数。每次进入 Section 时都会执行：
 
-| Hook      | 签名                  | 用途                      |
-| --------- | --------------------- | ------------------------- |
-| `data`    | `({ scope })`         | 初始化当前 Section 的变量 |
-| `onEnter` | `({ scope })`         | 进入时的副作用            |
-| `onLeave` | `({ scope, target })` | 离开时的副作用            |
+| Hook      | 签名                  | 时机                       |
+| --------- | --------------------- | -------------------------- |
+| `data`    | `({ scope })`         | 每次进入时（scope 先重置） |
+| `onEnter` | `({ scope })`         | `data()` 返回后            |
+| `onLeave` | `({ scope, target })` | 离开 Section / 故事结束时  |
 
 `scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。`scope.flags.x = true`、`scope.health = 50` 都能正确持久化。
 
@@ -219,34 +221,6 @@ export default {
 {{else}}
 你找到了 50 枚金币！
 {{/if}}
-```
-
-### 样式
-
-`<style>` 标签归属于所在 Section：
-
-```html
-<style>
-  .clue {
-    color: #ffd700;
-  }
-</style>
-```
-
-### 文件引入
-
-```markdown
-!include("./chapter-1.md")
-!include("https://example.com/shared.md")
-```
-
-引入路径相对于包含它的文件解析。
-
-### 空行
-
-```markdown
-{{linebreak}}
-{{linebreak 3}}
 ```
 
 ## 更多资源

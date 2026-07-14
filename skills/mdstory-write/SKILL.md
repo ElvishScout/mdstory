@@ -78,6 +78,8 @@ MdStory 是基于 Markdown 和 Handlebars 的互动小说脚本格式。本技�
 
 ## CLI 工具
 
+> 以下 CLI 命令可辅助检查故事结构和统计信息。如果因 Node.js 环境或包安装问题导致命令执行失败，可跳过该步骤，不影响故事编写。
+
 ### 故事结构概览
 
 `mdstory overview` 命令打印故事的 Section 树形结构，支持按层级查看 id 和累计字数，用于核对全篇结构完整性和字数分布。
@@ -155,12 +157,13 @@ node !#PACKAGE_ROOT/dist/cli/index.js overview story.md --ids --words -d 1
 
 **模板渲染规则**：
 
-- **首次进入**：从外部跳转到深层 Section 时，沿途祖先从外向内（根 → 父 → 目标）依次渲染模板、执行 `onEnter`。祖先模板中的 `{{#nav}}` 可拦截跳转。
+- **进入**：沿路径从外向内（根 → 父 → 目标）依次渲染模板。每个 Section 进入时 scope 重置、`data()` 执行、`onEnter()` 执行。祖先模板中的 `{{#nav}}` 可拦截跳转。
 - **离开**：`onLeave` 从内向外（目标 → 父 → 根）依次触发。
-- **同分支内跳转**：如 `a.b.c` → `a.b.d`，共同前缀 `a` 和 `a.b` 不重进，只进 `a.b.d`。
+- **重入**：跳转到当前所在 Section 会先离开再重新进入（触发完整的 onLeave → onEnter 循环）。
+- **同分支内跳转**：如 `a.b.c` → `a.b.d`，共同前缀不重进，只进 `a.b.d`。
 
 ## 写作规范
 
-详细的写作规范、模板语法、Hooks 最佳实践、状态分层、导航/输入/Script/Include 规范、命名约定、进阶功能（资源/样式/空行）、常见反模式和推荐模板，请参考：
+详细的写作规范、模板语法、Hooks 最佳实践、状态分层、导航/输入/Script/Include 规范、命名约定、资源与样式、常见反模式和推荐模板，请参考：
 
 @!#PACKAGE_ROOT/WRITING_GUIDE.zh-CN.md
