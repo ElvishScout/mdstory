@@ -75,45 +75,30 @@ mdstory build story.md
 ## CLI
 
 ```bash
-# Play a story in the terminal
+# Play a story interactively in the terminal
 mdstory play my-story.md
 
-# Play with debug output
+# Options: --debug
 mdstory play my-story.md --debug
 
 # Build a standalone HTML file and open in browser
 mdstory build my-story.md
 
-# Build to a specific output path
-mdstory build my-story.md -o dist/story.html
+# Options: -o <path>, -t <name|path>, -O <key=value>, --no-open, --debug
+mdstory build my-story.md -o dist/story.html -t default -O debug=true --no-open
 
-# Build without opening browser
-mdstory build my-story.md --no-open
+# Print a tree view of a story's section structure
+mdstory overview my-story.md
 
-# Build with debug output in browser console
-mdstory build my-story.md --debug
-
-# Build with a named template (from templates/ directory)
-mdstory build my-story.md --template default
-
-# Build with a custom template file
-mdstory build my-story.md --template ./my-theme/dist/index.html
-
-# Pass template options (repeatable, supports dot-separated nesting)
-mdstory build my-story.md -O debug=true -O theme.color=dark
+# Options: --words, --ids, -d <n>
+mdstory overview my-story.md --words --ids -d 2
 
 # Install MdStory writing skills to coding agents
 mdstory skills
 
-# Install to specific agents (non-interactive)
-mdstory skills --agent claude
-mdstory skills --agent claude --agent codex
-
-# Install to a custom directory
-mdstory skills --dir ./my-skills
-
-# Skip confirmation prompt
-mdstory skills --agent claude --yes
+# Options: -a <name> (target agent), -d <path> (custom install dir), -y (skip prompt)
+mdstory skills -a claude
+mdstory skills -d ./my-skills
 ```
 
 ## Skills

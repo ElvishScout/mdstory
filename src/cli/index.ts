@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { playCommand } from "./commands/play.js";
 import { buildCommand } from "./commands/build.js";
 import { skillsCommand } from "./commands/skills.js";
+import { overviewCommand } from "./commands/overview.js";
 import pkg from "../../package.json" with { type: "json" };
 
 const program = new Command();
@@ -20,6 +21,26 @@ program
   .action(async (storyPath, options) => {
     try {
       await playCommand(storyPath, { debug: options.debug ?? false });
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("overview")
+  .description("Print a tree view of the story's section structure")
+  .argument("<story>", "Path to the story .md file")
+  .option("--words", "Show cumulative word counts")
+  .option("--ids", "Show explicit #id suffixes")
+  .option("-d, --depth <n>", "Limit tree depth", (v) => parseInt(v, 10))
+  .action(async (storyPath, options) => {
+    try {
+      await overviewCommand(storyPath, {
+        words: options.words,
+        ids: options.ids,
+        depth: options.depth,
+      });
     } catch (err) {
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);

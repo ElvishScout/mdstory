@@ -78,42 +78,27 @@ mdstory build story.md
 # 在终端中交互式游玩故事
 mdstory play my-story.md
 
-# 带调试输出游玩
+# 可选参数：--debug
 mdstory play my-story.md --debug
 
 # 生成独立 HTML 文件并在浏览器中打开
 mdstory build my-story.md
 
-# 构建到指定输出路径
-mdstory build my-story.md -o dist/story.html
+# 可选参数：-o <path>、-t <name|path>、-O <key=value>、--no-open、--debug
+mdstory build my-story.md -o dist/story.html -t default -O debug=true --no-open
 
-# 构建但不自动打开浏览器
-mdstory build my-story.md --no-open
+# 以树状图打印故事的章节结构
+mdstory overview my-story.md
 
-# 构建并在浏览器控制台输出调试信息
-mdstory build my-story.md --debug
-
-# 使用指定模板构建（从 templates/ 目录查找）
-mdstory build my-story.md --template default
-
-# 使用自定义模板文件构建
-mdstory build my-story.md --template ./my-theme/dist/index.html
-
-# 传递模板选项（可重复，支持点号分隔的嵌套键）
-mdstory build my-story.md -O debug=true -O theme.color=dark
+# 可选参数：--words、--ids、-d <n>
+mdstory overview my-story.md --words --ids -d 2
 
 # 将 MdStory 写作 skill 安装到 coding agent
 mdstory skills
 
-# 安装到指定 agent（非交互模式）
-mdstory skills --agent claude
-mdstory skills --agent claude --agent codex
-
-# 安装到自定义目录
-mdstory skills --dir ./my-skills
-
-# 跳过确认提示
-mdstory skills --agent claude --yes
+# 可选参数：-a <name>（指定 agent）、-d <path>（自定义安装目录）、-y（跳过确认）
+mdstory skills -a claude
+mdstory skills -d ./my-skills
 ```
 
 ## Skills
