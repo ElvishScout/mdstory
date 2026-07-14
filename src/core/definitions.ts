@@ -41,7 +41,7 @@ export type InputType = "string" | "number" | "boolean";
 /** Section-level lifecycle hooks — unified, no globals/locals distinction. */
 export type SectionHooks = {
   /** Returns variables that take effect within this section's scope and cascade to descendants. */
-  scope?: (context: HookContext) => HookResult<Scope | undefined>;
+  data?: (context: HookContext) => HookResult<Scope | undefined>;
   onEnter?: (context: HookContext) => HookResult;
   onLeave?: (context: LeaveHookContext) => HookResult;
 };

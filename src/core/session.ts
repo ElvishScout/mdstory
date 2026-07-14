@@ -330,10 +330,9 @@ export class StorySession {
       this.data.scopes[pathKey] = {};
     }
 
-    if (section.hooks.scope) {
-      const parentPath = path.slice(0, -1);
-      const parentScope = this.buildScope(parentPath);
-      const result = await section.hooks.scope({ scope: parentScope });
+    if (section.hooks.data) {
+      const dataScope = this.buildScope(path);
+      const result = await section.hooks.data({ scope: dataScope });
       if (result) {
         Object.assign(this.data.scopes[pathKey], result);
       }

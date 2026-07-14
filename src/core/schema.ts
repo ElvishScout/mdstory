@@ -3,10 +3,6 @@ import { contentType } from "mime-types";
 
 import type { JsonValue, SectionHooks } from "./definitions.js";
 
-function PromiseLikeSchema<T extends z.ZodType>(schema: T) {
-  return schema.or(schema.promise());
-}
-
 export const VariableSchema: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([z.null(), z.string(), z.number(), z.boolean(), z.array(VariableSchema), z.record(VariableSchema)]),
 );
@@ -36,7 +32,7 @@ export const MetadataSchema = z.object({
 
 export const SectionHooksSchema = z
   .object({
-    scope: z.function().returns(PromiseLikeSchema(ScopeSchema.optional())),
+    data: z.function(),
     onEnter: z.function(),
     onLeave: z.function(),
   })
