@@ -6,7 +6,7 @@ title: MdStory
 
 <script>
   export default {
-    view() {
+    data() {
       return {
         replacedText: JSON.stringify(window.PARSED_STORY),
       }

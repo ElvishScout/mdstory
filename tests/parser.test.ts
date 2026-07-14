@@ -28,7 +28,7 @@ async function parse(src: string, includes?: Record<string, string>) {
 }
 
 const SCRIPT_DEFAULT = "<script>\nexport default { onEnter() {} };\n</script>";
-const SCRIPT_SCOPE = "<script>\nexport default { scope() { return { x: 1 }; } };\n</script>";
+const SCRIPT_DATA = "<script>\nexport default { data() { return { x: 1 }; } };\n</script>";
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -419,7 +419,7 @@ describe("parseStorySource", () => {
         "# Story",
         SCRIPT_DEFAULT,
         "## Chapter 1 {#ch1}",
-        SCRIPT_SCOPE,
+        SCRIPT_DATA,
         "### Scene 1 {#s1}",
       ].join("\n");
       const r = await parse(src);

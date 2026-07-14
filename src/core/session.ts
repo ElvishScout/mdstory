@@ -1,4 +1,4 @@
-import type { Scope, InputType } from "./definitions.js";
+import type { Scope, InputType, JsonValue } from "./definitions.js";
 import type { Story } from "./story.js";
 import type { Section } from "./section.js";
 import type { RenderOptions, RenderResult } from "./render.js";
@@ -6,7 +6,6 @@ import type { RenderOptions, RenderResult } from "./render.js";
 export interface StorySessionData {
   scopes: Record<string, Scope>;
   currentPath: string[];
-  enteredPaths: string[];
 }
 
 export type PromptProps = { type: "section" } & RenderResult;
@@ -44,11 +43,7 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
   const parsedInputs = Object.fromEntries(
     inputs.map(({ name, type }) => {
       const value = formData.get(name) as string | null;
-      try {
-        return [name, parseInput(type, value)];
-      } catch {
-        throw new Error(`Invalid input from FormData: ${name}, ${value}`);
-      }
+      return [name, parseInput(type, value)];
     }),
   );
   return { target, inputs: parsedInputs };
@@ -70,18 +65,28 @@ function findOwningLayerIndex(layers: Scope[], key: string): number {
   return -1;
 }
 
-function applyInputs(layers: Scope[], inputs: Scope) {
-  if (!layers.length) {
-    return;
+/** Length of the longest common prefix between two string arrays. */
+function commonPrefixLength(a: string[], b: string[]): number {
+  let n = 0;
+  while (n < a.length && n < b.length && a[n] === b[n]) {
+    n++;
   }
-  const leaf = layers[layers.length - 1];
+  return n;
+}
+
+/** Write `value` to the nearest layer that owns `key`, or to the leaf layer. */
+function writeToLayer(layers: Scope[], key: string, value: JsonValue): void {
+  const idx = findOwningLayerIndex(layers, key);
+  if (idx !== -1) {
+    layers[idx][key] = value;
+  } else {
+    layers[layers.length - 1][key] = value;
+  }
+}
+
+function applyInputs(layers: Scope[], inputs: Scope) {
   for (const [name, value] of Object.entries(inputs)) {
-    const idx = findOwningLayerIndex(layers, name);
-    if (idx !== -1) {
-      layers[idx][name] = value;
-    } else {
-      leaf[name] = value;
-    }
+    writeToLayer(layers, name, value);
   }
 }
 
@@ -102,7 +107,6 @@ export class StorySession {
       this.data = {
         scopes: { "": story.metadata.scope ? { ...story.metadata.scope } : {} },
         currentPath: initialPath,
-        enteredPaths: [],
       };
     }
   }
@@ -128,13 +132,11 @@ export class StorySession {
    * Builds a Proxy scope that reads from the nearest layer upwards,
    * and writes to the layer that already owns the key (or the leaf layer).
    */
-  private buildScope(path: string[]): Scope {
-    const layers = this.collectScopes(path);
+  private buildScope(path: string[], layers?: Scope[]): Scope {
+    layers ??= this.collectScopes(path);
     if (!layers.length) {
       return {};
     }
-
-    const leafIdx = layers.length - 1;
 
     return new Proxy({} as Scope, {
       get(_target, prop) {
@@ -142,13 +144,7 @@ export class StorySession {
         return idx !== -1 ? layers[idx][prop as string] : undefined;
       },
       set(_target, prop, value) {
-        const idx = findOwningLayerIndex(layers, prop as string);
-        if (idx !== -1) {
-          layers[idx][prop as string] = value;
-        } else {
-          // Key doesn't exist anywhere — set on leaf
-          layers[leafIdx][prop as string] = value;
-        }
+        writeToLayer(layers, prop as string, value);
         return true;
       },
       has(_target, prop) {
@@ -186,9 +182,10 @@ export class StorySession {
   }
 
   /** Builds a flat merged object for Handlebars rendering (not a proxy). */
-  private buildRenderScope(path: string[], overrides?: Scope): Scope {
+  private buildRenderScope(path: string[], overrides?: Scope, layers?: Scope[]): Scope {
+    layers ??= this.collectScopes(path);
     const result: Scope = {};
-    for (const layer of this.collectScopes(path)) {
+    for (const layer of layers) {
       Object.assign(result, layer);
     }
     if (overrides) {
@@ -257,23 +254,14 @@ export class StorySession {
 
   /**
    * Fires onLeave hooks for sections being left (from deepest to common ancestor).
-   * Also removes left sections from enteredPaths so they re-enter on return.
    */
   private async fireLeaveHooks(oldPath: string[], newPath: string[] | null): Promise<void> {
-    // Find common prefix length
-    let commonLen = 0;
-    if (newPath) {
-      while (commonLen < oldPath.length && commonLen < newPath.length && oldPath[commonLen] === newPath[commonLen]) {
-        commonLen++;
-      }
-    }
-
+    const commonLen = newPath ? commonPrefixLength(oldPath, newPath) : 0;
     const canonicalTarget = newPath ? newPath.join(".") : null;
 
     // Fire onLeave from deepest to the one just after common prefix
     for (let i = oldPath.length - 1; i >= commonLen; i--) {
       const leavingPath = oldPath.slice(0, i + 1);
-      const leavingKey = leavingPath.join(".");
       const section = this.story.root.walk(leavingPath);
       if (!section) {
         continue;
@@ -283,22 +271,12 @@ export class StorySession {
         const leaveScope = this.buildScope(leavingPath);
         await section.hooks.onLeave({ scope: leaveScope, target: canonicalTarget });
       }
-
-      // Remove from entered so re-entry triggers enter stage again
-      const enteredIdx = this.data.enteredPaths.indexOf(leavingKey);
-      if (enteredIdx !== -1) {
-        this.data.enteredPaths.splice(enteredIdx, 1);
-      }
     }
 
     // Fire root's onLeave when story ends (root is never in oldPath)
     if (newPath === null && this.story.root.hooks.onLeave) {
       const rootScope = this.buildScope([]);
       await this.story.root.hooks.onLeave({ scope: rootScope, target: null });
-      const enteredIdx = this.data.enteredPaths.indexOf("");
-      if (enteredIdx !== -1) {
-        this.data.enteredPaths.splice(enteredIdx, 1);
-      }
     }
   }
 
@@ -340,7 +318,6 @@ export class StorySession {
 
     // When initOnly, skip lifecycle hooks and render — target stage handles them
     if (initOnly) {
-      this.data.enteredPaths.push(pathKey);
       return { destination: null, isEnd: false };
     }
 
@@ -349,11 +326,6 @@ export class StorySession {
 
     // Handle nav
     if (destination) {
-      // Mark current as entered if navigating deeper (descendant path)
-      const destKey = destination.join(".");
-      if (destKey.startsWith(pathKey + ".")) {
-        this.data.enteredPaths.push(pathKey);
-      }
       await this.fireLeaveHooks(path, destination);
       return { destination, isEnd: false };
     }
@@ -363,8 +335,7 @@ export class StorySession {
       return { destination: null, isEnd: true };
     }
 
-    // Fall through — mark as entered
-    this.data.enteredPaths.push(pathKey);
+    // Fall through — scope already initialized above
     return { destination: null, isEnd: false };
   }
 
@@ -375,12 +346,16 @@ export class StorySession {
     prompt: StoryPrompt,
     options: PlayOptions,
   ): Promise<{ destination: string[] | null; isEnd: boolean }> {
+    const layers = this.collectScopes(path);
+
     if (section.hooks.onEnter) {
-      const enterScope = this.buildScope(path);
-      await section.hooks.onEnter({ scope: enterScope });
+      await section.hooks.onEnter({ scope: this.buildScope(path, layers) });
     }
 
-    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
+    const renderResult = section.render(
+      { ...this.story.assets, ...this.buildRenderScope(path, undefined, layers) },
+      options,
+    );
     const rawResult = await prompt({ ...renderResult, type: "section" });
     return this.ingestPrompt(rawResult, renderResult, path);
   }
@@ -408,19 +383,15 @@ export class StorySession {
     const { destination, isEnd } = await this.enterAndRender(section, path, prompt, options);
 
     // Fire onLeave for current section and ancestors being left
-    if (destination) {
-      await this.fireLeaveHooks(path, destination);
-    } else {
-      await this.fireLeaveHooks(path, null);
-    }
+    await this.fireLeaveHooks(path, destination);
 
     return { destination, isEnd };
   }
 
   /** Main play loop. */
   private async runLoop(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
-    // Ensure root has been entered before descending into children
-    if (!this.data.enteredPaths.includes("")) {
+    // Enter root first
+    {
       const rootResult = await this.runEnterStage([], prompt, options);
       if (rootResult.isEnd) {
         return;
@@ -430,31 +401,34 @@ export class StorySession {
       }
     }
 
+    // Track the last successfully rendered path so we can compute which
+    // ancestors are new on the next iteration via common-prefix comparison.
+    let prevPath: string[] = [];
+
     while (true) {
       const path = this.data.currentPath;
 
-      // ── Step A: Enter any un-entered ancestors (walk from root) ──────────
+      // ── Step A: Enter ancestors that are new since prevPath ──────────────
+      const commonLen = commonPrefixLength(prevPath, path);
       let redirected = false;
-      for (let depth = 0; depth < path.length; depth++) {
+
+      for (let depth = commonLen; depth < path.length; depth++) {
         const ancestorPath = path.slice(0, depth + 1);
-        const ancestorKey = ancestorPath.join(".");
+        // Deepest element is the target — scope-only init; lifecycle deferred to target stage
+        const isTarget = depth === path.length - 1;
+        const { destination, isEnd } = await this.runEnterStage(ancestorPath, prompt, options, isTarget);
 
-        if (!this.data.enteredPaths.includes(ancestorKey)) {
-          // Deepest element is the target — scope-only init; lifecycle deferred to target stage
-          const isTarget = depth === path.length - 1;
-          const { destination, isEnd } = await this.runEnterStage(ancestorPath, prompt, options, isTarget);
-
-          if (isEnd) {
-            return;
-          }
-
-          if (destination) {
-            this.data.currentPath = destination;
-            redirected = true;
-            break;
-          }
-          // fall through: already marked as entered in runEnterStage
+        if (isEnd) {
+          return;
         }
+
+        if (destination) {
+          this.data.currentPath = destination;
+          prevPath = []; // force full re-entry after redirect
+          redirected = true;
+          break;
+        }
+        // fall through: scope initialized, continue to next ancestor
       }
 
       if (redirected) {
@@ -467,6 +441,8 @@ export class StorySession {
       if (isEnd) {
         return;
       }
+
+      prevPath = path;
 
       if (destination) {
         this.data.currentPath = destination;
@@ -504,7 +480,6 @@ export class StorySession {
     return {
       scopes: structuredClone(this.data.scopes),
       currentPath: [...this.data.currentPath],
-      enteredPaths: [...this.data.enteredPaths],
     };
   }
 }
