@@ -1,19 +1,5 @@
 ## 第五章：毕业与告白 {#chapter5}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        affection: scope.affection || 0,
-        inventory: scope.inventory || [],
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter5Entered = true;
-    },
-  };
-</script>
-
 ### 毕业典礼 {#graduation}
 
 三月。樱花含苞。
@@ -92,7 +78,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.confessed = true;
       scope.affection = (scope.affection || 0) + 1;
     },
   };
@@ -134,13 +119,6 @@
 
 ### 沉默 {#silence}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.confessed = false;
-    },
-  };
-</script>
 
 你蹲在树根旁边，用手指拨开地面上的落叶。那些叶子经过一整个冬天已经腐烂了，变成深褐色的碎片。路面的泥土露出来。你没有说话。
 
@@ -156,7 +134,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
         canTrueEnding: inv.includes("旧照片") && inv.includes("樱花书签"),
@@ -184,13 +162,6 @@
 
 ### 第五章结束 {#ch5-end}
 
-<script>
-  export default {
-    onLeave({ scope }) {
-      scope.flags.chapter5Complete = true;
-    },
-  };
-</script>
 
 春风吹过来，带着泥土和新草的气味。远处的山在阳光下泛着一层淡绿色的薄雾——春天真的来了。
 

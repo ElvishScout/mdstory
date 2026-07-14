@@ -2,13 +2,10 @@
 
 <script>
   export default {
-    scope({ scope }) {
+    data({ scope }) {
       return {
         moraleOk: (scope.crewMorale || 80) >= 50,
       };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter1Entered = true;
     },
   };
 </script>
@@ -19,7 +16,7 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       return {
         moraleOk: scope.moraleOk || false,
         crewMorale: scope.crewMorale || 80,
@@ -68,9 +65,8 @@ _第一章 · 深空中的呼唤_
   export default {
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
-      scope.flags.analyzedSignal = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
         knowledge: scope.knowledge || 0,
       };
@@ -104,18 +100,12 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.courseSet = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
         knowledge: scope.knowledge || 0,
         highKnowledge: (scope.knowledge || 0) >= 1,
         crewMorale: scope.crewMorale || 80,
       };
-    },
-    onLeave({ scope }) {
-      scope.flags.chapter1Complete = true;
     },
   };
 </script>

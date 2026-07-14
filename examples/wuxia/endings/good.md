@@ -4,13 +4,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "good";
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
         repHigh: (scope.reputation || 0) >= 3,
-        ml: scope.martialLevel || 0,
         withRuyan: !!scope.flags.travelWithRuyan,
       };
     },

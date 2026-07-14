@@ -1,18 +1,5 @@
 ## 第二章：废弃舰 {#chapter2}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        commanderName: scope.commanderName || "指挥官",
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter2Entered = true;
-    },
-  };
-</script>
-
 _第二章 · 黑暗中的残骸_
 
 ### 抵达 {#arrival}
@@ -21,11 +8,9 @@ _第二章 · 黑暗中的残骸_
   export default {
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
-      scope.flags.arrivedAtK427 = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        commanderName: scope.commanderName,
         knowledge: scope.knowledge || 0,
         crewMorale: scope.crewMorale || 80,
         highKnowledge: (scope.knowledge || 0) >= 2,
@@ -63,10 +48,9 @@ _第二章 · 黑暗中的残骸_
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
         knowledge: scope.knowledge || 0,
-        crewMorale: scope.crewMorale || 80,
       };
     },
   };
@@ -101,13 +85,6 @@ _第二章 · 黑暗中的残骸_
       scope.inventory = inv;
       scope.flags.boardedShip = true;
     },
-    view({ scope }) {
-      return {
-        commanderName: scope.commanderName,
-        crewMorale: scope.crewMorale || 80,
-        knowledge: scope.knowledge || 0,
-      };
-    },
   };
 </script>
 
@@ -135,12 +112,10 @@ _第二章 · 黑暗中的残骸_
   export default {
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
-      scope.flags.remoteScanOnly = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
         knowledge: scope.knowledge || 0,
-        crewMorale: scope.crewMorale || 80,
       };
     },
   };

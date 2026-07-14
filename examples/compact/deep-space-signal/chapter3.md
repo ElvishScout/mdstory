@@ -1,19 +1,5 @@
 ## 第三章：真相 {#chapter3}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        commanderName: scope.commanderName || "指挥官",
-        boardedShip: !!(scope.flags || {}).boardedShip,
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter3Entered = true;
-    },
-  };
-</script>
-
 _第三章 · 两百年后的答案_
 
 ### 舰内探索 {#alien-interior}
@@ -22,13 +8,10 @@ _第三章 · 两百年后的答案_
   export default {
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
-      scope.flags.exploredShip = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        commanderName: scope.commanderName,
         knowledge: scope.knowledge || 0,
-        crewMorale: scope.crewMorale || 80,
         boardedShip: scope.boardedShip,
       };
     },
@@ -64,12 +47,6 @@ _第三章 · 两百年后的答案_
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
     },
-    view({ scope }) {
-      return {
-        knowledge: scope.knowledge || 0,
-        crewMorale: scope.crewMorale || 80,
-      };
-    },
   };
 </script>
 
@@ -93,15 +70,11 @@ _第三章 · 两百年后的答案_
   export default {
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
-      scope.flags.reachedCore = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        commanderName: scope.commanderName,
         knowledge: scope.knowledge || 0,
-        crewMorale: scope.crewMorale || 80,
         boardedShip: scope.boardedShip,
-        highKnowledge: (scope.knowledge || 0) >= 3,
       };
     },
   };
@@ -142,23 +115,15 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.madeFinalDecision = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const boarded = !!(scope.flags || {}).boardedShip;
       const knowledge = scope.knowledge || 0;
       return {
-        commanderName: scope.commanderName,
         knowledge,
         crewMorale: scope.crewMorale || 80,
-        boardedShip: boarded,
         canTrueEnding: knowledge >= 4 && boarded,
         canGoodEnding: knowledge >= 2,
       };
-    },
-    onLeave({ scope }) {
-      scope.flags.chapter3Complete = true;
     },
   };
 </script>

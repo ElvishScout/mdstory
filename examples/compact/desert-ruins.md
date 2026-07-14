@@ -9,22 +9,6 @@ scope:
 
 # 沙海遗踪
 
-<script>
-  export default {
-    scope() {
-      return {
-        inventory: [],
-        health: 100,
-        knowledge: 0,
-        flags: {},
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.storyStarted = true;
-    },
-  };
-</script>
-
 <style>
   .danger { color: #e74c3c; }
   .treasure { color: #f39c12; }
@@ -42,15 +26,6 @@ _"找到楼陀罗的人，可以许一个愿望。但记住——城里的东西
 
 <script>
   export default {
-    scope({ scope }) {
-      return {
-        currentHealth: scope.health || 100,
-        hasMap: (scope.inventory || []).includes("羊皮地图"),
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter1Entered = true;
-    },
     onLeave({ scope }) {
       scope.health = scope.currentHealth || scope.health;
     },
@@ -63,7 +38,7 @@ _第一章标题页 · 大漠边缘_
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       return {
         hasWater: (scope.inventory || []).includes("水袋"),
       };
@@ -98,14 +73,13 @@ _你腰间已经挂着水袋了。_
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
         hasRope: inv.includes("麻绳"),
         hasKnife: inv.includes("短刀"),
-        picked: (scope.flags || {}).suppliesPicked || 0,
         canPick: ((scope.flags || {}).suppliesPicked || 0) < 2,
       };
     },
@@ -154,7 +128,7 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
@@ -179,7 +153,7 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
@@ -204,7 +178,7 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
@@ -229,7 +203,7 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       return { picked: scope.flags.suppliesPicked || 0 };
     },
   };
@@ -248,18 +222,11 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.metSandstorm = true;
-      scope.flags.chapter1Complete = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
-        explorerName: scope.explorerName || "探险者",
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
-        hasKnife: inv.includes("短刀"),
-        hasRope: inv.includes("麻绳"),
       };
     },
   };
@@ -301,29 +268,15 @@ _你已经挑够两件了。_
 
 ## 第二章：地下迷宫 {#chapter2}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        explorerName: scope.explorerName || "探险者",
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter2Entered = true;
-    },
-  };
-</script>
-
 _第二章 · 地下迷宫_
 
 ### 长廊 {#corridor}
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
-        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
       };
     },
@@ -345,37 +298,11 @@ _第二章 · 地下迷宫_
 
 ### 机关室 {#trap-room}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.enteredTrapRoom = true;
-    },
-  };
-</script>
-
 你踏上了那些石砖——
 
 <span class="danger">咔。咔。咔。</span>
 
 三声清脆的响声，像是有什么东西在你脚下的石砖里转了一下。你还没来得及反应，走廊两边墙壁上忽然弹出了数不清的<span class="danger">箭孔</span>——
-
-<script>
-  export default {
-    view({ scope }) {
-      const inv = scope.inventory || [];
-      const health = scope.health || 100;
-      return {
-        hasRope: inv.includes("麻绳"),
-        // health will be updated in onLeave based on escape method
-        health,
-        hasCompass: inv.includes("星盘"),
-      };
-    },
-    onLeave({ scope }) {
-      // Health reduction applied via nav choice instead
-    },
-  };
-</script>
 
 {{#nav "chapter2.trap-dodge"}}扑向地面躲避{{/nav}}
 {{#nav "chapter2.trap-run"}}全速跑向长廊尽头{{/nav}}
@@ -392,12 +319,11 @@ _第二章 · 地下迷宫_
         scope.health = Math.max(0, (scope.health || 100) - 20);
       }
     },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
         hasRope: inv.includes("麻绳"),
         health: scope.health || 0,
-        explorerName: scope.explorerName || "探险者",
       };
     },
   };
@@ -426,10 +352,9 @@ _第二章 · 地下迷宫_
     onEnter({ scope }) {
       scope.health = Math.max(0, (scope.health || 100) - 30);
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
         health: scope.health || 0,
-        explorerName: scope.explorerName || "探险者",
       };
     },
   };
@@ -455,14 +380,11 @@ _第二章 · 地下迷宫_
   export default {
     onEnter({ scope }) {
       scope.knowledge = (scope.knowledge || 0) + 1;
-      scope.flags.visitedMuralHall = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
-        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
-        health: scope.health || 0,
         knowledge: scope.knowledge || 0,
       };
     },
@@ -495,18 +417,13 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
-        explorerName: scope.explorerName || "探险者",
-        hasRope: inv.includes("麻绳"),
         knowledge: scope.knowledge || 0,
         health: scope.health || 0,
         highKnowledge: (scope.knowledge || 0) >= 2,
       };
-    },
-    onLeave({ scope }) {
-      scope.flags.chapter2Complete = true;
     },
   };
 </script>
@@ -528,21 +445,6 @@ _第二章 · 地下迷宫_
 
 ## 第三章：遗迹核心 {#chapter3}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        explorerName: scope.explorerName || "探险者",
-        currentHealth: scope.health || 100,
-        currentKnowledge: scope.knowledge || 0,
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter3Entered = true;
-    },
-  };
-</script>
-
 _第三章 · 遗迹核心_
 
 ### 左路：熔火深渊 {#left-path}
@@ -550,20 +452,13 @@ _第三章 · 遗迹核心_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.choseLeftPath = true;
       scope.knowledge = (scope.knowledge || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
-        explorerName: scope.explorerName || "探险者",
         hasWater: inv.includes("水袋"),
-        health: scope.health || 0,
-        knowledge: scope.knowledge || 0,
       };
-    },
-    onLeave({ scope }) {
-      scope.flags.leftPathComplete = true;
     },
   };
 </script>
@@ -592,9 +487,8 @@ _第三章 · 遗迹核心_
     onEnter({ scope }) {
       scope.flags.skippedBox = true;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        explorerName: scope.explorerName || "探险者",
         health: scope.health || 0,
         knowledge: scope.knowledge || 0,
       };
@@ -624,17 +518,11 @@ _第三章 · 遗迹核心_
         }
       }
     },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
-        explorerName: scope.explorerName || "探险者",
         hasKnife: inv.includes("短刀"),
-        health: scope.health || 0,
-        knowledge: scope.knowledge || 0,
       };
-    },
-    onLeave({ scope }) {
-      scope.flags.rightPathComplete = true;
     },
   };
 </script>
@@ -657,26 +545,14 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.metGuardian = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
-      const health = scope.health || 100;
       const knowledge = scope.knowledge || 0;
       const flags = scope.flags || {};
       return {
-        explorerName: scope.explorerName || "探险者",
-        hasKnife: inv.includes("短刀"),
-        hasRope: inv.includes("麻绳"),
-        hasWater: inv.includes("水袋"),
-        hasCompass: inv.includes("星盘"),
-        health,
-        knowledge,
         choseRight: !!flags.choseRightPath,
         skippedBox: !!flags.skippedBox,
         highKnowledge: knowledge >= 3,
-        wellEquipped: inv.length >= 3,
         hasRedPearl: inv.includes("赤珠"),
       };
     },
@@ -717,27 +593,14 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.reachedTreasureRoom = true;
-      scope.flags.chapter3Complete = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       const knowledge = scope.knowledge || 0;
       const health = scope.health || 0;
-      const flags = scope.flags || {};
       return {
-        explorerName: scope.explorerName || "探险者",
         inventory: inv,
         knowledge,
         health,
-        hasKnife: inv.includes("短刀"),
-        hasWater: inv.includes("水袋"),
-        hasRope: inv.includes("麻绳"),
-        hasCompass: inv.includes("星盘"),
-        hasRedPearl: inv.includes("赤珠"),
-        choseRight: !!flags.choseRightPath,
-        skippedBox: !!flags.skippedBox,
         canTrueEnding: knowledge >= 4 && inv.length >= 3,
         canGoodEnding: health >= 50 && knowledge >= 1,
       };
@@ -756,8 +619,9 @@ _"给所有来到此处的人：楼陀罗在等待。它在等你提出一个愿
 你已经走到了楼陀罗的尽头。现在——
 
 {{#each inventory}}
+
 - 背包里有：{{this}}
-{{/each}}
+  {{/each}}
 
 生命值：{{health}} | 知识：{{knowledge}}
 
@@ -777,28 +641,14 @@ _"给所有来到此处的人：楼陀罗在等待。它在等你提出一个愿
 
 ## 结局 {#endings}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        explorerName: scope.explorerName || "探险者",
-      };
-    },
-  };
-</script>
-
 _结局_
 
 ### 真结局：楼陀罗的继承者 {#true}
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "true";
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        explorerName: scope.explorerName || "探险者",
         choseRight: !!(scope.flags || {}).choseRightPath,
       };
     },
@@ -843,15 +693,9 @@ _结局_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "good";
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        explorerName: scope.explorerName || "探险者",
-        hasWater: (scope.inventory || []).includes("水袋"),
         hasCompass: (scope.inventory || []).includes("星盘"),
-        knowledge: scope.knowledge || 0,
       };
     },
   };
@@ -880,19 +724,6 @@ _结局_
 {{#nav null}}合上书{{/nav}}
 
 ### 坏结局：石盒的代价 {#bad}
-
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "bad";
-    },
-    view({ scope }) {
-      return {
-        explorerName: scope.explorerName || "探险者",
-      };
-    },
-  };
-</script>
 
 你把双手按在石盒上，许下了一个贪婪的愿望。
 

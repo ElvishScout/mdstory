@@ -9,22 +9,6 @@ scope:
 
 # 深空信号
 
-<script>
-  export default {
-    scope() {
-      return {
-        knowledge: 0,
-        crewMorale: 80,
-        inventory: [],
-        flags: {},
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.storyStarted = true;
-    },
-  };
-</script>
-
 <style>
   .danger { color: #e74c3c; font-weight: bold; }
   .system { color: #3498db; }

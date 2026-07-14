@@ -1,19 +1,5 @@
 ## 第二章：夏日合宿 {#chapter2}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        affection: scope.affection || 0,
-        inventory: scope.inventory || [],
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter2Entered = true;
-    },
-  };
-</script>
-
 ### 出发 {#departure}
 
 学期过半，夏天毫无预兆地来了。
@@ -63,13 +49,6 @@
 
 ### 曾经去过 {#been-before}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.beenToSea = true;
-    },
-  };
-</script>
 
 "去过几次，但都是很小的时候了。印象里只有一些碎片——沙滩很烫脚、海水很咸、被浪冲倒过一次。"
 
@@ -97,13 +76,6 @@
 
 ### 从未去过 {#never-been}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.beenToSea = false;
-    },
-  };
-</script>
 
 "一次也没有去过。"
 
@@ -153,13 +125,6 @@
 
 ### 游泳 {#swimming}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.beachActivity = "游泳";
-    },
-  };
-</script>
 
 "游泳吧。"
 
@@ -201,13 +166,6 @@
 
 ### 捡贝壳 {#shells}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.beachActivity = "捡贝壳";
-    },
-  };
-</script>
 
 你更喜欢在沙滩上走走。
 
@@ -241,13 +199,6 @@
 
 ### 沙滩排球 {#volleyball}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.beachActivity = "沙滩排球";
-    },
-  };
-</script>
 
 几个同学在沙滩上拉起了一张网，正在打排球。你加入了他们。
 
@@ -279,12 +230,6 @@
 
 ### 试胆大会 {#scary}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-    },
-  };
-</script>
 
 第一天的重头戏在夜晚降临后。
 
@@ -317,13 +262,6 @@
 
 ### 胆小的坦白 {#was-scared}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.scaredAtNight = true;
-    },
-  };
-</script>
 
 "有点紧张。"你老实承认了。
 
@@ -373,13 +311,6 @@
 
 ### 勇敢的坦率 {#was-brave}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.scaredAtNight = false;
-    },
-  };
-</script>
 
 "还好，我不怎么怕。"
 
@@ -412,7 +343,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.attendedFireworks = true;
       if (!Array.isArray(scope.inventory)) scope.inventory = [];
       if (!scope.inventory.includes("护身符")) {
         scope.inventory.push("护身符");
@@ -577,10 +507,7 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.summerCampComplete = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
         hasCharm: inv.includes("护身符"),

@@ -53,7 +53,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       return {
         playerName: scope.name || "你",
       };
@@ -289,7 +289,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       return { myHobby: scope.hobby || "" };
     },
   };
@@ -359,8 +359,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.joinedLiterature = true;
-      scope.flags.joinedClub = "文艺部";
       scope.affection = (scope.affection || 0) + 1;
     },
   };
@@ -431,14 +429,6 @@
 
 ### 篮球部 {#choose-basketball}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.joinedSports = true;
-      scope.flags.joinedClub = "篮球部";
-    },
-  };
-</script>
 
 你选择了篮球部。学长高兴地拍了拍你的背，拍得力气大了些，你差点没站稳。
 
@@ -470,13 +460,6 @@
 
 ### 回家部 {#home-club}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.noClub = true;
-    },
-  };
-</script>
 
 "我再逛逛吧。"
 
@@ -565,10 +548,9 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.acceptedLibrary = true;
       scope.affection = (scope.affection || 0) + 1;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
         wasTourAccepted: !!(scope.flags || {}).acceptedTour,
       };
@@ -673,13 +655,6 @@
 
 ### 婉拒邀请 {#lib-declined}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.acceptedLibrary = false;
-    },
-  };
-</script>
 
 "这周末我有点事……下次吧。"
 
@@ -707,10 +682,7 @@
 
 <script>
   export default {
-    onLeave({ scope }) {
-      scope.flags.chapter1Complete = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
         hasPhoto: inv.includes("旧照片"),

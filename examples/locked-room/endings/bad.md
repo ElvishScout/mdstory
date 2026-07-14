@@ -4,10 +4,7 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "bad";
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
         accusedWife: scope.accusation === "wife",
         accusedButler: scope.accusation === "butler",

@@ -2,11 +2,7 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "bad";
-      scope.flags.gameCompleted = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       const inv = scope.inventory || [];
       return {
         hasCharm: inv.includes("护身符"),

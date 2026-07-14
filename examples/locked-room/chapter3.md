@@ -2,16 +2,13 @@
 
 <script>
   export default {
-    scope({ scope }) {
+    data({ scope }) {
       const flags = scope.flags || {};
       return {
         interrogatedZhao: !!flags.interrogatedZhao,
         interrogatedWife: !!flags.interrogatedWife,
         interrogatedButler: !!flags.interrogatedButler,
       };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter3Entered = true;
     },
   };
 </script>
@@ -199,7 +196,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const flags = scope.flags || {};
       const clues = scope.clues || [];
       return {

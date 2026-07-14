@@ -4,10 +4,7 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "true";
-    },
-    view({ scope }) {
+    data({ scope }) {
       const clues = scope.clues || [];
       return {
         hasLetters: clues.includes("secret-letters"),

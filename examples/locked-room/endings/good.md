@@ -4,10 +4,7 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "good";
-    },
-    view({ scope }) {
+    data({ scope }) {
       const clues = scope.clues || [];
       return {
         hasPawnTicket: clues.includes("pawn-ticket"),

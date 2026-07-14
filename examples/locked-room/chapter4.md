@@ -2,18 +2,13 @@
 
 <script>
   export default {
-    scope({ scope }) {
+    data({ scope }) {
       const clues = scope.clues || [];
       const keyClues = ["hidden-passage", "cufflink", "cigarette-ash", "vase-weapon", "mud-shoes", "secret-letters", "butler-testimony"];
       const foundKey = keyClues.filter(c => clues.includes(c)).length;
       return {
-        clueCount: clues.length,
-        foundKey,
         enoughForTrue: foundKey >= 5,
       };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter4Entered = true;
     },
   };
 </script>

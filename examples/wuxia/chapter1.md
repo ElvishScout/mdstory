@@ -1,13 +1,5 @@
 ## 第一章：夜雨灭门 {#chapter1}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.chapter1Started = true;
-    },
-  };
-</script>
-
 ### 山雨欲来 {#night-raid}
 
 这一年的秋天来得特别早。
@@ -134,15 +126,11 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.escaped = true;
       if (!scope.inventory.includes("青云心法")) {
         scope.inventory.push("青云心法");
       }
     },
-    onLeave({ scope }) {
-      scope.flags.chapter1Complete = true;
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
         fought: !!scope.flags.foughtAtSect,
       };

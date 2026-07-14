@@ -1,15 +1,4 @@
 ## 结局 {#endings}
-
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        commanderName: scope.commanderName || "指挥官",
-      };
-    },
-  };
-</script>
-
 _结局_
 
 ### 真结局：守夜人的传承 {#true}
@@ -17,12 +6,10 @@ _结局_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.ending = "true";
       scope.crewMorale = 100;
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        commanderName: scope.commanderName,
         boardedShip: !!(scope.flags || {}).boardedShip,
       };
     },
@@ -62,13 +49,10 @@ _结局_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.ending = "good";
       scope.crewMorale = Math.min(100, (scope.crewMorale || 80) + 20);
     },
-    view({ scope }) {
+    data({ scope }) {
       return {
-        commanderName: scope.commanderName,
-        knowledge: scope.knowledge || 0,
         hasHighKnowledge: (scope.knowledge || 0) >= 3,
       };
     },
@@ -102,13 +86,7 @@ _结局_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.ending = "bad";
       scope.crewMorale = 0;
-    },
-    view({ scope }) {
-      return {
-        commanderName: scope.commanderName,
-      };
     },
   };
 </script>

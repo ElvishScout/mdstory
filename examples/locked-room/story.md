@@ -14,21 +14,6 @@ scope:
   .suspect { color: #c0392b; }
 </style>
 
-<script>
-  export default {
-    scope() {
-      return {
-        clues: [],
-        flags: {},
-        accusation: null,
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.started = true;
-    },
-  };
-</script>
-
 !include("./chapter1.md")
 !include("./chapter2.md")
 !include("./chapter3.md")

@@ -1,13 +1,5 @@
 ## 第一章：雨夜来客 {#chapter1}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.chapter1Entered = true;
-    },
-  };
-</script>
-
 ### 山庄门前 {#arrival}
 
 民国十六年，深秋。

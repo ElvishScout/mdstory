@@ -2,13 +2,10 @@
 
 <script>
   export default {
-    scope({ scope }) {
+    data({ scope }) {
       return {
         withRuyan: !!scope.flags.travelWithRuyan,
       };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter3Started = true;
     },
   };
 </script>
@@ -85,7 +82,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.practicedPatient = true;
       scope.flags.masteredUltimate = true;
       scope.martialLevel += 2;
       if (!scope.inventory.includes("剑意")) {
@@ -116,7 +112,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.practicedPatient = false;
       scope.flags.masteredUltimate = false;
       scope.martialLevel += 1;
     },

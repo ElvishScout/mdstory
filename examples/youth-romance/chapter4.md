@@ -1,19 +1,5 @@
 ## 第四章：冬日的选择 {#chapter4}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        affection: scope.affection || 0,
-        inventory: scope.inventory || [],
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter4Entered = true;
-    },
-  };
-</script>
-
 ### 冷淡 {#cold}
 
 十一月中旬，校园里的银杏树终于变成了一片灿烂的金黄色。
@@ -62,13 +48,6 @@
 
 ### 圣诞节 {#christmas}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.christmasReached = true;
-    },
-  };
-</script>
 
 十二月二十四日。平安夜。
 
@@ -285,7 +264,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       return {
         gaveGift: !!(scope.flags || {}).gaveChristmasGift,
       };
@@ -315,7 +294,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.studiedTogether = true;
       scope.affection = (scope.affection || 0) + 1;
     },
   };
@@ -367,13 +345,6 @@
 
 ### 独自复习 {#study-alone}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.studiedTogether = false;
-    },
-  };
-</script>
 
 你在家复习了一整天。
 
@@ -433,13 +404,6 @@
 
 ### 最后的对话 {#goodbye}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.goodbyeReached = true;
-    },
-  };
-</script>
 
 二月的最后一个星期五。
 
@@ -513,13 +477,6 @@
 
 ### 第四章结束 {#to-chapter5}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.chapter4Complete = true;
-    },
-  };
-</script>
 
 你站在屋顶上。风吹过来。远处操场上体育课的哨声已经停了。天空的颜色从灰蓝变成了浅紫和橘红——正在一层一层地暗下去。
 

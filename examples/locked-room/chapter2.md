@@ -1,13 +1,5 @@
 ## 第二章：勘察取证 {#chapter2}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.chapter2Entered = true;
-    },
-  };
-</script>
-
 ### 书房复勘 {#crime-scene}
 
 天已经完全黑了。雾气从窗户的缝隙中渗进来，走廊里弥漫着一股潮湿清冷的气息。你让所有人留在客厅，只带了王管家上楼，重新回到书房。
@@ -297,7 +289,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const clues = scope.clues || [];
       return {
         hasPawnTicket: clues.includes("pawn-ticket"),
@@ -307,7 +299,6 @@
         hasVaseWeapon: clues.includes("vase-weapon"),
         hasMudShoes: clues.includes("mud-shoes"),
         hasSecretLetters: clues.includes("secret-letters"),
-        clueCount: clues.length,
       };
     },
   };

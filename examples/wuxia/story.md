@@ -11,20 +11,6 @@ scope:
 
 # 江湖风雨录
 
-<script>
-  export default {
-    scope() {
-      return {
-        inventory: [],
-        qi: 100,
-        martialLevel: 1,
-        reputation: 0,
-        flags: {},
-      };
-    },
-  };
-</script>
-
 !include("./chapter1.md")
 !include("./chapter2.md")
 !include("./chapter3.md")

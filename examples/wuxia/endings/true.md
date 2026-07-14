@@ -4,13 +4,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "true";
-    },
-    view({ scope }) {
+    data({ scope }) {
       return {
         withRuyan: !!scope.flags.travelWithRuyan,
-        fought: !!scope.flags.foughtAtSect,
       };
     },
   };

@@ -1,19 +1,5 @@
 ## 第二章：风雨客栈 {#chapter2}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        currentQi: scope.qi || 100,
-        fought: !!(scope.flags || {}).foughtAtSect,
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter2Started = true;
-    },
-  };
-</script>
-
 ### 荒郊客栈 {#inn}
 
 你们沿着官道走了三天。
@@ -164,7 +150,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       return {
         metRuyan: !!scope.flags.metLiuruyan,
         revealed: !!scope.flags.revealedToLiuruyan,

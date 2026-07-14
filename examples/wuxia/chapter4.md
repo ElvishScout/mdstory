@@ -2,16 +2,10 @@
 
 <script>
   export default {
-    scope({ scope }) {
+    data({ scope }) {
       return {
-        ml: scope.martialLevel || 1,
-        rep: scope.reputation || 0,
-        qi: scope.qi || 100,
         masteredUltimate: !!scope.flags.masteredUltimate,
       };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter4Started = true;
     },
   };
 </script>
@@ -106,22 +100,11 @@
 
 <script>
   export default {
-    view({ scope }) {
-      const inv = scope.inventory || [];
+    data({ scope }) {
       return {
-        hasManual: inv.includes("青云心法"),
-        masteredUltimate: !!scope.flags.masteredUltimate,
-        masteredUltimateOrHigher: !!scope.flags.masteredUltimate, // kept for compat
-        martialHigh: (scope.martialLevel || 0) >= 3,
-        repHigh: (scope.reputation || 0) >= 3,
-        finalMl: scope.martialLevel || 0,
-        finalRep: scope.reputation || 0,
         canTrueEnding: !!scope.flags.masteredUltimate,
         canGoodEnding: (scope.martialLevel || 0) >= 3 || (scope.reputation || 0) >= 3,
       };
-    },
-    onLeave({ scope }) {
-      scope.flags.gameCompleted = true;
     },
   };
 </script>

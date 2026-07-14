@@ -1,14 +1,5 @@
 ## 真结局：樱花的约定 {#ending-true}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.ending = "true";
-      scope.flags.gameCompleted = true;
-    },
-  };
-</script>
-
 你低头看着手里的两样东西。
 
 一张泛黄的旧照片——照片上的年轻女人站在樱花树下，笑容温柔。边角卷曲，颜色褪了，但你把它保存得很好。还有一枚不锈钢的樱花书签——新年的夜里她在神社门口递给你的，说"看到的时候觉得很适合你"。

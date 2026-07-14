@@ -1,19 +1,5 @@
 ## 第三章：学园祭 {#chapter3}
 
-<script>
-  export default {
-    scope({ scope }) {
-      return {
-        affection: scope.affection || 0,
-        inventory: scope.inventory || [],
-      };
-    },
-    onEnter({ scope }) {
-      scope.flags.chapter3Entered = true;
-    },
-  };
-</script>
-
 ### 学园祭准备 {#preparation}
 
 暑假结束后，秋天来了。
@@ -118,13 +104,6 @@
 
 ### 装饰组 {#decoration}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.taskGroup = "装饰组";
-    },
-  };
-</script>
 
 你选择了装饰组。负责店内的整体装饰设计——桌布、花艺、灯光、墙面的布置。组长是一个戴眼镜的女生，做事非常利落，当天下午就拿出了好几页设计草图。
 
@@ -160,13 +139,6 @@
 
 ### 餐点组 {#cooking}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.taskGroup = "餐点组";
-    },
-  };
-</script>
 
 "我也来餐点组。"
 
@@ -212,13 +184,6 @@
 
 ### 饮品组 {#drinks}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.taskGroup = "饮品组";
-    },
-  };
-</script>
 
 你选择了饮品组。
 
@@ -258,7 +223,7 @@
 
 <script>
   export default {
-    view({ scope }) {
+    data({ scope }) {
       const project = (scope.flags || {}).festivalProject || "女仆咖啡厅";
       return {
         isCafe: project === "女仆咖啡厅",
@@ -326,7 +291,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.festivalDayReached = true;
       scope.affection = (scope.affection || 0) + 1;
     },
   };
@@ -408,7 +372,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.crisisChoice = "help";
       scope.affection = (scope.affection || 0) + 1;
     },
   };
@@ -441,7 +404,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.crisisChoice = "fix";
       scope.affection = (scope.affection || 0) + 1;
     },
   };
@@ -471,13 +433,6 @@
 
 ### 屋顶的谈话 {#rooftop}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.rooftopReached = true;
-    },
-  };
-</script>
 
 学园祭在傍晚六点整落下了帷幕。
 
@@ -527,7 +482,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.flags.acceptedDig = true;
       scope.affection = (scope.affection || 0) + 1;
       if (!Array.isArray(scope.inventory)) scope.inventory = [];
       if (!scope.inventory.includes("手写信")) {
@@ -559,13 +513,6 @@
 
 ### 没有答应 {#declined-dig}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.acceptedDig = false;
-    },
-  };
-</script>
 
 "这个周末……我可能有事。"
 
@@ -595,13 +542,6 @@
 
 ### 转学 {#transfer}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.transferNewsReached = true;
-    },
-  };
-</script>
 
 学园祭结束后的那个周一，一个消息在班级里传开了。
 
@@ -673,13 +613,6 @@
 
 ### 秋天的尾声 {#season-end}
 
-<script>
-  export default {
-    onEnter({ scope }) {
-      scope.flags.chapter3Complete = true;
-    },
-  };
-</script>
 
 那之后的日子，表面上没有什么变化。
 
