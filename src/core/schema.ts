@@ -11,7 +11,6 @@ export const ScopeSchema = z.record(VariableSchema);
 const AssetObjectSchema = z.object({
   url: z.string(),
   mime: z.string().optional(),
-  alt: z.string().optional(),
 });
 
 export const AssetSchema = z.union([

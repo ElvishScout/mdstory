@@ -67,11 +67,13 @@ export function renderTemplate(template: string, scope: Scope, options: RenderOp
   const fields: Fields = { inputs: [], navs: [] };
   const helpers = useHelper(fields, resolvedAdapter);
 
-  // Compile lazily, cache on first use
-  let compiled = compiledCache.get(template);
+  // Compile lazily, cache on first use.  The cache key includes the format
+  // because markdown disables HTML escaping while html relies on it.
+  const cacheKey = `${resolvedAdapter.format}:${template}`;
+  let compiled = compiledCache.get(cacheKey);
   if (!compiled) {
     compiled = Handlebars.compile(template, resolvedAdapter.format === "markdown" ? { noEscape: true } : undefined);
-    compiledCache.set(template, compiled);
+    compiledCache.set(cacheKey, compiled);
   }
 
   let text = compiled(scope, { helpers });

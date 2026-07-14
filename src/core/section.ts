@@ -100,15 +100,6 @@ export class Section {
     return path;
   }
 
-  /** Get all descendant ids (depth-first). */
-  getAllIds(): string[] {
-    const ids: string[] = [this.id];
-    for (const child of this.children) {
-      ids.push(...child.getAllIds());
-    }
-    return ids;
-  }
-
   /** Find the next sibling in the parent's children array. */
   findNextSibling(): Section | null {
     if (!this.parent) {
