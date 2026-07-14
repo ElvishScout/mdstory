@@ -6,13 +6,13 @@ _第二章 · 黑暗中的残骸_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
-    },
     data({ scope }) {
       return {
         highKnowledge: scope.knowledge >= 2,
       };
+    },
+    onEnter({ scope }) {
+      scope.knowledge += 1;
     },
   };
 </script>

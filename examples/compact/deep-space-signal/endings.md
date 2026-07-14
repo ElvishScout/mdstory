@@ -43,13 +43,13 @@ _结局_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.crewMorale = Math.min(100, scope.crewMorale + 20);
-    },
     data({ scope }) {
       return {
         hasHighKnowledge: scope.knowledge >= 3,
       };
+    },
+    onEnter({ scope }) {
+      scope.crewMorale = Math.min(100, scope.crewMorale + 20);
     },
   };
 </script>

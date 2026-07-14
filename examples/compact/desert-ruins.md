@@ -114,9 +114,6 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
-    data({ scope }) {
-      return { picked: scope.flags.suppliesPicked };
-    },
   };
 </script>
 
@@ -124,7 +121,7 @@ _你已经挑够两件了。_
 
 老韩点了点头："明智。没有水，别的都是空谈。"
 
-已选装备：{{picked}}/2
+已选装备：{{flags.suppliesPicked}}/2
 
 {{#nav "chapter1.supply-choice"}}继续挑选{{/nav}}
 {{#nav "chapter1.sandstorm"}}装备够了，出发{{/nav}}
@@ -139,9 +136,6 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
-    data({ scope }) {
-      return { picked: scope.flags.suppliesPicked };
-    },
   };
 </script>
 
@@ -149,7 +143,7 @@ _你已经挑够两件了。_
 
 "夜里拿它对着北斗星，就不会走偏。"老韩说，"沙漠里的路不是直的——一阵沙暴就能让你偏离方向二十里。"
 
-已选装备：{{picked}}/2
+已选装备：{{flags.suppliesPicked}}/2
 
 {{#nav "chapter1.supply-choice"}}继续挑选{{/nav}}
 {{#nav "chapter1.sandstorm"}}装备够了，出发{{/nav}}
@@ -164,9 +158,6 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
-    data({ scope }) {
-      return { picked: scope.flags.suppliesPicked };
-    },
   };
 </script>
 
@@ -174,7 +165,7 @@ _你已经挑够两件了。_
 
 "遗迹里的台阶靠不住。"老韩敲了敲拐杖，"几千年的石头，说塌就塌。有根绳子多条命。"
 
-已选装备：{{picked}}/2
+已选装备：{{flags.suppliesPicked}}/2
 
 {{#nav "chapter1.supply-choice"}}继续挑选{{/nav}}
 {{#nav "chapter1.sandstorm"}}装备够了，出发{{/nav}}
@@ -189,9 +180,6 @@ _你已经挑够两件了。_
       }
       scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
-    data({ scope }) {
-      return { picked: scope.flags.suppliesPicked };
-    },
   };
 </script>
 
@@ -199,7 +187,7 @@ _你已经挑够两件了。_
 
 "这把刀跟了我二十年。"老韩说，"撬过石门、砍过蝎子、削过果子。给你了。"
 
-已选装备：{{picked}}/2
+已选装备：{{flags.suppliesPicked}}/2
 
 {{#nav "chapter1.supply-choice"}}继续挑选{{/nav}}
 {{#nav "chapter1.sandstorm"}}装备够了，出发{{/nav}}
@@ -297,6 +285,12 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
+    data({ scope }) {
+      const inv = scope.inventory;
+      return {
+        hasRope: inv.includes("麻绳"),
+      };
+    },
     onEnter({ scope }) {
       const inv = scope.inventory;
       if (inv.includes("麻绳")) {
@@ -304,12 +298,6 @@ _第二章 · 地下迷宫_
       } else {
         scope.health = Math.max(0, scope.health - 20);
       }
-    },
-    data({ scope }) {
-      const inv = scope.inventory;
-      return {
-        hasRope: inv.includes("麻绳"),
-      };
     },
   };
 </script>
@@ -358,14 +346,14 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
-    },
     data({ scope }) {
       const inv = scope.inventory;
       return {
         hasKnife: inv.includes("短刀"),
       };
+    },
+    onEnter({ scope }) {
+      scope.knowledge += 1;
     },
   };
 </script>
@@ -427,14 +415,14 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
-    },
     data({ scope }) {
       const inv = scope.inventory;
       return {
         hasWater: inv.includes("水袋"),
       };
+    },
+    onEnter({ scope }) {
+      scope.knowledge += 1;
     },
   };
 </script>
@@ -478,6 +466,12 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
+    data({ scope }) {
+      const inv = scope.inventory;
+      return {
+        hasKnife: inv.includes("短刀"),
+      };
+    },
     onEnter({ scope }) {
       scope.flags.choseRightPath = true;
       scope.knowledge += 2;
@@ -487,12 +481,6 @@ _第三章 · 遗迹核心_
           inv.push("赤珠");
         }
       }
-    },
-    data({ scope }) {
-      const inv = scope.inventory;
-      return {
-        hasKnife: inv.includes("短刀"),
-      };
     },
   };
 </script>
