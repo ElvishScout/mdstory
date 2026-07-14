@@ -24,23 +24,13 @@ _"找到楼陀罗的人，可以许一个愿望。但记住——城里的东西
 
 ## 第一章：大漠边缘 {#chapter1}
 
-<script>
-  export default {
-    onLeave({ scope }) {
-      scope.health = scope.currentHealth || scope.health;
-    },
-  };
-</script>
-
-_第一章标题页 · 大漠边缘_
-
 ### 绿洲镇 {#oasis-town}
 
 <script>
   export default {
     data({ scope }) {
       return {
-        hasWater: (scope.inventory || []).includes("水袋"),
+        hasWater: scope.inventory.includes("水袋"),
       };
     },
   };
@@ -74,13 +64,13 @@ _你腰间已经挂着水袋了。_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
         hasRope: inv.includes("麻绳"),
         hasKnife: inv.includes("短刀"),
-        canPick: ((scope.flags || {}).suppliesPicked || 0) < 2,
+        canPick: scope.flags.suppliesPicked < 2,
       };
     },
   };
@@ -96,22 +86,18 @@ _你腰间已经挂着水袋了。_
 - <span class="treasure">短刀</span>：一把旧但磨得很锋利的短刀。也许能撬开什么东西。
 
 {{#if canPick}}
-{{#if hasWater}}
-{{else}}
+{{#unless hasWater}}
 {{#nav "chapter1.pick-water"}}选择水袋{{/nav}}
-{{/if}}
-{{#if hasCompass}}
-{{else}}
+{{/unless}}
+{{#unless hasCompass}}
 {{#nav "chapter1.pick-compass"}}选择星盘{{/nav}}
-{{/if}}
-{{#if hasRope}}
-{{else}}
+{{/unless}}
+{{#unless hasRope}}
 {{#nav "chapter1.pick-rope"}}选择麻绳{{/nav}}
-{{/if}}
-{{#if hasKnife}}
-{{else}}
+{{/unless}}
+{{#unless hasKnife}}
 {{#nav "chapter1.pick-knife"}}选择短刀{{/nav}}
-{{/if}}
+{{/unless}}
 {{else}}
 _你已经挑够两件了。_
 
@@ -126,10 +112,10 @@ _你已经挑够两件了。_
       if (!scope.inventory.includes("水袋")) {
         scope.inventory.push("水袋");
       }
-      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
     data({ scope }) {
-      return { picked: scope.flags.suppliesPicked || 0 };
+      return { picked: scope.flags.suppliesPicked };
     },
   };
 </script>
@@ -151,10 +137,10 @@ _你已经挑够两件了。_
       if (!scope.inventory.includes("星盘")) {
         scope.inventory.push("星盘");
       }
-      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
     data({ scope }) {
-      return { picked: scope.flags.suppliesPicked || 0 };
+      return { picked: scope.flags.suppliesPicked };
     },
   };
 </script>
@@ -176,10 +162,10 @@ _你已经挑够两件了。_
       if (!scope.inventory.includes("麻绳")) {
         scope.inventory.push("麻绳");
       }
-      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
     data({ scope }) {
-      return { picked: scope.flags.suppliesPicked || 0 };
+      return { picked: scope.flags.suppliesPicked };
     },
   };
 </script>
@@ -201,10 +187,10 @@ _你已经挑够两件了。_
       if (!scope.inventory.includes("短刀")) {
         scope.inventory.push("短刀");
       }
-      scope.flags.suppliesPicked = (scope.flags.suppliesPicked || 0) + 1;
+      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
     },
     data({ scope }) {
-      return { picked: scope.flags.suppliesPicked || 0 };
+      return { picked: scope.flags.suppliesPicked };
     },
   };
 </script>
@@ -223,7 +209,7 @@ _你已经挑够两件了。_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
@@ -275,7 +261,7 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasKnife: inv.includes("短刀"),
       };
@@ -312,18 +298,18 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     onEnter({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       if (inv.includes("麻绳")) {
-        scope.health = Math.max(0, (scope.health || 100) - 5);
+        scope.health = Math.max(0, scope.health - 5);
       } else {
-        scope.health = Math.max(0, (scope.health || 100) - 20);
+        scope.health = Math.max(0, scope.health - 20);
       }
     },
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasRope: inv.includes("麻绳"),
-        health: scope.health || 0,
+        health: scope.health,
       };
     },
   };
@@ -350,11 +336,11 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.health = Math.max(0, (scope.health || 100) - 30);
+      scope.health = Math.max(0, scope.health - 30);
     },
     data({ scope }) {
       return {
-        health: scope.health || 0,
+        health: scope.health,
       };
     },
   };
@@ -379,13 +365,13 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasKnife: inv.includes("短刀"),
-        knowledge: scope.knowledge || 0,
+        knowledge: scope.knowledge,
       };
     },
   };
@@ -418,11 +404,11 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
-        knowledge: scope.knowledge || 0,
-        health: scope.health || 0,
-        highKnowledge: (scope.knowledge || 0) >= 2,
+        knowledge: scope.knowledge,
+        health: scope.health,
+        highKnowledge: scope.knowledge >= 2,
       };
     },
   };
@@ -452,10 +438,10 @@ _第三章 · 遗迹核心_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasWater: inv.includes("水袋"),
       };
@@ -489,8 +475,8 @@ _第三章 · 遗迹核心_
     },
     data({ scope }) {
       return {
-        health: scope.health || 0,
-        knowledge: scope.knowledge || 0,
+        health: scope.health,
+        knowledge: scope.knowledge,
       };
     },
   };
@@ -510,8 +496,8 @@ _第三章 · 遗迹核心_
   export default {
     onEnter({ scope }) {
       scope.flags.choseRightPath = true;
-      scope.knowledge = (scope.knowledge || 0) + 2;
-      const inv = scope.inventory || [];
+      scope.knowledge = scope.knowledge + 2;
+      const inv = scope.inventory;
       if (inv.includes("短刀")) {
         if (!inv.includes("赤珠")) {
           inv.push("赤珠");
@@ -519,7 +505,7 @@ _第三章 · 遗迹核心_
       }
     },
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasKnife: inv.includes("短刀"),
       };
@@ -546,9 +532,9 @@ _第三章 · 遗迹核心_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
-      const knowledge = scope.knowledge || 0;
-      const flags = scope.flags || {};
+      const inv = scope.inventory;
+      const knowledge = scope.knowledge;
+      const flags = scope.flags;
       return {
         choseRight: !!flags.choseRightPath,
         skippedBox: !!flags.skippedBox,
@@ -594,9 +580,9 @@ _第三章 · 遗迹核心_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
-      const knowledge = scope.knowledge || 0;
-      const health = scope.health || 0;
+      const inv = scope.inventory;
+      const knowledge = scope.knowledge;
+      const health = scope.health;
       return {
         inventory: inv,
         knowledge,
@@ -649,7 +635,7 @@ _结局_
   export default {
     data({ scope }) {
       return {
-        choseRight: !!(scope.flags || {}).choseRightPath,
+        choseRight: !!scope.flags.choseRightPath,
       };
     },
   };
@@ -695,7 +681,7 @@ _结局_
   export default {
     data({ scope }) {
       return {
-        hasCompass: (scope.inventory || []).includes("星盘"),
+        hasCompass: scope.inventory.includes("星盘"),
       };
     },
   };

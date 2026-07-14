@@ -7,11 +7,11 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
+        knowledge: scope.knowledge,
         boardedShip: scope.boardedShip,
       };
     },
@@ -45,7 +45,7 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
   };
 </script>
@@ -69,11 +69,11 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
+        knowledge: scope.knowledge,
         boardedShip: scope.boardedShip,
       };
     },
@@ -116,11 +116,11 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     data({ scope }) {
-      const boarded = !!(scope.flags || {}).boardedShip;
-      const knowledge = scope.knowledge || 0;
+      const boarded = !!scope.flags.boardedShip;
+      const knowledge = scope.knowledge;
       return {
         knowledge,
-        crewMorale: scope.crewMorale || 80,
+        crewMorale: scope.crewMorale,
         canTrueEnding: knowledge >= 4 && boarded,
         canGoodEnding: knowledge >= 2,
       };

@@ -224,7 +224,7 @@
 <script>
   export default {
     data({ scope }) {
-      const project = (scope.flags || {}).festivalProject || "女仆咖啡厅";
+      const project = scope.flags.festivalProject || "女仆咖啡厅";
       return {
         isCafe: project === "女仆咖啡厅",
       };
@@ -291,7 +291,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>
@@ -372,7 +372,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>
@@ -404,7 +404,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>
@@ -482,8 +482,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
-      if (!Array.isArray(scope.inventory)) scope.inventory = [];
+      scope.affection = scope.affection + 1;
       if (!scope.inventory.includes("手写信")) {
         scope.inventory.push("手写信");
       }

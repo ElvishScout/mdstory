@@ -6,7 +6,7 @@
   export default {
     data({ scope }) {
       return {
-        repHigh: (scope.reputation || 0) >= 3,
+        repHigh: scope.reputation >= 3,
         withRuyan: !!scope.flags.travelWithRuyan,
       };
     },

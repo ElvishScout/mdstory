@@ -10,7 +10,7 @@ _结局_
     },
     data({ scope }) {
       return {
-        boardedShip: !!(scope.flags || {}).boardedShip,
+        boardedShip: !!scope.flags.boardedShip,
       };
     },
   };
@@ -49,11 +49,11 @@ _结局_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.crewMorale = Math.min(100, (scope.crewMorale || 80) + 20);
+      scope.crewMorale = Math.min(100, scope.crewMorale + 20);
     },
     data({ scope }) {
       return {
-        hasHighKnowledge: (scope.knowledge || 0) >= 3,
+        hasHighKnowledge: scope.knowledge >= 3,
       };
     },
   };

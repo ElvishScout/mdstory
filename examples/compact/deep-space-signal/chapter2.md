@@ -7,13 +7,13 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
-        crewMorale: scope.crewMorale || 80,
-        highKnowledge: (scope.knowledge || 0) >= 2,
+        knowledge: scope.knowledge,
+        crewMorale: scope.crewMorale,
+        highKnowledge: scope.knowledge >= 2,
       };
     },
   };
@@ -46,11 +46,11 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
+        knowledge: scope.knowledge,
       };
     },
   };
@@ -78,7 +78,7 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       if (!inv.includes("登舰小队")) {
         inv.push("登舰小队");
       }
@@ -111,11 +111,11 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
+        knowledge: scope.knowledge,
       };
     },
   };

@@ -3,7 +3,7 @@
 <script>
   export default {
     data({ scope }) {
-      const clues = scope.clues || [];
+      const clues = scope.clues;
       const keyClues = ["hidden-passage", "cufflink", "cigarette-ash", "vase-weapon", "mud-shoes", "secret-letters", "butler-testimony"];
       const foundKey = keyClues.filter(c => clues.includes(c)).length;
       return {

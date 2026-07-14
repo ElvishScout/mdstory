@@ -343,7 +343,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      if (!Array.isArray(scope.inventory)) scope.inventory = [];
       if (!scope.inventory.includes("护身符")) {
         scope.inventory.push("护身符");
       }
@@ -508,7 +507,7 @@
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasCharm: inv.includes("护身符"),
       };

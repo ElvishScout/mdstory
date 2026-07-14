@@ -3,7 +3,7 @@
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasCharm: inv.includes("护身符"),
       };

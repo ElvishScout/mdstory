@@ -116,7 +116,7 @@
   export default {
     onEnter({ scope }) {
       scope.flags.gaveChristmasGift = true;
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>
@@ -176,7 +176,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      if (!Array.isArray(scope.inventory)) scope.inventory = [];
       if (!scope.inventory.includes("樱花书签")) {
         scope.inventory.push("樱花书签");
       }
@@ -266,7 +265,7 @@
   export default {
     data({ scope }) {
       return {
-        gaveGift: !!(scope.flags || {}).gaveChristmasGift,
+        gaveGift: !!scope.flags.gaveChristmasGift,
       };
     },
   };
@@ -294,7 +293,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>

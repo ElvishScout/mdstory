@@ -103,7 +103,7 @@
     data({ scope }) {
       return {
         canTrueEnding: !!scope.flags.masteredUltimate,
-        canGoodEnding: (scope.martialLevel || 0) >= 3 || (scope.reputation || 0) >= 3,
+        canGoodEnding: scope.martialLevel >= 3 || scope.reputation >= 3,
       };
     },
   };

@@ -3,7 +3,7 @@
 <script>
   export default {
     data({ scope }) {
-      const flags = scope.flags || {};
+      const flags = scope.flags;
       return {
         interrogatedZhao: !!flags.interrogatedZhao,
         interrogatedWife: !!flags.interrogatedWife,
@@ -197,8 +197,8 @@
 <script>
   export default {
     data({ scope }) {
-      const flags = scope.flags || {};
-      const clues = scope.clues || [];
+      const flags = scope.flags;
+      const clues = scope.clues;
       return {
         interrogatedZhao: !!flags.interrogatedZhao,
         interrogatedWife: !!flags.interrogatedWife,

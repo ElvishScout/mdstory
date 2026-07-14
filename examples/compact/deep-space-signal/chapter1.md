@@ -4,7 +4,7 @@
   export default {
     data({ scope }) {
       return {
-        moraleOk: (scope.crewMorale || 80) >= 50,
+        moraleOk: scope.crewMorale >= 50,
       };
     },
   };
@@ -18,9 +18,9 @@ _第一章 · 深空中的呼唤_
   export default {
     data({ scope }) {
       return {
-        moraleOk: scope.moraleOk || false,
-        crewMorale: scope.crewMorale || 80,
-        knowledge: scope.knowledge || 0,
+        moraleOk: scope.moraleOk,
+        crewMorale: scope.crewMorale,
+        knowledge: scope.knowledge,
       };
     },
   };
@@ -64,11 +64,11 @@ _第一章 · 深空中的呼唤_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = (scope.knowledge || 0) + 1;
+      scope.knowledge = scope.knowledge + 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
+        knowledge: scope.knowledge,
       };
     },
   };
@@ -102,9 +102,9 @@ _第一章 · 深空中的呼唤_
   export default {
     data({ scope }) {
       return {
-        knowledge: scope.knowledge || 0,
-        highKnowledge: (scope.knowledge || 0) >= 1,
-        crewMorale: scope.crewMorale || 80,
+        knowledge: scope.knowledge,
+        highKnowledge: scope.knowledge >= 1,
+        crewMorale: scope.crewMorale,
       };
     },
   };

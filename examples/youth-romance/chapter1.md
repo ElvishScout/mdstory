@@ -55,7 +55,7 @@
   export default {
     data({ scope }) {
       return {
-        playerName: scope.name || "你",
+        playerName: scope.name,
       };
     },
   };
@@ -134,7 +134,7 @@
   export default {
     onEnter({ scope }) {
       scope.flags.acceptedTour = true;
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>
@@ -290,7 +290,7 @@
 <script>
   export default {
     data({ scope }) {
-      return { myHobby: scope.hobby || "" };
+      return { myHobby: scope.hobby };
     },
   };
 </script>
@@ -359,7 +359,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
   };
 </script>
@@ -490,7 +490,6 @@
 <script>
   export default {
     onEnter({ scope }) {
-      if (!Array.isArray(scope.inventory)) scope.inventory = [];
       if (!scope.inventory.includes("旧照片")) {
         scope.inventory.push("旧照片");
       }
@@ -548,11 +547,11 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = (scope.affection || 0) + 1;
+      scope.affection = scope.affection + 1;
     },
     data({ scope }) {
       return {
-        wasTourAccepted: !!(scope.flags || {}).acceptedTour,
+        wasTourAccepted: !!scope.flags.acceptedTour,
       };
     },
   };
@@ -683,7 +682,7 @@
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory || [];
+      const inv = scope.inventory;
       return {
         hasPhoto: inv.includes("旧照片"),
       };

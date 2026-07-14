@@ -5,7 +5,7 @@
 <script>
   export default {
     data({ scope }) {
-      const clues = scope.clues || [];
+      const clues = scope.clues;
       return {
         hasLetters: clues.includes("secret-letters"),
         hasPawnTicket: clues.includes("pawn-ticket"),
