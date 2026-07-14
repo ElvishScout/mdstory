@@ -67,6 +67,29 @@ export async function resolveParseOptions(options?: Partial<ParseStoryOptions>):
   };
 }
 
+/** Recursively validates scripts in a ParsedSection tree after placeholder IDs are replaced. */
+async function validateScripts(section: ParsedSection, parentPath?: string[]): Promise<void> {
+  const path = parentPath ? [...parentPath, section.id] : undefined;
+  if (section.scripts.length) {
+    SectionHooksSchema.parse(await mergeScripts(section.scripts, path));
+  }
+  for (const child of section.children) {
+    await validateScripts(child, parentPath ? [...parentPath, section.id] : [section.id]);
+  }
+}
+
+/** Validates that every full-path (dot-joined ancestor → descendant) is unique. */
+function validatePaths(section: ParsedSection, parentPath: string, seen: Set<string>): void {
+  const fullPath = parentPath ? `${parentPath}.${section.id}` : section.id;
+  if (seen.has(fullPath)) {
+    throw new Error(`Duplicated section path found: ${fullPath}`);
+  }
+  seen.add(fullPath);
+  for (const child of section.children) {
+    validatePaths(child, fullPath, seen);
+  }
+}
+
 /**
  * Parses a Markdown-formatted story source into a recursive Section tree.
  *
@@ -222,11 +245,6 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
     const sectionScripts = getBlocksInScope(scripts, heading.lineno, endLine);
     const sectionStyles = getBlocksInScope(styleBlocks, heading.lineno, endLine);
 
-    // Validate scripts at parse time (same module IDs as Section.fromParsed)
-    if (sectionScripts.length) {
-      SectionHooksSchema.parse(await mergeScripts(sectionScripts, path));
-    }
-
     // Build children recursively
     const children = await Promise.all(
       childNodes.map(({ heading: childHeading, children: grandChildren }) =>
@@ -256,11 +274,6 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   const rootScripts = getBlocksInScope(scripts, 0, firstHeadingLine);
   const rootStyles = getBlocksInScope(styleBlocks, 0, firstHeadingLine);
 
-  // Validate root scripts at parse time
-  if (rootScripts.length) {
-    SectionHooksSchema.parse(await mergeScripts(rootScripts));
-  }
-
   const rootChildren2 = await Promise.all(
     rootChildren.map(({ heading, children }) => buildSection(heading, children, [])),
   );
@@ -285,17 +298,11 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   };
   replacePlaceholderIds(root);
 
+  // Validate scripts with replaced IDs (matching Section.fromParsed paths)
+  await validateScripts(root);
+
   // ── Pass 5: validate full-path uniqueness ──────────────────────────────────
-  (function validatePaths(section: ParsedSection, parentPath: string, seen: Set<string>): void {
-    const fullPath = parentPath ? `${parentPath}.${section.id}` : section.id;
-    if (seen.has(fullPath)) {
-      throw new Error(`Duplicated section path found: ${fullPath}`);
-    }
-    seen.add(fullPath);
-    for (const child of section.children) {
-      validatePaths(child, fullPath, seen);
-    }
-  })(root, "", new Set());
+  validatePaths(root, "", new Set());
 
   return { metadata, root };
 }

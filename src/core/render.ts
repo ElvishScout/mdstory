@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import type { HelperDeclareSpec, HelperOptions } from "handlebars";
+import type { HelperDeclareSpec, HelperOptions, TemplateDelegate as HandlebarsTemplateDelegate } from "handlebars";
 import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";
@@ -44,6 +44,12 @@ function useHelper({ inputs, navs }: Fields, adapter: RenderAdapter): HelperDecl
   };
 }
 
+/** Cache compiled Handlebars templates to avoid re-parsing on every render. */
+const compiledCache = new Map<string, HandlebarsTemplateDelegate>();
+
+/** Module-level MarkdownIt instance — stateless between .render() calls. */
+const mdHtml = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginMark);
+
 /**
  * Compiles a Handlebars template with built-in helpers, optionally renders
  * through MarkdownIt, and returns the rendered text with extracted fields.
@@ -61,13 +67,16 @@ export function renderTemplate(template: string, scope: Scope, options: RenderOp
   const fields: Fields = { inputs: [], navs: [] };
   const helpers = useHelper(fields, resolvedAdapter);
 
-  let text;
+  // Compile lazily, cache on first use
+  let compiled = compiledCache.get(template);
+  if (!compiled) {
+    compiled = Handlebars.compile(template, resolvedAdapter.format === "markdown" ? { noEscape: true } : undefined);
+    compiledCache.set(template, compiled);
+  }
+
+  let text = compiled(scope, { helpers });
   if (resolvedAdapter.format === "html") {
-    const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginMark);
-    text = Handlebars.compile(template)(scope, { helpers });
-    text = md.render(text);
-  } else {
-    text = Handlebars.compile(template, { noEscape: true })(scope, { helpers });
+    text = mdHtml.render(text);
   }
 
   return { text, ...fields };

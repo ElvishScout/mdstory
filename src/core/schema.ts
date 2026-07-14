@@ -7,7 +7,9 @@ function PromiseLikeSchema<T extends z.ZodType>(schema: T) {
   return schema.or(schema.promise());
 }
 
-export const VariableSchema = z.any().transform((v) => v as JsonValue);
+export const VariableSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([z.null(), z.string(), z.number(), z.boolean(), z.array(VariableSchema), z.record(VariableSchema)]),
+);
 export const ScopeSchema = z.record(VariableSchema);
 
 const AssetObjectSchema = z.object({

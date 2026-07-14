@@ -60,21 +60,26 @@ function parseFormData(formData: FormData, { inputs }: Pick<RenderResult, "input
  */
 const hasOwn = (obj: object, key: string): boolean => Object.prototype.hasOwnProperty.call(obj, key);
 
+/** Returns the index of the nearest layer (from leaf upward) that owns `key`, or -1. */
+function findOwningLayerIndex(layers: Scope[], key: string): number {
+  for (let i = layers.length - 1; i >= 0; i--) {
+    if (hasOwn(layers[i], key)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 function applyInputs(layers: Scope[], inputs: Scope) {
   if (!layers.length) {
     return;
   }
   const leaf = layers[layers.length - 1];
   for (const [name, value] of Object.entries(inputs)) {
-    let found = false;
-    for (let i = layers.length - 1; i >= 0; i--) {
-      if (hasOwn(layers[i], name)) {
-        layers[i][name] = value;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
+    const idx = findOwningLayerIndex(layers, name);
+    if (idx !== -1) {
+      layers[idx][name] = value;
+    } else {
       leaf[name] = value;
     }
   }
@@ -129,40 +134,30 @@ export class StorySession {
       return {};
     }
 
+    const leafIdx = layers.length - 1;
+
     return new Proxy({} as Scope, {
       get(_target, prop) {
-        for (let i = layers.length - 1; i >= 0; i--) {
-          if (hasOwn(layers[i], prop as string)) {
-            return layers[i][prop as string];
-          }
-        }
-        return undefined;
+        const idx = findOwningLayerIndex(layers, prop as string);
+        return idx !== -1 ? layers[idx][prop as string] : undefined;
       },
       set(_target, prop, value) {
-        for (let i = layers.length - 1; i >= 0; i--) {
-          if (hasOwn(layers[i], prop as string)) {
-            layers[i][prop as string] = value;
-            return true;
-          }
+        const idx = findOwningLayerIndex(layers, prop as string);
+        if (idx !== -1) {
+          layers[idx][prop as string] = value;
+        } else {
+          // Key doesn't exist anywhere — set on leaf
+          layers[leafIdx][prop as string] = value;
         }
-        // Key doesn't exist anywhere — set on leaf
-        layers[layers.length - 1][prop as string] = value;
         return true;
       },
       has(_target, prop) {
-        for (let i = layers.length - 1; i >= 0; i--) {
-          if (hasOwn(layers[i], prop as string)) {
-            return true;
-          }
-        }
-        return false;
+        return findOwningLayerIndex(layers, prop as string) !== -1;
       },
       deleteProperty(_target, prop) {
-        for (let i = layers.length - 1; i >= 0; i--) {
-          if (hasOwn(layers[i], prop as string)) {
-            delete layers[i][prop as string];
-            return true;
-          }
+        const idx = findOwningLayerIndex(layers, prop as string);
+        if (idx !== -1) {
+          delete layers[idx][prop as string];
         }
         return true;
       },
@@ -176,15 +171,14 @@ export class StorySession {
         return [...keys];
       },
       getOwnPropertyDescriptor(_target, prop) {
-        for (let i = layers.length - 1; i >= 0; i--) {
-          if (hasOwn(layers[i], prop as string)) {
-            return {
-              configurable: true,
-              enumerable: true,
-              value: layers[i][prop as string],
-              writable: true,
-            };
-          }
+        const idx = findOwningLayerIndex(layers, prop as string);
+        if (idx !== -1) {
+          return {
+            configurable: true,
+            enumerable: true,
+            value: layers[idx][prop as string],
+            writable: true,
+          };
         }
         return undefined;
       },
@@ -242,6 +236,11 @@ export class StorySession {
       result = rawResult.data;
     }
 
+    // Normalize empty string target to null (equivalent to "end story")
+    if (result.target === "") {
+      result.target = null;
+    }
+
     // Apply inputs to the nearest owning scope layer (no $ prefix needed)
     if (result.inputs) {
       const layers = this.collectScopes(currentPath);
@@ -291,6 +290,16 @@ export class StorySession {
         this.data.enteredPaths.splice(enteredIdx, 1);
       }
     }
+
+    // Fire root's onLeave when story ends (root is never in oldPath)
+    if (newPath === null && this.story.root.hooks.onLeave) {
+      const rootScope = this.buildScope([]);
+      await this.story.root.hooks.onLeave({ scope: rootScope, target: null });
+      const enteredIdx = this.data.enteredPaths.indexOf("");
+      if (enteredIdx !== -1) {
+        this.data.enteredPaths.splice(enteredIdx, 1);
+      }
+    }
   }
 
   /**
@@ -336,16 +345,8 @@ export class StorySession {
       return { destination: null, isEnd: false };
     }
 
-    // onEnter
-    if (section.hooks.onEnter) {
-      const enterScope = this.buildScope(path);
-      await section.hooks.onEnter({ scope: enterScope });
-    }
-
-    // Render + prompt
-    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
-    const rawResult = await prompt({ ...renderResult, type: "section" });
-    const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, path);
+    // onEnter + render + prompt
+    const { destination, isEnd } = await this.enterAndRender(section, path, prompt, options);
 
     // Handle nav
     if (destination) {
@@ -368,6 +369,23 @@ export class StorySession {
     return { destination: null, isEnd: false };
   }
 
+  /** Shared helper: runs onEnter hook then renders + prompts. */
+  private async enterAndRender(
+    section: Section,
+    path: string[],
+    prompt: StoryPrompt,
+    options: PlayOptions,
+  ): Promise<{ destination: string[] | null; isEnd: boolean }> {
+    if (section.hooks.onEnter) {
+      const enterScope = this.buildScope(path);
+      await section.hooks.onEnter({ scope: enterScope });
+    }
+
+    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
+    const rawResult = await prompt({ ...renderResult, type: "section" });
+    return this.ingestPrompt(rawResult, renderResult, path);
+  }
+
   /**
    * Runs the "target stage" for the deepest section (runs every visit).
    */
@@ -387,17 +405,8 @@ export class StorySession {
       console.log("--- [debug] scopes:", JSON.stringify(this.data.scopes, null, 2));
     }
 
-    const enterScope = this.buildScope(path);
-
-    // onEnter (fires every visit to target)
-    if (section.hooks.onEnter) {
-      await section.hooks.onEnter({ scope: enterScope });
-    }
-
-    // Render + prompt
-    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
-    const rawResult = await prompt({ ...renderResult, type: "section" });
-    const { destination, isEnd } = this.ingestPrompt(rawResult, renderResult, path);
+    // onEnter + render + prompt
+    const { destination, isEnd } = await this.enterAndRender(section, path, prompt, options);
 
     // Fire onLeave for current section and ancestors being left
     if (destination) {
@@ -420,11 +429,6 @@ export class StorySession {
       if (rootResult.destination) {
         this.data.currentPath = rootResult.destination;
       }
-    }
-
-    // If there's nothing to play after root, exit
-    if (!this.data.currentPath.length) {
-      return;
     }
 
     while (true) {

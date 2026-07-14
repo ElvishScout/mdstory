@@ -89,7 +89,13 @@ export class Story {
       }
     }
 
-    // 3. Not found locally — ambiguous or non-existent
+    // 3. Search globally across the entire tree
+    const globalMatch = this.root.findById(id);
+    if (globalMatch) {
+      return globalMatch.getPath();
+    }
+
+    // 4. Not found — ambiguous or non-existent
     throw new Error(`Target not found: ${target}`);
   }
 
