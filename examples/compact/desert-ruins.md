@@ -33,6 +33,9 @@ _"找到楼陀罗的人，可以许一个愿望。但记住——城里的东西
         hasWater: scope.inventory.includes("水袋"),
       };
     },
+    onEnter({ scope }) {
+      scope.flags.suppliesPicked = 0;
+    },
   };
 </script>
 
