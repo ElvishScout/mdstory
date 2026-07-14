@@ -7,7 +7,7 @@ description: Write interactive fiction using the MdStory format — Markdown + H
 
 MdStory 是基于 Markdown 和 Handlebars 的互动小说脚本格式。本技能指导你使用 MdStory 格式创作互动故事（写在 `.md` 文件中）。
 
-开始写作前先阅读 @!PACKAGE_ROOT/examples/ 目录中的参考示例以理解格式。
+开始写作前先阅读 @!#PACKAGE_ROOT/examples/ 目录中的参考示例以理解格式。
 
 ## 快速参考
 
@@ -76,6 +76,44 @@ MdStory 是基于 Markdown 和 Handlebars 的互动小说脚本格式。本技�
 
 只有所有问题项都已修复且结论为"通过"后，才能继续编写下一文件（或交付故事）。
 
+## CLI 工具
+
+### 故事结构概览
+
+`mdstory overview` 命令打印故事的 Section 树形结构，支持按层级查看 id 和累计字数，用于核对全篇结构完整性和字数分布。
+
+```
+node !#PACKAGE_ROOT/dist/cli/index.js overview <story.md> [options]
+```
+
+| 选项              | 说明                                    |
+| ----------------- | --------------------------------------- |
+| `--words`         | 显示每个 Section 的累计字数（含子节点） |
+| `--ids`           | 显示显式 `{#id}` 后缀                   |
+| `-d, --depth <n>` | 限制树的展示深度                        |
+
+**典型用法**：
+
+```bash
+# 全篇统计：查看所有 Section 的 id 和字数（推荐用于全篇终检）
+node !#PACKAGE_ROOT/dist/cli/index.js overview story.md --ids --words
+
+# 只看顶层结构
+node !#PACKAGE_ROOT/dist/cli/index.js overview story.md --ids --words -d 1
+```
+
+**输出解读**：
+
+- 每个 Section 的 `— N words` 是**累计字数**，包含自身及其下所有子 Section 的字数总和。
+- 第一行显示故事标题和全篇总字数。
+- 使用 `--ids` 可快速核对 nav 目标 id 是否存在、命名是否一致。
+
+**在全篇终检时使用**：运行 `node !#PACKAGE_ROOT/dist/cli/index.js overview story.md --ids --words`，逐项核对：
+
+- 全篇总字数是否符合预期
+- 各章节字数分布是否合理（避免某章过长或过短）
+- 所有显式 id 是否存在、命名是否符合命名规范
+
 ## 文档结构
 
 ```
@@ -125,4 +163,4 @@ MdStory 是基于 Markdown 和 Handlebars 的互动小说脚本格式。本技�
 
 详细的写作规范、模板语法、Hooks 最佳实践、状态分层、导航/输入/Script/Include 规范、命名约定、进阶功能（资源/样式/空行）、常见反模式和推荐模板，请参考：
 
-@!PACKAGE_ROOT/WRITING_GUIDE.zh-CN.md
+@!#PACKAGE_ROOT/WRITING_GUIDE.zh-CN.md

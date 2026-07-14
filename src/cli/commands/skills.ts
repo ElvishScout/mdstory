@@ -15,9 +15,9 @@ interface AgentConfig {
 // ---------------------------------------------------------------------------
 // Placeholder resolution
 // ---------------------------------------------------------------------------
-// Rules: `@!` followed by uppercase letters, underscores, digits; no digit at
+// Rules: `!#` followed by uppercase letters, underscores, digits; no digit at
 // start; optional trailing / for directories.
-const PLACEHOLDER_RE = /@!([A-Z][A-Z0-9_]*)/g;
+const PLACEHOLDER_RE = /!#([A-Z][A-Z0-9_]*)/g;
 
 /** Maps placeholder names to project-root-relative paths. */
 const PLACEHOLDER_PATHS: Record<string, string> = {
@@ -25,7 +25,7 @@ const PLACEHOLDER_PATHS: Record<string, string> = {
 };
 
 /**
- * Replace all `@!PLACEHOLDER` occurrences in `content` with real filesystem
+ * Replace all `!#PLACEHOLDER` occurrences in `content` with real filesystem
  * paths.  When the package is installed inside a project's `node_modules`
  * the paths are relative to `cwd`; for a global install they are absolute.
  */
@@ -33,14 +33,14 @@ function resolvePlaceholders(content: string, packageRoot: string, isRelative: b
   return content.replace(PLACEHOLDER_RE, (match, name) => {
     const relativePath = PLACEHOLDER_PATHS[name];
     if (relativePath === undefined) {
-      console.warn(`  [warn] Unknown placeholder: @!${name}`);
+      console.warn(`  [warn] Unknown placeholder: !#${name}`);
       return match;
     }
     const absolute = path.resolve(packageRoot, relativePath);
 
     let resolved = isRelative ? path.relative(process.cwd(), absolute) : absolute;
     resolved = path.normalize(resolved).replace(/\\/g, "/").replace(/\/$/, "");
-    return `@${resolved}`;
+    return resolved;
   });
 }
 
@@ -59,7 +59,7 @@ async function clearDirectory(dir: string): Promise<void> {
 }
 
 /**
- * Recursively copy a skill directory tree, replacing `@!PLACEHOLDER` tokens in
+ * Recursively copy a skill directory tree, replacing `!#PLACEHOLDER` tokens in
  * `.md` (and `.yaml`/`.yml`) files.
  */
 async function copySkillTree(srcDir: string, destDir: string, packageRoot: string, isRelative: boolean): Promise<void> {
