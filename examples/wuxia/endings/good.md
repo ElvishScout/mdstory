@@ -7,7 +7,6 @@
     data({ scope }) {
       return {
         repHigh: scope.reputation >= 3,
-        withRuyan: !!scope.flags.travelWithRuyan,
       };
     },
   };
@@ -19,7 +18,7 @@
 
 但你还活着。你已经凭一己之力回来了，面对了该面对的人。
 
-{{#if withRuyan}}
+{{#if flags.travelWithRuyan}}
 柳如烟把你从地上拉起来。她的力道不算温柔——但你正好需要这股力量才能站起来。
 
 "走吧。"她说。

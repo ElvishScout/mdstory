@@ -14,18 +14,6 @@ _第一章 · 深空中的呼唤_
 
 ### 舰桥 {#bridge}
 
-<script>
-  export default {
-    data({ scope }) {
-      return {
-        moraleOk: scope.moraleOk,
-        crewMorale: scope.crewMorale,
-        knowledge: scope.knowledge,
-      };
-    },
-  };
-</script>
-
 曙光号的舰桥笼罩在恒星投影仪投出的淡蓝色光芒中。十二个操作台呈弧形排列在你面前，每一个屏幕上都滚动着密密麻麻的数据。主屏幕上，K-427 星系的星图正在缓缓旋转——一颗死去的白矮星，三颗冰冷的岩石行星，以及一个微弱的、脉动的信号源标记。
 
 你的大副陈敏转过身来。
@@ -64,12 +52,7 @@ _第一章 · 深空中的呼唤_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
-    },
-    data({ scope }) {
-      return {
-        knowledge: scope.knowledge,
-      };
+      scope.knowledge += 1;
     },
   };
 </script>
@@ -102,9 +85,7 @@ _第一章 · 深空中的呼唤_
   export default {
     data({ scope }) {
       return {
-        knowledge: scope.knowledge,
         highKnowledge: scope.knowledge >= 1,
-        crewMorale: scope.crewMorale,
       };
     },
   };

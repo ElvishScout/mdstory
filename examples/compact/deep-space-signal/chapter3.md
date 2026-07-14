@@ -7,13 +7,7 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
-    },
-    data({ scope }) {
-      return {
-        knowledge: scope.knowledge,
-        boardedShip: scope.boardedShip,
-      };
+      scope.knowledge += 1;
     },
   };
 </script>
@@ -24,7 +18,7 @@ _第三章 · 两百年后的答案_
 
 <span class="alien">一具遗骸靠在墙上。不是人类，但接近——身高大约相当于一个高个子的人类，身体结构是直的，两条手臂，两条腿。它的手指——有六根——手里攥着一个东西。</span>
 
-{{#if boardedShip}}
+{{#if flags.boardedShip}}
 你蹲下来，小心翼翼地掰开那只已经干枯了不知道多少年的手指。它的手心里攥着一个球体——拳头大小，表面是镂空的金属丝编织成的网，网的中心有一点微光在脉动。微光的节奏和那个信号是一样的——7 分 13 秒。这个球体不是一个容器——它就是信号源本身。或者至少是信号源的一个组成部分。
 
 "指挥官，"你的通信频道里传来了罗伊的声音，"我分析了这个东西的能量特征。这是——一个记忆存储体。它储存的不是数据，是记忆。这个人在死之前把自己的记忆转录到了这个东西里。"
@@ -45,7 +39,7 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
+      scope.knowledge += 1;
     },
   };
 </script>
@@ -69,18 +63,12 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
-    },
-    data({ scope }) {
-      return {
-        knowledge: scope.knowledge,
-        boardedShip: scope.boardedShip,
-      };
+      scope.knowledge += 1;
     },
   };
 </script>
 
-{{#if boardedShip}}
+{{#if flags.boardedShip}}
 你走到了外星飞船的核心舱。舱门已经半开着——从裂开的门缝里，你能看到内部柔和的蓝光。
 
 核心舱很小——大约相当于曙光号舰桥的一半。墙壁上覆盖着一层半透明的物质，那种蓝光就是从这层物质里散发出来的，缓慢地、有节奏地明灭着。明灭的节奏和信号一致——这个舱室就是信号源。
@@ -116,13 +104,10 @@ _第三章 · 两百年后的答案_
 <script>
   export default {
     data({ scope }) {
-      const boarded = !!scope.flags.boardedShip;
-      const knowledge = scope.knowledge;
+      const boarded = scope.flags.boardedShip;
       return {
-        knowledge,
-        crewMorale: scope.crewMorale,
-        canTrueEnding: knowledge >= 4 && boarded,
-        canGoodEnding: knowledge >= 2,
+        canTrueEnding: scope.knowledge >= 4 && boarded,
+        canGoodEnding: scope.knowledge >= 2,
       };
     },
   };

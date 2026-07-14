@@ -148,21 +148,10 @@
 
 ### 独处思量 {#alone}
 
-<script>
-  export default {
-    data({ scope }) {
-      return {
-        metRuyan: !!scope.flags.metLiuruyan,
-        revealed: !!scope.flags.revealedToLiuruyan,
-      };
-    },
-  };
-</script>
-
 你回到房间，关上门。
 
-{{#if metRuyan}}
-{{#if revealed}}
+{{#if flags.metLiuruyan}}
+{{#if flags.revealedToLiuruyan}}
 你把那枚青玉佩翻来覆去地看了很久。玉质温润，摸起来像是常年被人握在手中摩挲的。你把它握在手心里，感受那一点微凉的温度。柳如烟——这个名字你从未听说过。但她的眼神不像在说谎。你决定明天跟她走。
 {{else}}
 你没有收她那块玉佩。你回到房间里，在黑暗中坐了很久。柳如烟——这个名字你记住了。但你不确定她是否值得信任。在这条路上，信任可能是最奢侈的东西。

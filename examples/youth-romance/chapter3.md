@@ -291,7 +291,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>
@@ -372,7 +372,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>
@@ -404,7 +404,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>
@@ -482,7 +482,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
       if (!scope.inventory.includes("手写信")) {
         scope.inventory.push("手写信");
       }

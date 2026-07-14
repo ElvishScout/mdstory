@@ -116,7 +116,7 @@
   export default {
     onEnter({ scope }) {
       scope.flags.gaveChristmasGift = true;
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>
@@ -261,21 +261,11 @@
 
 ### 期末考试 {#exam}
 
-<script>
-  export default {
-    data({ scope }) {
-      return {
-        gaveGift: !!scope.flags.gaveChristmasGift,
-      };
-    },
-  };
-</script>
-
 新年过后，期末考试如期而至。
 
 教室里的氛围变了。走廊里不再有人慢悠悠地闲逛，取而代之的是手里握着笔记和习题集匆匆走过的身影。图书馆每天下午都是满的——要在课间提前去占座，晚几分钟就没有位置了。就连平时最散漫的几个男生也开始在课间翻课本了，虽然一边翻一边抱怨。
 
-{{#if gaveGift}}
+{{#if flags.gaveChristmasGift}}
 你注意到从圣诞节之后，林雪和你的距离好像缩短了一些。不是完全回到暑假前的那种亲近——但也至少不再是十一月那种刻意的疏远了。她又开始在课间偶尔转过身来了——虽然说的都是"昨天的数学作业做了吗"之类的日常对话，但至少她在转身。有一天午休，你正在座位上啃面包复习公式。她走过来，在你桌上放了一盒草莓牛奶。什么也没说，放完就转身回座位了。你拿起那盒牛奶的时候，发现它不是冰的——是温的。便利店有加热柜，她大概特意买的热的。
 {{else}}
 你还注意到从圣诞节之后，林雪似乎更加沉默了。不是刻意的沉默——她依然会和人说话、会笑、会参与课间的聊天。但那些笑容里好像多了一层什么。一层薄薄的、透明的隔膜。你隔着那层东西看她的笑容，轮廓是清楚的，但细节模糊了。她经过你桌边的时候没有停下脚步。
@@ -293,7 +283,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>

@@ -1,15 +1,5 @@
 ## 第四章：青云终战 {#chapter4}
 
-<script>
-  export default {
-    data({ scope }) {
-      return {
-        masteredUltimate: !!scope.flags.masteredUltimate,
-      };
-    },
-  };
-</script>
-
 ### 重返青云 {#return}
 
 冬去春来。你回到了青云山。
@@ -54,7 +44,7 @@
 
 你交手了几个回合。对方的刀势压制着你，你的剑被他的力道震得不断偏离轨迹。你发现自己在节节后退，脚后跟磕到了一块松动的砖石。
 
-{{#if masteredUltimate}}
+{{#if flags.masteredUltimate}}
 但你的剑意没有退。
 
 三个月在剑冢中的修行，此刻像潮水一样涌回你的身体。那些在石壁上刻着的线条、那些在脑海中演练过无数次的剑意流转——当刀锋离你的喉咙还有三寸的时候，你的身体自己动了。
@@ -102,7 +92,6 @@
   export default {
     data({ scope }) {
       return {
-        canTrueEnding: !!scope.flags.masteredUltimate,
         canGoodEnding: scope.martialLevel >= 3 || scope.reputation >= 3,
       };
     },
@@ -113,7 +102,7 @@
 
 你面前有几条不同的路。
 
-{{#if canTrueEnding}}
+{{#if flags.masteredUltimate}}
 {{#nav "ending-true"}}重建青云派 (需要: 悟得剑意){{/nav}}
 {{/if}}
 

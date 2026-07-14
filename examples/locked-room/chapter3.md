@@ -1,18 +1,5 @@
 ## 第三章：盘问疑犯 {#chapter3}
 
-<script>
-  export default {
-    data({ scope }) {
-      const flags = scope.flags;
-      return {
-        interrogatedZhao: !!flags.interrogatedZhao,
-        interrogatedWife: !!flags.interrogatedWife,
-        interrogatedButler: !!flags.interrogatedButler,
-      };
-    },
-  };
-</script>
-
 ### 赵铭远 {#interrogate-zhao}
 
 <script>
@@ -198,12 +185,8 @@
   export default {
     data({ scope }) {
       const flags = scope.flags;
-      const clues = scope.clues;
       return {
-        interrogatedZhao: !!flags.interrogatedZhao,
-        interrogatedWife: !!flags.interrogatedWife,
-        interrogatedButler: !!flags.interrogatedButler,
-        allInterrogated: !!(flags.interrogatedZhao && flags.interrogatedWife && flags.interrogatedButler),
+        allInterrogated: flags.interrogatedZhao && flags.interrogatedWife && flags.interrogatedButler,
       };
     },
   };
@@ -222,15 +205,15 @@
 {{else}}
 你还没有和所有人谈完。偏厅外面，还有人在等着你。
 
-{{#unless interrogatedZhao}}
+{{#unless flags.interrogatedZhao}}
 {{#nav "chapter3.interrogate-zhao"}}找赵铭远谈谈{{/nav}}
 {{/unless}}
 
-{{#unless interrogatedWife}}
+{{#unless flags.interrogatedWife}}
 {{#nav "chapter3.interrogate-wife"}}找陈太太谈谈{{/nav}}
 {{/unless}}
 
-{{#unless interrogatedButler}}
+{{#unless flags.interrogatedButler}}
 {{#nav "chapter3.interrogate-butler"}}找王管家谈谈{{/nav}}
 {{/unless}}
 {{/if}}

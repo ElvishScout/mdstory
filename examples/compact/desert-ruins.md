@@ -309,7 +309,6 @@ _第二章 · 地下迷宫_
       const inv = scope.inventory;
       return {
         hasRope: inv.includes("麻绳"),
-        health: scope.health,
       };
     },
   };
@@ -338,11 +337,6 @@ _第二章 · 地下迷宫_
     onEnter({ scope }) {
       scope.health = Math.max(0, scope.health - 30);
     },
-    data({ scope }) {
-      return {
-        health: scope.health,
-      };
-    },
   };
 </script>
 
@@ -365,13 +359,12 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
+      scope.knowledge += 1;
     },
     data({ scope }) {
       const inv = scope.inventory;
       return {
         hasKnife: inv.includes("短刀"),
-        knowledge: scope.knowledge,
       };
     },
   };
@@ -404,10 +397,7 @@ _第二章 · 地下迷宫_
 <script>
   export default {
     data({ scope }) {
-      const inv = scope.inventory;
       return {
-        knowledge: scope.knowledge,
-        health: scope.health,
         highKnowledge: scope.knowledge >= 2,
       };
     },
@@ -438,7 +428,7 @@ _第三章 · 遗迹核心_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
+      scope.knowledge += 1;
     },
     data({ scope }) {
       const inv = scope.inventory;
@@ -473,12 +463,6 @@ _第三章 · 遗迹核心_
     onEnter({ scope }) {
       scope.flags.skippedBox = true;
     },
-    data({ scope }) {
-      return {
-        health: scope.health,
-        knowledge: scope.knowledge,
-      };
-    },
   };
 </script>
 
@@ -496,7 +480,7 @@ _第三章 · 遗迹核心_
   export default {
     onEnter({ scope }) {
       scope.flags.choseRightPath = true;
-      scope.knowledge = scope.knowledge + 2;
+      scope.knowledge += 2;
       const inv = scope.inventory;
       if (inv.includes("短刀")) {
         if (!inv.includes("赤珠")) {
@@ -534,10 +518,7 @@ _第三章 · 遗迹核心_
     data({ scope }) {
       const inv = scope.inventory;
       const knowledge = scope.knowledge;
-      const flags = scope.flags;
       return {
-        choseRight: !!flags.choseRightPath,
-        skippedBox: !!flags.skippedBox,
         highKnowledge: knowledge >= 3,
         hasRedPearl: inv.includes("赤珠"),
       };
@@ -559,14 +540,14 @@ _第三章 · 遗迹核心_
 <span class="clue">你想起在壁画上看到的内容——"守"代表守卫，"永生"代表祭祀把身体献给了守护者。按照你解读的壁画，这个石人守卫需要的不是武力，而是让它明白——你不是来掠夺的。你理解了——守护者不是杀入侵者的，它是守卫"某个承诺"的。</span>
 {{/if}}
 
-{{#if choseRight}}
+{{#if flags.choseRightPath}}
 {{#if hasRedPearl}}
 你举起赤珠，走向石像。珠子的光芒在你接近石像时变亮了，像是有人在珠子内部点燃了一团火。石像没有动——当赤珠嵌入胸口的凹槽时，整个大厅响起了音乐。不是人的音乐——是石头的音乐：墙壁上的每一个凹槽、每一个刻痕都在共鸣，发出不同音高的嗡鸣声。石像表面出现了细密的裂纹——从胸口开始蔓延，像冰裂一样迅速布满全身。片刻之后，石像坍塌了，化作一堆碎石，露出了身后的通道。
 {{else}}
 你缓缓伸出手，按在石像胸口的菱形凹槽上。你按的不是一个按钮——你按的是一个手掌的形状：你把五指张开，对应石像暗纹的五个节点按了下去——像壁画上讲的那样。石像沉默了一瞬间。然后它表面的石头开始龟裂——裂缝从你按的五个点开始向外扩散，像是石头在蜕皮。一片片碎石剥落在你脚边粉碎。石像碎成石堆后露出了身后的通道。
 {{/if}}
 {{else}}
-{{#if skippedBox}}
+{{#if flags.skippedBox}}
 石像没有动。你绕着它走了一圈——它似乎只守在那个位置上，对从侧面绕过的你并没有反应。也许它等待的并不是你——它等待的是那个石盒。而你没有动那个石盒。你从石像身后找到了一个向下的通道。
 {{else}}
 石像动了。它抬起石剑，剑尖在你面前划过一道弧线停下来——和你之间的距离不到半尺。石剑带起的风把你头发吹了起来。但它没有继续攻击——它停在那里，像是在问你一个问题。石像没有五官，但你感觉得到它在看着你——在等你的回答。你沉默了几秒钟然后你把手按在了石像胸口的凹槽上——你的五指正好对应五个指节的光点。几秒钟后——石像表面出现了裂纹，它缓缓地跪了下来，露出了身后的通道。
@@ -581,14 +562,9 @@ _第三章 · 遗迹核心_
   export default {
     data({ scope }) {
       const inv = scope.inventory;
-      const knowledge = scope.knowledge;
-      const health = scope.health;
       return {
-        inventory: inv,
-        knowledge,
-        health,
-        canTrueEnding: knowledge >= 4 && inv.length >= 3,
-        canGoodEnding: health >= 50 && knowledge >= 1,
+        canTrueEnding: scope.knowledge >= 4 && inv.length >= 3,
+        canGoodEnding: scope.health >= 50 && scope.knowledge >= 1,
       };
     },
   };
@@ -631,16 +607,6 @@ _结局_
 
 ### 真结局：楼陀罗的继承者 {#true}
 
-<script>
-  export default {
-    data({ scope }) {
-      return {
-        choseRight: !!scope.flags.choseRightPath,
-      };
-    },
-  };
-</script>
-
 你把双手放在石盒上。
 
 不是许一个关于财富、权力或永生的愿望——你在壁画厅读到的内容、你在走廊里解开的古文字、你在守护者面前学到的道理——这些都告诉你一件事：楼陀罗的人不是不懂贪婪，他们是克制了贪婪。不是因为道德高尚，而是因为他们见过贪婪把别的东西变成什么样。
@@ -661,7 +627,7 @@ _结局_
 
 你现在也知道了。
 
-{{#if choseRight}}
+{{#if flags.choseRightPath}}
 你把手从石盒上移开。你没有许任何愿——你已经得到了你真正想要的：一个跨越千年的故事。你把竹简小心地卷好、铜镜用布包起来、石盒留在了原处。这是楼陀罗的——你只是它的读者。
 
 你从遗迹的另一头找到了出口，走上了地面。沙漠上空的星星比地面上任何地方的星星都要亮。你怀里揣着那卷竹简——楼陀罗最后的礼物。

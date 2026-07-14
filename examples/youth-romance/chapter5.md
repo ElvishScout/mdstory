@@ -78,7 +78,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>

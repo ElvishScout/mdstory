@@ -134,7 +134,7 @@
   export default {
     onEnter({ scope }) {
       scope.flags.acceptedTour = true;
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>
@@ -359,7 +359,7 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
+      scope.affection += 1;
     },
   };
 </script>
@@ -547,17 +547,12 @@
 <script>
   export default {
     onEnter({ scope }) {
-      scope.affection = scope.affection + 1;
-    },
-    data({ scope }) {
-      return {
-        wasTourAccepted: !!scope.flags.acceptedTour,
-      };
+      scope.affection += 1;
     },
   };
 </script>
 
-{{#if wasTourAccepted}}
+{{#if flags.acceptedTour}}
 周六上午，阳光很好。
 
 你到学校门口的时候，林雪已经到了。她穿着一件白色的连衣裙，外面套了一件浅蓝色的开衫，背着一个帆布包，站在校门口的樱花树下。花瓣落在她的头发上，她没有拂去，只是安静地低头看着手机。晨光在她的侧脸上勾勒出一层柔和的光。

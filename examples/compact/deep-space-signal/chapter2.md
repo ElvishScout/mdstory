@@ -7,12 +7,10 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
+      scope.knowledge += 1;
     },
     data({ scope }) {
       return {
-        knowledge: scope.knowledge,
-        crewMorale: scope.crewMorale,
         highKnowledge: scope.knowledge >= 2,
       };
     },
@@ -46,12 +44,7 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
-    },
-    data({ scope }) {
-      return {
-        knowledge: scope.knowledge,
-      };
+      scope.knowledge += 1;
     },
   };
 </script>
@@ -111,12 +104,7 @@ _第二章 · 黑暗中的残骸_
 <script>
   export default {
     onEnter({ scope }) {
-      scope.knowledge = scope.knowledge + 1;
-    },
-    data({ scope }) {
-      return {
-        knowledge: scope.knowledge,
-      };
+      scope.knowledge += 1;
     },
   };
 </script>
