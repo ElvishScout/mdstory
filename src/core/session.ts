@@ -1,11 +1,11 @@
 import type { Scope, InputType, JsonValue } from "./definitions.js";
 import type { Story } from "./story.js";
-import type { Section } from "./section.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 
 export interface StorySessionData {
   scopes: Record<string, Scope>;
-  currentPath: string[];
+  /** `null` = nowhere (session not started / finished); `[]` = root; `["a","b"]` = nested section. */
+  currentPath: string[] | null;
 }
 
 export type PromptProps = { type: "section" } & RenderResult;
@@ -102,11 +102,9 @@ export class StorySession {
     if (data) {
       this.data = data;
     } else {
-      const firstLeaf = findFirstLeaf(story.root);
-      const initialPath = firstLeaf ? firstLeaf.getPath() : [];
       this.data = {
         scopes: { "": story.metadata.scope ? { ...story.metadata.scope } : {} },
-        currentPath: initialPath,
+        currentPath: null,
       };
     }
   }
@@ -182,14 +180,11 @@ export class StorySession {
   }
 
   /** Builds a flat merged object for Handlebars rendering (not a proxy). */
-  private buildRenderScope(path: string[], overrides?: Scope, layers?: Scope[]): Scope {
+  private buildRenderScope(path: string[], layers?: Scope[]): Scope {
     layers ??= this.collectScopes(path);
     const result: Scope = {};
     for (const layer of layers) {
       Object.assign(result, layer);
-    }
-    if (overrides) {
-      Object.assign(result, overrides);
     }
     return result;
   }
@@ -211,17 +206,17 @@ export class StorySession {
     return this.story.resolveTarget(target, currentPath);
   }
 
-  /** Normalises a PromptResult into a concrete navigation decision. */
+  /**
+   * Normalises a PromptResult into a concrete navigation decision.
+   * Returns the destination path array, or `null` to end the story.
+   */
   private ingestPrompt(
     rawResult: Awaited<ReturnType<StoryPrompt>>,
     renderResult: RenderResult,
     currentPath: string[],
-  ): {
-    destination: string[] | null;
-    isEnd: boolean;
-  } {
+  ): string[] | null {
     if (rawResult.type === "end") {
-      return { destination: null, isEnd: true };
+      return null;
     }
 
     let result: { target?: string | null; inputs?: Scope };
@@ -248,8 +243,7 @@ export class StorySession {
       applyInputs(layers, result.inputs);
     }
 
-    const destination = this.resolveDestination(result.target, currentPath);
-    return { destination, isEnd: result.target === null };
+    return this.resolveDestination(result.target, currentPath);
   }
 
   /**
@@ -281,26 +275,14 @@ export class StorySession {
   }
 
   /**
-   * Runs the "enter stage" for a section (runs once when first entering).
-   * Sets up scope, runs onEnter hook, renders template, prompts.
-   * When initOnly is true, only initializes scope — lifecycle hooks and
-   * render are deferred to the target stage (avoids double onEnter).
-   * Returns the destination if the user navigated away, or null to fall through.
+   * Init a section: reset scope, data(), onEnter.  No render.
+   * Called on every entry — whether first visit or re-visit.
    */
-  private async runEnterStage(
-    path: string[],
-    prompt: StoryPrompt,
-    options: PlayOptions,
-    initOnly = false,
-  ): Promise<{ destination: string[] | null; isEnd: boolean }> {
+  private async initSection(path: string[]): Promise<void> {
     const pathKey = path.join(".");
     const section = this.story.root.walk(path);
     if (!section) {
-      return { destination: null, isEnd: false };
-    }
-
-    if (options.debug) {
-      console.log("--- [debug] enter stage:", pathKey);
+      return;
     }
 
     // Reset scope for this section (skip root — initialized from metadata)
@@ -316,149 +298,74 @@ export class StorySession {
       }
     }
 
-    // When initOnly, skip lifecycle hooks and render — target stage handles them
-    if (initOnly) {
-      return { destination: null, isEnd: false };
-    }
-
-    // onEnter + render + prompt
-    const { destination, isEnd } = await this.enterAndRender(section, path, prompt, options);
-
-    // Handle nav
-    if (destination) {
-      await this.fireLeaveHooks(path, destination);
-      return { destination, isEnd: false };
-    }
-
-    if (isEnd) {
-      await this.fireLeaveHooks(path, null);
-      return { destination: null, isEnd: true };
-    }
-
-    // Fall through — scope already initialized above
-    return { destination: null, isEnd: false };
-  }
-
-  /** Shared helper: runs onEnter hook then renders + prompts. */
-  private async enterAndRender(
-    section: Section,
-    path: string[],
-    prompt: StoryPrompt,
-    options: PlayOptions,
-  ): Promise<{ destination: string[] | null; isEnd: boolean }> {
-    const layers = this.collectScopes(path);
-
     if (section.hooks.onEnter) {
-      await section.hooks.onEnter({ scope: this.buildScope(path, layers) });
+      await section.hooks.onEnter({ scope: this.buildScope(path) });
     }
-
-    const renderResult = section.render(
-      { ...this.story.assets, ...this.buildRenderScope(path, undefined, layers) },
-      options,
-    );
-    const rawResult = await prompt({ ...renderResult, type: "section" });
-    return this.ingestPrompt(rawResult, renderResult, path);
   }
 
   /**
-   * Runs the "target stage" for the deepest section (runs every visit).
+   * Render + prompt a section.  Returns the navigation result.
+   * Does NOT fire onLeave — the play loop handles all leaving.
    */
-  private async runTargetStage(
-    path: string[],
-    prompt: StoryPrompt,
-    options: PlayOptions,
-  ): Promise<{ destination: string[] | null; isEnd: boolean }> {
-    const pathKey = path.join(".");
+  private async renderSection(path: string[], prompt: StoryPrompt, options: PlayOptions): Promise<string[] | null> {
     const section = this.story.root.walk(path);
     if (!section) {
-      return { destination: null, isEnd: false };
+      return null;
     }
 
-    if (options.debug) {
-      console.log("--- [debug] target stage:", pathKey);
-      console.log("--- [debug] scopes:", JSON.stringify(this.data.scopes, null, 2));
-    }
-
-    // onEnter + render + prompt
-    const { destination, isEnd } = await this.enterAndRender(section, path, prompt, options);
-
-    // Fire onLeave for current section and ancestors being left
-    await this.fireLeaveHooks(path, destination);
-
-    return { destination, isEnd };
+    const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
+    return this.ingestPrompt(await prompt({ ...renderResult, type: "section" }), renderResult, path);
   }
 
-  /** Main play loop. */
-  private async runLoop(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
-    // Enter root first
-    {
-      const rootResult = await this.runEnterStage([], prompt, options);
-      if (rootResult.isEnd) {
-        return;
-      }
-      if (rootResult.destination) {
-        this.data.currentPath = rootResult.destination;
-      }
+  /** Fire onLeave for a single section. */
+  private async leaveOne(path: string[], target: string | null): Promise<void> {
+    const section = this.story.root.walk(path);
+    if (section?.hooks.onLeave) {
+      await section.hooks.onLeave({ scope: this.buildScope(path), target });
     }
+  }
 
-    // Track the last successfully rendered path so we can compute which
-    // ancestors are new on the next iteration via common-prefix comparison.
-    let prevPath: string[] = [];
+  /** Main play loop — each iteration either enters or leaves one section. */
+  private async runLoop(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
+    // Resume from saved position: start at the parent of the recorded path so
+    // the first iteration enters the saved section through normal enter logic.
+    // `null` → enter root; `[]` → enter root; `["a"]` → enter "a" from root.
+    const savedPath = this.data.currentPath?.slice() ?? null;
+    let currentPath: string[] | null = savedPath && savedPath.length > 0 ? savedPath.slice(0, -1) : null;
+    let targetPath: string[] = savedPath ?? [];
+    // When resuming, skip initSection on the first entry to preserve saved scope,
+    // data() and onEnter state.
+    let resuming = savedPath !== null;
 
     while (true) {
-      const path = this.data.currentPath;
+      // ── Enter: current is a STRICT prefix of target (or null → enter root) ─
+      // Equality is NOT an enter — it falls through to leave so the section is
+      // exited to its parent first, then re-entered (onLeave → onEnter cycle).
+      if (
+        currentPath === null ||
+        (currentPath.length < targetPath.length && commonPrefixLength(currentPath, targetPath) === currentPath.length)
+      ) {
+        const nextPath: string[] = currentPath ? targetPath.slice(0, currentPath.length + 1) : []; // enter root
+        this.data.currentPath = nextPath;
+        if (resuming) {
+          resuming = false;
+        } else {
+          await this.initSection(nextPath);
+        }
+        const destination = await this.renderSection(nextPath, prompt, options);
+        currentPath = nextPath;
 
-      // ── Step A: Enter ancestors that are new since prevPath ──────────────
-      const commonLen = commonPrefixLength(prevPath, path);
-      let redirected = false;
-
-      for (let depth = commonLen; depth < path.length; depth++) {
-        const ancestorPath = path.slice(0, depth + 1);
-        // Deepest element is the target — scope-only init; lifecycle deferred to target stage
-        const isTarget = depth === path.length - 1;
-        const { destination, isEnd } = await this.runEnterStage(ancestorPath, prompt, options, isTarget);
-
-        if (isEnd) {
+        if (!destination) {
+          await this.fireLeaveHooks(currentPath, null);
           return;
         }
-
-        if (destination) {
-          this.data.currentPath = destination;
-          prevPath = []; // force full re-entry after redirect
-          redirected = true;
-          break;
-        }
-        // fall through: scope initialized, continue to next ancestor
+        targetPath = destination;
+      } else {
+        // ── Leave: step back one section; parent is NOT re-entered ──
+        // When already at root, go to null so the next iteration re-enters root.
+        await this.leaveOne(currentPath!, targetPath.join("."));
+        currentPath = currentPath!.length > 0 ? currentPath!.slice(0, -1) : null;
       }
-
-      if (redirected) {
-        continue;
-      }
-
-      // ── Step B: Render the target (deepest) section ──────────────────────
-      const { destination, isEnd } = await this.runTargetStage(path, prompt, options);
-
-      if (isEnd) {
-        return;
-      }
-
-      prevPath = path;
-
-      if (destination) {
-        this.data.currentPath = destination;
-        continue;
-      }
-
-      // No destination — try findNextInTree
-      const current = this.story.root.walk(path);
-      if (!current) {
-        return;
-      }
-      const next = current.findNextInTree();
-      if (!next) {
-        return;
-      }
-      this.data.currentPath = next.getPath();
     }
   }
 
@@ -477,17 +384,6 @@ export class StorySession {
 
   /** Saves session data */
   save(): StorySessionData {
-    return {
-      scopes: structuredClone(this.data.scopes),
-      currentPath: [...this.data.currentPath],
-    };
+    return structuredClone(this.data);
   }
-}
-
-/** Find the first leaf section (no children) in depth-first order. */
-function findFirstLeaf(root: Section): Section | null {
-  if (!root.children.length) {
-    return root;
-  }
-  return findFirstLeaf(root.children[0]);
 }
