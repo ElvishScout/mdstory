@@ -281,6 +281,12 @@ export class StorySession {
       return null;
     }
 
+    if (options.debug) {
+      const renderScope = this.buildRenderScope(path);
+      console.log("--- [debug] path:", path.join(".") || "(root)");
+      console.log("--- [debug] scope:", JSON.stringify(renderScope, null, 2));
+    }
+
     const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
     return this.ingestPrompt(await prompt({ ...renderResult, type: "section" }), renderResult, path);
   }
