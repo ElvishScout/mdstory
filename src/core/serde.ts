@@ -91,12 +91,15 @@ export function wrap(data: any): any {
     }
 
     if (value !== null && typeof value === "object") {
-      const result: Record<string, any> = {};
-      seen.set(value, result);
-      for (const key of Object.keys(value)) {
-        result[key] = _wrap(value[key]);
+      const proto = Object.getPrototypeOf(value);
+      if (proto === Object.prototype || proto === null) {
+        const result: Record<string, any> = {};
+        seen.set(value, result);
+        for (const key of Object.keys(value)) {
+          result[key] = _wrap(value[key]);
+        }
+        return result;
       }
-      return result;
     }
 
     return value;
