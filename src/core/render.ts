@@ -4,23 +4,22 @@ import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";
 
-import type { InputType, Variable, Scope } from "./definitions.js";
-import { htmlAdapter, markdownAdapter, RenderAdapter } from "./adapter.js";
+import type { Variable, Scope } from "./definitions.js";
+import { htmlAdapter, markdownAdapter, RenderAdapter, type InputType } from "./adapter.js";
 
 /** Rendering options. */
-export type RenderOptions = {
+export interface RenderOptions {
   adapter: "markdown" | "html" | RenderAdapter;
-};
+}
 
 /** The rendering result containing rendered text and extracted fields. */
-export type RenderResult = { text: string } & Fields;
-
-type Fields = {
+export interface RenderResult {
+  text: string;
   inputs: { name: string; type: InputType; value: Variable }[];
   navs: { text: string; target: string | null }[];
-};
+}
 
-function useHelper({ inputs, navs }: Fields, adapter: RenderAdapter): HelperDeclareSpec {
+function useHelper({ inputs, navs }: Pick<RenderResult, "inputs" | "navs">, adapter: RenderAdapter): HelperDeclareSpec {
   return {
     input(type: InputType, opt: HelperOptions) {
       for (const name in opt.hash) {
@@ -64,7 +63,7 @@ export function renderTemplate(template: string, scope: Scope, options: RenderOp
     resolvedAdapter = options.adapter;
   }
 
-  const fields: Fields = { inputs: [], navs: [] };
+  const fields: Pick<RenderResult, "inputs" | "navs"> = { inputs: [], navs: [] };
   const helpers = useHelper(fields, resolvedAdapter);
 
   // Compile lazily, cache on first use.  The cache key includes the format

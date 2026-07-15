@@ -1,10 +1,38 @@
-import type { SectionHooks, Scope, SectionInit } from "./definitions.js";
+import type { Scope } from "./definitions.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 import type { ParsedSection } from "./parser.js";
 import { mergeScripts } from "./utils.js";
 
 export type { ParsedSection } from "./parser.js";
+
+type HookResult<T = void> = T | Promise<T>;
+
+export interface HookContext {
+  scope: Scope;
+}
+
+export interface LeaveHookContext extends HookContext {
+  target: string | null;
+}
+
+/** Section-level lifecycle hooks — unified, no globals/locals distinction. */
+export interface SectionHooks {
+  /** Returns variables that take effect within this section's scope and cascade to descendants. */
+  data?: (context: HookContext) => HookResult<Scope | undefined>;
+  onEnter?: (context: HookContext) => HookResult;
+  onLeave?: (context: LeaveHookContext) => HookResult;
+}
+
+/** Structured representation of a section for runtime construction. */
+export interface SectionInit {
+  id: string;
+  title?: string;
+  template?: string;
+  stylesheets?: string[];
+  hooks?: SectionHooks;
+  children: Section[];
+}
 
 /** A recursive section node — the core unit of an MdStory. */
 export class Section {

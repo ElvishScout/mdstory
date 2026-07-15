@@ -1,4 +1,5 @@
-import type { Scope, InputType, JsonValue } from "./definitions.js";
+import type { Scope, JsonValue } from "./definitions.js";
+import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 
@@ -8,7 +9,9 @@ export interface StorySessionData {
   currentPath: string[] | null;
 }
 
-export type PromptProps = { type: "section" } & RenderResult;
+export interface PromptProps extends RenderResult {
+  type: "section";
+}
 
 export type PromptResultData = { target?: string | null; inputs?: Scope } | FormData;
 
@@ -19,9 +22,9 @@ export type PromptResult = { type: "end" } | { type: "continue"; data?: PromptRe
 
 export type StoryPrompt = (props: PromptProps) => Promise<PromptResult>;
 
-export type PlayOptions = RenderOptions & {
+export interface PlayOptions extends RenderOptions {
   debug?: boolean;
-};
+}
 
 function parseInput(type: InputType, text: string | null) {
   switch (type) {

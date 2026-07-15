@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { contentType } from "mime-types";
 
-import type { JsonValue, SectionHooks } from "./definitions.js";
+import type { JsonValue } from "./definitions.js";
+import type { SectionHooks } from "./section.js";
 
 export const VariableSchema: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([z.null(), z.string(), z.number(), z.boolean(), z.array(VariableSchema), z.record(VariableSchema)]),

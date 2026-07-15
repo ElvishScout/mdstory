@@ -1,5 +1,8 @@
-import type { InputType, Variable } from "./definitions.js";
+import type { Variable } from "./definitions.js";
 import { escapeHtml } from "./utils.js";
+
+/** Type indicator for input fields. */
+export type InputType = "string" | "number" | "boolean";
 
 type HtmlAttrs = Record<string, string | boolean | undefined>;
 

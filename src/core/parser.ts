@@ -7,31 +7,44 @@ import { MetadataSchema, SectionHooksSchema } from "./schema.js";
 import type { Metadata } from "./definitions.js";
 import { loadSource, mergeScripts, normalizePath, StableIdGenerator } from "./utils.js";
 
-type Heading = { depth: number; id: string; title: string; lineno: number };
-type ScriptBlock = { from: number; to: number; content: string };
-type StyleBlock = { from: number; to: number; content: string };
+interface Heading {
+  depth: number;
+  id: string;
+  title: string;
+  lineno: number;
+}
+interface ScriptBlock {
+  from: number;
+  to: number;
+  content: string;
+}
+interface StyleBlock {
+  from: number;
+  to: number;
+  content: string;
+}
 
 export type IncludeResolver = (path: string) => string | Promise<string>;
-export type ParseStoryOptions = {
+export interface ParseStoryOptions {
   base: string;
   resolveInclude: IncludeResolver;
-};
+}
 
 /** A parsed section node — recursive, mirrors the heading hierarchy. */
-export type ParsedSection = {
+export interface ParsedSection {
   id: string;
   title: string;
   template: string;
   stylesheets: string[];
   scripts: string[];
   children: ParsedSection[];
-};
+}
 
 /** Top-level parse result. */
-export type ParsedStory = {
+export interface ParsedStory {
   metadata: Metadata;
   root: ParsedSection;
-};
+}
 
 async function expandIncludes(source: string, options: ParseStoryOptions, stack: string[] = []): Promise<string> {
   const lines = source.split("\n");
