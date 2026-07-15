@@ -10,7 +10,7 @@ const handlers: Record<string, Handler> = {
     wrap: () => null,
     unwrap: () => undefined,
   },
-  SpecialNumber: {
+  Number: {
     match: (value) => (typeof value === "number" || value instanceof Number) && !Number.isFinite(Number(value)),
     wrap: (value) => value.toString(),
     unwrap: (value) => Number(value),
@@ -65,20 +65,8 @@ export function wrap(data: any): any {
     }
 
     // Primitives that can never match any handler — return as-is.
-    const vt = typeof value;
-    if (value === null || vt === "string" || vt === "boolean" || vt === "symbol" || vt === "function") {
+    if (value === null || ["string", "boolean", "symbol", "function"].includes(typeof value)) {
       return value;
-    }
-
-    for (const [name, handler] of Object.entries(handlers)) {
-      if (handler.match(value)) {
-        const result: Record<string, any> = { $type: name };
-        if (value !== null && typeof value === "object") {
-          seen.set(value, result);
-        }
-        result.value = _wrap(handler.wrap(value));
-        return result;
-      }
     }
 
     if (Array.isArray(value)) {
@@ -90,7 +78,7 @@ export function wrap(data: any): any {
       return result;
     }
 
-    if (value !== null && typeof value === "object") {
+    if (typeof value === "object") {
       const proto = Object.getPrototypeOf(value);
       if (proto === Object.prototype || proto === null) {
         const result: Record<string, any> = {};
@@ -98,6 +86,17 @@ export function wrap(data: any): any {
         for (const key of Object.keys(value)) {
           result[key] = _wrap(value[key]);
         }
+        return result;
+      }
+    }
+
+    for (const [name, handler] of Object.entries(handlers)) {
+      if (handler.match(value)) {
+        const result: Record<string, any> = { $type: name };
+        if (typeof value === "object") {
+          seen.set(value, result);
+        }
+        result.value = _wrap(handler.wrap(value));
         return result;
       }
     }
