@@ -1,4 +1,4 @@
-import type { Scope, JsonValue } from "./definitions.js";
+import type { Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
@@ -78,7 +78,7 @@ function commonPrefixLength(a: string[], b: string[]): number {
 }
 
 /** Write `value` to the nearest layer that owns `key`, or to the leaf layer. */
-function writeToLayer(layers: Scope[], key: string, value: JsonValue): void {
+function writeToLayer(layers: Scope[], key: string, value: any): void {
   const idx = findOwningLayerIndex(layers, key);
   if (idx !== -1) {
     layers[idx][key] = value;

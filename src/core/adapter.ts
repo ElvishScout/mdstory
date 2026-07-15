@@ -1,4 +1,3 @@
-import type { Variable } from "./definitions.js";
 import { escapeHtml } from "./utils.js";
 
 /** Type indicator for input fields. */
@@ -37,7 +36,7 @@ const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => 
   return `<${tag} ${attrText}>${children ?? ""}</${tag}>`;
 };
 
-const createInputHtml = ({ name, type, value }: { name: string; type: InputType; value: Variable }) => {
+const createInputHtml = ({ name, type, value }: { name: string; type: InputType; value: any }) => {
   const inputType = type === "boolean" ? "checkbox" : "text";
   const inputAttrs: HtmlAttrs = {
     name,

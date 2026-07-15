@@ -4,7 +4,7 @@ import MarkdownIt from "markdown-it";
 import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";
 
-import type { Variable, Scope } from "./definitions.js";
+import type { Scope } from "./definitions.js";
 import { htmlAdapter, markdownAdapter, RenderAdapter, type InputType } from "./adapter.js";
 
 /** Rendering options. */
@@ -15,7 +15,7 @@ export interface RenderOptions {
 /** The rendering result containing rendered text and extracted fields. */
 export interface RenderResult {
   text: string;
-  inputs: { name: string; type: InputType; value: Variable }[];
+  inputs: { name: string; type: InputType; value: any }[];
   navs: { text: string; target: string | null }[];
 }
 
