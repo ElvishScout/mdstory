@@ -64,6 +64,12 @@ export function wrap(data: any): any {
       }
     }
 
+    // Primitives that can never match any handler — return as-is.
+    const vt = typeof value;
+    if (value === null || vt === "string" || vt === "boolean" || vt === "symbol" || vt === "function") {
+      return value;
+    }
+
     for (const [name, handler] of Object.entries(handlers)) {
       if (handler.match(value)) {
         const result: Record<string, any> = { $type: name };
@@ -106,7 +112,7 @@ export function wrap(data: any): any {
  * Circular references are handled by returning the previously-unwrapped object.
  */
 export function unwrap(data: any): any {
-  const seen = new Map<object, any>();
+  const seen = new WeakMap<object, any>();
 
   function _unwrap(value: any): any {
     if (value === null || typeof value !== "object") {
