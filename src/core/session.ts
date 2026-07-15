@@ -2,6 +2,7 @@ import type { Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
+import * as serde from "./serde.js";
 
 export interface StorySessionData {
   scopes: Record<string, Scope>;
@@ -100,7 +101,7 @@ export class StorySession {
       this.data = data;
     } else {
       this.data = {
-        scopes: { "": story.metadata.scope ? { ...story.metadata.scope } : {} },
+        scopes: { "": { ...story.metadata.scope } },
         currentPath: null,
       };
     }
@@ -360,8 +361,13 @@ export class StorySession {
     return this.promise;
   }
 
-  /** Saves session data */
-  save(): StorySessionData {
-    return structuredClone(this.data);
+  /** Saves session data to wrapped object */
+  save(): any {
+    return structuredClone(serde.wrap(this.data));
+  }
+
+  /** Loads session data from wrapped object */
+  load(data: any) {
+    this.data = serde.unwrap(structuredClone(data));
   }
 }
