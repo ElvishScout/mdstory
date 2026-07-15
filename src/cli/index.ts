@@ -22,6 +22,9 @@ program
     try {
       await playCommand(storyPath, { debug: options.debug ?? false });
     } catch (err) {
+      if (err instanceof Error && err.name === "ExitPromptError") {
+        process.exit(0);
+      }
       console.error(err instanceof Error ? err.message : err);
       process.exit(1);
     }
