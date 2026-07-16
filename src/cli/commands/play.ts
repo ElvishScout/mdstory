@@ -1,5 +1,5 @@
 import readline from "node:readline";
-import inquirer from "inquirer";
+import { input, confirm as confirmPrompt, number, select } from "@inquirer/prompts";
 import type MarkdownIt from "markdown-it";
 import type { StoryPrompt, Scope } from "../../index.js";
 import { fromPath } from "../../index.js";
@@ -10,50 +10,49 @@ export interface PlayOptions {
   debug?: boolean;
 }
 
-/** The currently active inquirer runner, if a prompt is in progress. */
-let activeRunner: { close(): void } | null = null;
+/** The currently active AbortController, if a prompt is in progress. */
+let activeController: AbortController | null = null;
 
 function createPrompt(md: MarkdownIt): StoryPrompt {
   return async ({ text, inputs: fields, navs }) => {
     console.log(md.render(text).trim());
     console.log();
 
-    let inputReplies: Record<string, unknown>;
+    let inputReplies: Record<string, unknown> = {};
     let targetReplies: { target: string | null | undefined };
 
     try {
+      const controller = new AbortController();
+      activeController = controller;
+
+      // Dynamic multi-field prompts — loop sequentially.
       if (fields.length) {
-        const promptObj = inquirer.prompt<Record<string, unknown>>(
-          fields.map(({ name, type, value }) => {
-            if (type === "number") {
-              return { type: "number", name, message: name, default: Number(value) };
-            } else if (type === "boolean") {
-              return { type: "confirm", name, message: name, default: Boolean(value) };
-            } else {
-              return { type: "input", name, message: name, default: String(value) };
-            }
-          }),
-        );
-        activeRunner = promptObj.ui;
-        inputReplies = await promptObj;
+        for (const { name, type, value } of fields) {
+          if (type === "number") {
+            inputReplies[name] = await number({ message: name, default: Number(value) }, { signal: controller.signal });
+          } else if (type === "boolean") {
+            inputReplies[name] = await confirmPrompt({ message: name, default: Boolean(value) }, { signal: controller.signal });
+          } else {
+            inputReplies[name] = await input({ message: name, default: String(value) }, { signal: controller.signal });
+          }
+        }
       }
 
       if (navs.length) {
-        const promptObj = inquirer.prompt<{ target: string }>([
-          {
-            type: "select",
-            name: "target",
-            message: "Choose target",
-            choices: navs.map(({ text, target }) => ({ name: text, value: target })),
-          },
-        ]);
-        activeRunner = promptObj.ui;
-        targetReplies = await promptObj;
+        targetReplies = {
+          target: await select(
+            {
+              message: "Choose target",
+              choices: navs.map(({ text: name, target: value }) => ({ name, value })),
+            },
+            { signal: controller.signal },
+          ),
+        };
       } else {
         targetReplies = { target: undefined };
       }
     } finally {
-      activeRunner = null;
+      activeController = null;
     }
 
     const target = targetReplies.target;
@@ -75,9 +74,9 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
   if (process.stdin.isTTY) {
     readline.emitKeypressEvents(process.stdin);
     process.stdin.on("keypress", (_str, key) => {
-      if (key?.name === "escape" && activeRunner) {
-        activeRunner.close();
-        activeRunner = null;
+      if (key?.name === "escape" && activeController) {
+        activeController.abort();
+        activeController = null;
       }
     });
   }

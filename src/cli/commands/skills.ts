@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import inquirer from "inquirer";
+import { checkbox, input, confirm } from "@inquirer/prompts";
 
 interface AgentConfig {
   /** CLI tool name used for identification (e.g. "claude", "codex") */
@@ -167,43 +167,35 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
   } else {
     // ---- Interactive agent selection ----
     const CUSTOM_KEY = "__custom__";
-    const { agentNames } = await inquirer.prompt<{ agentNames: string[] }>([
-      {
-        type: "checkbox",
-        name: "agentNames",
-        message: "Select target coding agents",
-        choices: [
-          ...AGENTS.map((a) => ({ name: a.label, value: a.name })),
-          { name: "Custom directory…", value: CUSTOM_KEY },
-        ],
-        validate: (input: string[]) => {
-          if (!input.length) {
-            return "Select at least one agent or custom directory";
-          }
-          return true;
-        },
+    const agentNames = await checkbox({
+      message: "Select target coding agents",
+      choices: [
+        ...AGENTS.map((a) => ({ name: a.label, value: a.name })),
+        { name: "Custom directory…", value: CUSTOM_KEY },
+      ],
+      validate: (choices) => {
+        if (choices.every((c) => !c.checked)) {
+          return "Select at least one agent or custom directory";
+        }
+        return true;
       },
-    ]);
+    });
 
     selectedAgents = AGENTS.filter((a) => agentNames.includes(a.name));
     useCustom = agentNames.includes(CUSTOM_KEY);
 
     // If custom selected, ask for directory
     if (useCustom) {
-      const answer = await inquirer.prompt<{ customDir: string }>([
-        {
-          type: "input",
-          name: "customDir",
-          message: "Enter custom directory path:",
-          validate: (input: string) => {
-            if (!input.trim()) {
-              return "Directory path cannot be empty";
-            }
-            return true;
-          },
+      const customDirRaw = await input({
+        message: "Enter custom directory path:",
+        validate: (value: string) => {
+          if (!value.trim()) {
+            return "Directory path cannot be empty";
+          }
+          return true;
         },
-      ]);
-      customDir = path.resolve(process.cwd(), answer.customDir.trim());
+      });
+      customDir = path.resolve(process.cwd(), customDirRaw.trim());
     }
   }
 
@@ -223,14 +215,7 @@ export async function skillsCommand(options: SkillsOptions = {}): Promise<void> 
 
   // ---- Confirmation ----
   if (!options.yes) {
-    const { confirmed } = await inquirer.prompt<{ confirmed: boolean }>([
-      {
-        type: "confirm",
-        name: "confirmed",
-        message: "Proceed?",
-        default: true,
-      },
-    ]);
+    const confirmed = await confirm({ message: "Proceed?", default: true });
 
     if (!confirmed) {
       console.log("Aborted.");

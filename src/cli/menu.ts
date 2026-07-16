@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import inquirer from "inquirer";
+import { select, input } from "@inquirer/prompts";
 import type { StorySession } from "../index.js";
 
 // ── types ───────────────────────────────────────────────────────────
@@ -76,9 +76,7 @@ export class GameMenu {
     while (true) {
       const choices = toChoices(current);
 
-      const { value } = await inquirer.prompt<{ value: string }>([
-        { type: "select", name: "value", message: "Menu", choices },
-      ]);
+      const value = await select({ message: "Menu", choices });
 
       if (value === BACK) {
         if (stack.length > 0) {
@@ -121,9 +119,7 @@ export class GameMenu {
   // ── private helpers ──────────────────────────────────────────────
 
   private async doSave(): Promise<boolean> {
-    const { path } = await inquirer.prompt<{ path: string }>([
-      { type: "input", name: "path", message: "Save to:", default: "save.json" },
-    ]);
+    const path = await input({ message: "Save to:", default: "save.json" });
     if (!path) {
       return false;
     }
@@ -134,9 +130,7 @@ export class GameMenu {
   }
 
   private async doLoad(): Promise<boolean> {
-    const { path } = await inquirer.prompt<{ path: string }>([
-      { type: "input", name: "path", message: "Load from:", default: "save.json" },
-    ]);
+    const path = await input({ message: "Load from:", default: "save.json" });
     if (!path) {
       return false;
     }
