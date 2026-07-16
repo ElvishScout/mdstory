@@ -4,6 +4,7 @@ import type MarkdownIt from "markdown-it";
 import type { StoryPrompt, Scope } from "../../index.js";
 import { fromPath } from "../../index.js";
 import { createMarkdownRenderer } from "../markdown.js";
+import { GameMenu } from "../menu.js";
 
 export interface PlayOptions {
   debug?: boolean;
@@ -65,27 +66,14 @@ function createPrompt(md: MarkdownIt): StoryPrompt {
 export async function playCommand(storyPath: string, options: PlayOptions): Promise<void> {
   const story = await fromPath(storyPath);
   const md = createMarkdownRenderer();
-  const prompt = createPrompt(md);
+  const session = story.session();
+  const menu = new GameMenu(session);
 
-  const wrappedPrompt: StoryPrompt = async (props) => {
-    while (true) {
-      try {
-        return await prompt(props);
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortPromptError") {
-          console.log("Show menu");
-          // Show menu
-        } else {
-          throw err;
-        }
-      }
-    }
-  };
+  const prompt = createPrompt(md);
 
   // Monitor ESC key to cancel the active inquirer prompt.
   if (process.stdin.isTTY) {
     readline.emitKeypressEvents(process.stdin);
-    process.stdin.setRawMode(true);
     process.stdin.on("keypress", (_str, key) => {
       if (key?.name === "escape" && activeRunner) {
         activeRunner.close();
@@ -94,5 +82,32 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
     });
   }
 
-  await story.play(wrappedPrompt, { adapter: "markdown", debug: options.debug });
+  // Outer loop — restarts the session when the player loads a save.
+  while (true) {
+    let restart = false;
+
+    const wrappedPrompt: StoryPrompt = async (props) => {
+      while (true) {
+        try {
+          return await prompt(props);
+        } catch (err) {
+          if (err instanceof Error && err.name === "AbortPromptError") {
+            const action = await menu.prompt();
+            restart = await menu.handle(action);
+            if (restart) {
+              return { type: "end" };
+            }
+          } else {
+            throw err;
+          }
+        }
+      }
+    };
+
+    await session.play(wrappedPrompt, { adapter: "markdown", debug: options.debug });
+
+    if (!restart) {
+      break;
+    }
+  }
 }
