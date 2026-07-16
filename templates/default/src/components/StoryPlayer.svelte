@@ -1,9 +1,10 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import type { PromptProps, PromptResult, Story, StoryPrompt, TemplateOptions } from "../../../../src";
+  import type { PromptProps, PromptResult, Story, StoryPrompt } from "../../../../src";
   import { Section } from "../../../../src";
   import FcInput from "./FcInput.svelte";
-  import { processHtml } from "./process-html";
+  import { processHtml } from "../lib/utils";
+  import type { TemplateOptions } from "../types";
 
   // Keep reference to prevent tree-shaking of the custom element registration
   void FcInput;

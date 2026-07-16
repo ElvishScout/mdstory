@@ -1,22 +1,20 @@
 <script lang="ts">
-  import { type Story, type TemplateOptions, fromParsed } from "../../../src";
-  import StoryPlayer from "./lib/StoryPlayer.svelte";
+  import { type Story, fromParsed } from "../../../src";
+  import { parseKeyValuePairs } from "../../../src/core/utils";
+  import StoryPlayer from "./components/StoryPlayer.svelte";
+  import { deepMerge } from "./lib/utils";
+  import type { TemplateOptions } from "./types";
 
   let story: Story | undefined = $state();
   let options: TemplateOptions | undefined = $state();
 
   $effect(() => {
     const originalTitle = document.title;
-
     const searchParams = new URLSearchParams(location.search);
-    const debugParam = searchParams.get("debug");
 
+    const paramOptions = parseKeyValuePairs(searchParams.entries());
     const templateOptions = typeof window.TEMPLATE_OPTIONS === "string" ? {} : window.TEMPLATE_OPTIONS;
-    if (debugParam !== null) {
-      templateOptions.debug = debugParam === "1";
-    }
-
-    options = templateOptions;
+    options = deepMerge(templateOptions, paramOptions);
 
     const parsedStory = typeof window.PARSED_STORY === "string" ? window.PLACEHOLDER_STORY : window.PARSED_STORY;
     fromParsed(parsedStory).then((s) => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { StableIdGenerator } from "../src/core/utils.js";
+import { parseKeyValuePairs, StableIdGenerator } from "../src/core/utils.js";
 
 // ---------------------------------------------------------------------------
 // StableIdGenerator unit tests
@@ -51,5 +51,93 @@ describe("StableIdGenerator", () => {
     // Cycling through: next also adds to used set
     expect(gen.next()).not.toBe(first);
     expect(gen.next()).not.toBe(second);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseKeyValuePairs unit tests
+// ---------------------------------------------------------------------------
+
+describe("parseKeyValuePairs", () => {
+  it("parses simple flat key-value pairs", () => {
+    const result = parseKeyValuePairs([
+      ["foo", "bar"],
+      ["baz", "qux"],
+    ]);
+    expect(result).toEqual({ foo: "bar", baz: "qux" });
+  });
+
+  it("coerces boolean and number values", () => {
+    const result = parseKeyValuePairs([
+      ["debug", "true"],
+      ["count", "42"],
+      ["name", "hello"],
+    ]);
+    expect(result).toEqual({ debug: true, count: 42, name: "hello" });
+  });
+
+  it("converts kebab-case keys to camelCase", () => {
+    const result = parseKeyValuePairs([
+      ["font-size", "16"],
+      ["background-color", "red"],
+    ]);
+    expect(result).toEqual({ fontSize: 16, backgroundColor: "red" });
+  });
+
+  it("supports dot-notation for nested objects", () => {
+    const result = parseKeyValuePairs([
+      ["ui.theme", "dark"],
+      ["ui.fontSize", "14"],
+    ]);
+    expect(result).toEqual({ ui: { theme: "dark", fontSize: 14 } });
+  });
+
+  it("creates arrays when a key segment is a numeric index", () => {
+    const result = parseKeyValuePairs([
+      ["a.0", "foo"],
+      ["a.1", "bar"],
+    ]);
+    expect(result).toEqual({ a: ["foo", "bar"] });
+  });
+
+  it("creates arrays of objects when numeric index has nested keys", () => {
+    const result = parseKeyValuePairs([
+      ["items.0.name", "first"],
+      ["items.0.value", "10"],
+      ["items.1.name", "second"],
+    ]);
+    expect(result).toEqual({
+      items: [{ name: "first", value: 10 }, { name: "second" }],
+    });
+  });
+
+  it("handles nested arrays", () => {
+    const result = parseKeyValuePairs([
+      ["matrix.0.0", "a"],
+      ["matrix.0.1", "b"],
+    ]);
+    expect(result).toEqual({ matrix: [["a", "b"]] });
+  });
+
+  it("handles sparse arrays", () => {
+    const result = parseKeyValuePairs([
+      ["a.0", "first"],
+      ["a.2", "third"],
+    ]);
+    // sparse: index 1 is a hole
+    expect(result).toHaveProperty("a.0", "first");
+    expect(result).toHaveProperty("a.2", "third");
+    expect((result as any).a[1]).toBeUndefined();
+  });
+
+  it("combines camelCase conversion with array indices", () => {
+    const result = parseKeyValuePairs([
+      ["nav-items.0.label", "Home"],
+      ["nav-items.0.href", "/"],
+      ["nav-items.1.label", "About"],
+    ]);
+    expect(result).toEqual({
+      navItems: [{ label: "Home", href: "/" }, { label: "About" }],
+    });
   });
 });
