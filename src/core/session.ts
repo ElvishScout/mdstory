@@ -6,8 +6,8 @@ import * as serde from "./serde.js";
 
 export interface StorySessionData {
   scopes: Record<string, Scope>;
-  /** `null` = nowhere (session not started / finished); `[]` = root; `["a","b"]` = nested section. */
-  currentPath: string[] | null;
+  /** `null` = nowhere (session not started / finished); `""` = root; `"a.b"` = nested section. */
+  currentPath: string | null;
 }
 
 export interface PromptProps extends RenderResult {
@@ -76,6 +76,16 @@ function commonPrefixLength(a: string[], b: string[]): number {
     n++;
   }
   return n;
+}
+
+/** Convert a path array to a dot-separated key. `[]` → `""`, `["a","b"]` → `"a.b"` */
+function pathToKey(path: string[]): string {
+  return path.join(".");
+}
+
+/** Convert a dot-separated key back to a path array. `""` → `[]`, `"a.b"` → `["a","b"]` */
+function keyToPath(key: string): string[] {
+  return key ? key.split(".") : [];
 }
 
 /** Write `value` to the nearest layer that owns `key`, or to the leaf layer. */
@@ -310,8 +320,9 @@ export class StorySession {
   private async runLoop(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
     // Resume from saved position: start at the parent of the recorded path so
     // the first iteration enters the saved section through normal enter logic.
-    // `null` → enter root; `[]` → enter root; `["a"]` → enter "a" from root.
-    const savedPath = this.data.currentPath?.slice() ?? null;
+    // `null` → enter root; `""` → enter root; `"a"` → enter "a" from root.
+    const savedKey = this.data.currentPath;
+    const savedPath: string[] | null = savedKey !== null ? keyToPath(savedKey) : null;
     let currentPath: string[] | null = savedPath && savedPath.length > 0 ? savedPath.slice(0, -1) : null;
     let targetPath: string[] | null = savedPath ?? [];
     // When resuming, skip initSection on the first entry to preserve saved scope.
@@ -327,7 +338,7 @@ export class StorySession {
             commonPrefixLength(currentPath, targetPath) === currentPath.length))
       ) {
         const nextPath: string[] = currentPath ? targetPath.slice(0, currentPath.length + 1) : [];
-        this.data.currentPath = nextPath;
+        this.data.currentPath = pathToKey(nextPath);
         if (resuming) {
           resuming = false;
         } else {
