@@ -31,7 +31,10 @@ function createPrompt(md: MarkdownIt): StoryPrompt {
           if (type === "number") {
             inputReplies[name] = await number({ message: name, default: Number(value) }, { signal: controller.signal });
           } else if (type === "boolean") {
-            inputReplies[name] = await confirmPrompt({ message: name, default: Boolean(value) }, { signal: controller.signal });
+            inputReplies[name] = await confirmPrompt(
+              { message: name, default: Boolean(value) },
+              { signal: controller.signal },
+            );
           } else {
             inputReplies[name] = await input({ message: name, default: String(value) }, { signal: controller.signal });
           }
@@ -75,6 +78,9 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
     readline.emitKeypressEvents(process.stdin);
     process.stdin.on("keypress", (_str, key) => {
       if (key?.name === "escape" && activeController) {
+        // Pause stdin before aborting so the internal readline cleanup
+        // doesn't leave a stale flowing stream competing with the next prompt.
+        process.stdin.pause();
         activeController.abort();
         activeController = null;
       }
@@ -91,14 +97,20 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
           return await prompt(props);
         } catch (err) {
           if (err instanceof Error && err.name === "AbortPromptError") {
+            // @inquirer/prompts internal readline cleanup may still be
+            // in-flight when the AbortPromptError is caught. Deferring by
+            // one event-loop tick lets rl.close() / setRawMode(false) finish,
+            // then we resume stdin for the next prompt.
+            await new Promise((r) => setImmediate(r));
+            process.stdin.resume();
             const action = await menu.prompt();
             restart = await menu.handle(action);
             if (restart) {
               return { type: "end" };
             }
-          } else {
-            throw err;
+            continue;
           }
+          throw err;
         }
       }
     };
