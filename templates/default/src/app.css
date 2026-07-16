@@ -29,6 +29,14 @@
     @apply my-4 first:mt-0 text-xl;
   }
 
+  .scene-form ol {
+    @apply pl-4 list-decimal;
+  }
+
+  .scene-form ul {
+    @apply pl-4 list-disc;
+  }
+
   .scene-form pre {
     @apply w-fit max-w-full px-4 py-2.5 border border-red-200 bg-red-100 rounded-md font-mono overflow-auto;
   }
