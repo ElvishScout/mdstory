@@ -9,6 +9,7 @@
   let options: TemplateOptions | undefined = $state();
   let headerVisible: boolean = $state(true);
   let playerRef: StoryPlayer | null = $state(null);
+  let loadInputRef: HTMLInputElement | null = $state(null);
 
   let lastScrollY = 0;
 
@@ -48,7 +49,43 @@
 
   function handleSaveClick() {
     const saved = playerRef?.save();
-    console.log(saved);
+    if (!saved) {
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(saved, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${story?.title ?? "save"}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleLoadClick() {
+    loadInputRef?.click();
+  }
+
+  function handleLoadFileChange(ev: Event) {
+    const input = ev.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        playerRef?.load(data);
+      } catch {
+        // Ignore invalid save files
+      }
+    };
+    reader.readAsText(file);
   }
 </script>
 
@@ -69,9 +106,19 @@
         >
           Save
         </button>
-        <button class="ml-4 text-lg text-red-600 hover:text-red-400 active:text-red-300 underline cursor-pointer">
+        <button
+          class="ml-4 text-lg text-red-600 hover:text-red-400 active:text-red-300 underline cursor-pointer"
+          onclick={handleLoadClick}
+        >
           Load
         </button>
+        <input
+          bind:this={loadInputRef}
+          class="hidden"
+          type="file"
+          accept=".json,application/json"
+          onchange={handleLoadFileChange}
+        />
       </div>
     {/if}
   {/if}

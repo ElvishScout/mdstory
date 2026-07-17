@@ -50,13 +50,13 @@
 
   $effect(() => {
     const timer = setTimeout(() => {
-      if (session) {
-        return;
+      if (resolver) {
+        resolver({ type: "end" });
+        resolver = null;
       }
 
       session = story.session();
       session.play(prompt, { adapter: "html", debug: options.debug }).then(() => {
-        session = null;
         if (messageBuffer.length) {
           messageGroups.push(messageBuffer);
           messageBuffer = [];
