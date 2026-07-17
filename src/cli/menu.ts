@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import { select, input } from "@inquirer/prompts";
-import type { StorySession } from "../index.js";
 
 // ── types ───────────────────────────────────────────────────────────
 
@@ -34,20 +33,30 @@ function toChoices(items: MenuItem[]): { name: string; value: string }[] {
 
 // ── GameMenu ────────────────────────────────────────────────────────
 
+/** Session operations the menu delegates to its owner (the play loop). */
+export interface GameMenuActions {
+  /** Returns the active session's wrapped save data. */
+  save(): any;
+  /** Prepares a replacement session from loaded save data. */
+  load(data: any): void;
+}
+
 /**
  * In-game menu shown when the player presses Escape.
  *
  * Built around a tree of {@link MenuItem} nodes so that multi-level menus
  * can be added later without changing the navigation or dispatch logic.
+ * Owns only UI and dispatch — session lifecycle stays with the caller,
+ * behind {@link GameMenuActions}.
  *
  * Default items: **Save** / **Load** / **Return**.
  */
 export class GameMenu {
-  private session: StorySession;
+  private actions: GameMenuActions;
   private items: MenuItem[];
 
-  constructor(session: StorySession, items?: MenuItem[]) {
-    this.session = session;
+  constructor(actions: GameMenuActions, items?: MenuItem[]) {
+    this.actions = actions;
     this.items = items ?? GameMenu.defaultItems();
   }
 
@@ -123,7 +132,7 @@ export class GameMenu {
     if (!path) {
       return false;
     }
-    const data = this.session.save();
+    const data = this.actions.save();
     fs.writeFileSync(path, JSON.stringify(data, null, 2), "utf-8");
     console.log("Progress saved.");
     return false;
@@ -141,7 +150,7 @@ export class GameMenu {
     try {
       const raw = fs.readFileSync(path, "utf-8");
       const data = JSON.parse(raw);
-      this.session.load(data);
+      this.actions.load(data);
       console.log("Progress loaded.");
       return true;
     } catch {
