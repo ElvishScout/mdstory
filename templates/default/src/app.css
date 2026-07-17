@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @layer custom {
+  :root {
+    @apply text-[14px] md:text-[16px];
+  }
+
   * {
     @apply outline-none;
   }
@@ -18,15 +22,15 @@
   }
 
   .scene-form h1 {
-    @apply my-8 first:mt-0 text-3xl text-center;
+    @apply my-8 text-3xl text-center;
   }
 
   .scene-form h2 {
-    @apply my-6 first:mt-0 text-2xl;
+    @apply my-6 text-2xl;
   }
 
   .scene-form h3 {
-    @apply my-4 first:mt-0 text-xl;
+    @apply my-4 text-xl;
   }
 
   .scene-form ol {
