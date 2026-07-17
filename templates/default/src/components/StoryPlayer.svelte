@@ -1,7 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import type { PromptProps, PromptResult, Story, StoryPrompt } from "../../../../src";
-  import { Section } from "../../../../src";
+  import type { PromptProps, PromptResult, Section, Story, StoryPrompt, StorySession } from "../../../../src";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "../lib/utils";
   import type { TemplateOptions } from "../types";
@@ -27,6 +26,7 @@
   let lastFormRef: HTMLFormElement | null = $state(null);
   let lastCoverRef: HTMLDivElement | null = $state(null);
 
+  let session: StorySession | null = null;
   let resolver: ((result: PromptResult) => void) | null = null;
 
   // Scroll to latest scene + play cover animation when scenes change
@@ -50,7 +50,13 @@
 
   $effect(() => {
     const timer = setTimeout(() => {
-      story.play(prompt, { adapter: "html", debug: options.debug }).then(() => {
+      if (session) {
+        return;
+      }
+
+      session = story.session();
+      session.play(prompt, { adapter: "html", debug: options.debug }).then(() => {
+        session = null;
         if (messageBuffer.length) {
           messageGroups.push(messageBuffer);
           messageBuffer = [];
@@ -128,6 +134,14 @@
   function handleFormSubmit(ev: SubmitEvent) {
     ev.preventDefault();
     resolveForm(ev.currentTarget as HTMLFormElement, ev.submitter);
+  }
+
+  export function save() {
+    return session?.save() ?? null;
+  }
+
+  export function load(data: any) {
+    session?.load(data);
   }
 </script>
 

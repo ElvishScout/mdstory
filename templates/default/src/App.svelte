@@ -8,6 +8,7 @@
   let story: Story | undefined = $state();
   let options: TemplateOptions | undefined = $state();
   let headerVisible: boolean = $state(true);
+  let playerRef: StoryPlayer | null = $state(null);
 
   let lastScrollY = 0;
 
@@ -44,19 +45,33 @@
       headerVisible = false;
     }
   }
+
+  function handleSaveClick() {
+    const saved = playerRef?.save();
+    console.log(saved);
+  }
 </script>
 
 <div class="relative min-h-screen pb-[33vh] flex flex-col *:grow">
   {#if story}
     <div class="px-2 md:px-12">
-      <StoryPlayer {story} {options} />
+      <StoryPlayer {story} {options} bind:this={playerRef} />
     </div>
     {#if options?.showHeader}
       <div
-        class="fixed px-2 md:px-12 py-2 left-0 right-0 top-0 bg-white border-b-2 border-red-500 z-20 transition-transform
+        class="fixed flex px-4 md:px-14 py-2 left-0 right-0 top-0 bg-white border-b-2 border-red-700 z-20 transition-transform
           {!headerVisible ? '-translate-y-full' : ''}"
       >
-        <p class="text-2xl">Header</p>
+        <p class="text-xl mr-auto text-nowrap overflow-hidden text-ellipsis">{story.title}</p>
+        <button
+          class="ml-4 text-lg text-red-600 hover:text-red-400 active:text-red-300 underline cursor-pointer"
+          onclick={handleSaveClick}
+        >
+          Save
+        </button>
+        <button class="ml-4 text-lg text-red-600 hover:text-red-400 active:text-red-300 underline cursor-pointer">
+          Load
+        </button>
       </div>
     {/if}
   {/if}
