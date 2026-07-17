@@ -17,56 +17,56 @@
     @apply overflow-auto;
   }
 
-  .scene-form {
+  .scene form {
     @apply text-lg space-y-2;
   }
 
-  .scene-form h1 {
+  .scene h1 {
     @apply my-8 text-3xl text-center;
   }
 
-  .scene-form h2 {
+  .scene h2 {
     @apply my-6 text-2xl;
   }
 
-  .scene-form h3 {
+  .scene h3 {
     @apply my-4 text-xl;
   }
 
-  .scene-form ol {
+  .scene ol {
     @apply pl-4 list-decimal;
   }
 
-  .scene-form ul {
+  .scene ul {
     @apply pl-4 list-disc;
   }
 
-  .scene-form pre {
+  .scene pre {
     @apply w-fit max-w-full px-4 py-2.5 border border-red-200 bg-red-100 rounded-md font-mono overflow-auto;
   }
 
-  .scene-form code {
+  .scene code {
     @apply bg-red-100 px-1.5 py-0.5 rounded font-mono;
   }
 
-  .scene-form pre code {
+  .scene pre code {
     @apply bg-inherit p-0 py-0 rounded-none;
   }
 
-  .scene-form blockquote {
+  .scene blockquote {
     @apply w-fit px-4 py-2.5 bg-red-100 border-l-4 border-red-600 rounded-md;
   }
 
-  .scene-form button {
+  .scene button {
     @apply mx-0.5 text-red-600 underline cursor-pointer;
   }
-  .scene-form button:hover:not(:disabled) {
+  .scene button:hover:not(:disabled) {
     @apply text-red-400;
   }
-  .scene-form button:active:not(:disabled) {
+  .scene button:active:not(:disabled) {
     @apply text-red-300;
   }
-  .scene-form button:disabled {
+  .scene button:disabled {
     @apply text-red-600 cursor-default;
   }
 }

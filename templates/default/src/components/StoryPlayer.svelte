@@ -48,25 +48,6 @@
     });
   });
 
-  const prompt: StoryPrompt = async (message) => {
-    if (!message.inputs.length && !message.navs.length) {
-      if (message.text) {
-        messageBuffer.push(message);
-      }
-
-      resolver = null;
-      return { type: "continue" };
-    }
-
-    messageBuffer.push(message);
-    messageGroups.push(messageBuffer);
-    messageBuffer = [];
-
-    return new Promise<PromptResult>((resolve) => {
-      resolver = resolve;
-    });
-  };
-
   $effect(() => {
     const timer = setTimeout(() => {
       story.play(prompt, { adapter: "html", debug: options.debug }).then(() => {
@@ -87,6 +68,25 @@
       }
     };
   });
+
+  const prompt: StoryPrompt = async (message) => {
+    if (!message.inputs.length && !message.navs.length) {
+      if (message.text) {
+        messageBuffer.push(message);
+      }
+
+      resolver = null;
+      return { type: "continue" };
+    }
+
+    messageBuffer.push(message);
+    messageGroups.push(messageBuffer);
+    messageBuffer = [];
+
+    return new Promise<PromptResult>((resolve) => {
+      resolver = resolve;
+    });
+  };
 
   function resolveForm(form: HTMLFormElement, submitter?: HTMLElement | null) {
     if (resolver) {
@@ -141,18 +141,17 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="px-2 md:px-12" onclick={handlePlayerClick}>
+<div onclick={handlePlayerClick}>
   {#each messageGroups as group, i}
     {@const enabled = i === messageGroups.length - 1}
     <div
-      class="scene-container relative px-2 pt-8 first:pt-4 md:first:pt-8 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden {!enabled
-        ? 'opacity-50'
-        : ''}"
+      class="scene relative px-2 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden
+        {options.showHeader ? 'pt-12 not-md:first:pt-8' : 'pt-8 not-md:first:pt-4'}
+        {!enabled ? 'opacity-50' : ''}"
       bind:this={lastSceneRef}
     >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <form
-        class="scene-form"
         bind:this={lastFormRef}
         onkeydown={handleFormKeyDown}
         onsubmit={enabled ? handleFormSubmit : (ev) => ev.preventDefault()}
@@ -163,7 +162,7 @@
       </form>
       {#if enabled}
         <div
-          class="scene-cover absolute left-0 right-0 top-full h-[200%] bg-linear-to-b from-transparent via-white to-white z-10"
+          class="absolute left-0 right-0 top-full h-[200%] bg-linear-to-b from-transparent via-white to-white z-10"
           bind:this={lastCoverRef}
         ></div>
       {/if}
