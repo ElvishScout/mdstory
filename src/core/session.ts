@@ -31,7 +31,10 @@ export type PromptResultData = { target?: string | null; inputs?: Scope } | Form
 /**
  * Normalised result returned by the prompt function after each render.
  */
-export type PromptResult = { type: "end" } | { type: "continue"; data?: PromptResultData };
+export type PromptResult =
+  | { type: "end" }
+  | { type: "continue"; data?: PromptResultData }
+  | { type: "abort"; reason?: StorySessionAbortReason };
 
 export type StoryPrompt = (props: PromptProps) => Promise<PromptResult>;
 
@@ -237,6 +240,8 @@ export class StorySession {
   ): string[] | null {
     if (rawResult.type === "end") {
       return null;
+    } else if (rawResult.type === "abort") {
+      throw new StorySessionAbortError(rawResult.reason);
     }
 
     let result: { target?: string | null; inputs?: Scope };

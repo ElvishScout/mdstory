@@ -98,7 +98,7 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
           const action = await menu.prompt();
           const restart = await menu.handle(action);
           if (restart) {
-            throw new StorySessionAbortError("restart");
+            return { type: "abort", reason: "restart" };
           }
           continue;
         }

@@ -2,12 +2,9 @@
   import { tick } from "svelte";
   import type { PromptProps, PromptResult, Section, Story, StoryPrompt, StorySession } from "../../../../src";
   import { StorySessionAbortError } from "../../../../src";
-  import FcInput from "./FcInput.svelte";
+  import "./FcInput.svelte";
   import { processHtml } from "../lib/utils";
   import type { TemplateOptions } from "../types";
-
-  // Keep reference to prevent tree-shaking of the custom element registration
-  void FcInput;
 
   function collectStyles(section: Section): string {
     return section.stylesheets.join("") + section.children.map(collectStyles).join("");
@@ -30,7 +27,6 @@
   let session: StorySession | null = null;
   let promptControls: {
     resolve: (result: PromptResult) => void;
-    reject: (reason?: unknown) => void;
   } | null = null;
 
   // Saved session data used to restart the session on load().
@@ -38,7 +34,7 @@
 
   function abortSession() {
     if (promptControls) {
-      promptControls.reject(new StorySessionAbortError("restart"));
+      promptControls.resolve({ type: "abort", reason: "restart" });
       promptControls = null;
     }
   }
@@ -114,8 +110,8 @@
     messageGroups.push(messageBuffer);
     messageBuffer = [];
 
-    return new Promise<PromptResult>((resolve, reject) => {
-      promptControls = { resolve, reject };
+    return new Promise<PromptResult>((resolve) => {
+      promptControls = { resolve };
     });
   };
 
