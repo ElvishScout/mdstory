@@ -4,6 +4,18 @@ import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 import * as serde from "./serde.js";
 
+export type StorySessionAbortReason = "restart";
+
+export class StorySessionAbortError extends Error {
+  reason?: StorySessionAbortReason;
+
+  constructor(reason?: StorySessionAbortReason, message?: string) {
+    super(message);
+    this.name = "SessionAbortError";
+    this.reason = reason;
+  }
+}
+
 export interface StorySessionData {
   scopes: Record<string, Scope>;
   /** `null` = nowhere (session not started / finished); `""` = root; `"a.b"` = nested section. */
@@ -302,7 +314,8 @@ export class StorySession {
     }
 
     const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
-    return this.ingestPrompt(await prompt({ ...renderResult, type: "section" }), renderResult, path);
+    const promptResult = await prompt({ ...renderResult, type: "section" });
+    return this.ingestPrompt(promptResult, renderResult, path);
   }
 
   /** Fire onLeave for a single section. */
@@ -375,10 +388,5 @@ export class StorySession {
   /** Saves session data to wrapped object */
   save(): any {
     return structuredClone(serde.wrap(this.data));
-  }
-
-  /** Loads session data from wrapped object */
-  load(data: any) {
-    this.data = serde.unwrap(structuredClone(data));
   }
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import type { PromptProps, PromptResult, Section, Story, StoryPrompt, StorySession } from "../../../../src";
+  import { StorySessionAbortError } from "../../../../src";
   import FcInput from "./FcInput.svelte";
   import { processHtml } from "../lib/utils";
   import type { TemplateOptions } from "../types";
@@ -27,7 +28,43 @@
   let lastCoverRef: HTMLDivElement | null = $state(null);
 
   let session: StorySession | null = null;
-  let resolver: ((result: PromptResult) => void) | null = null;
+  let promptControls: {
+    resolve: (result: PromptResult) => void;
+    reject: (reason?: unknown) => void;
+  } | null = null;
+
+  // Saved session data used to restart the session on load().
+  let savedData: any = $state(null);
+
+  function abortSession() {
+    if (promptControls) {
+      promptControls.reject(new StorySessionAbortError("restart"));
+      promptControls = null;
+    }
+  }
+
+  function startSession(data?: any) {
+    abortSession();
+
+    messageGroups = [];
+    messageBuffer = [];
+
+    session = story.session(data ?? undefined);
+    session
+      .play(prompt, { adapter: "html", debug: options.debug })
+      .then(() => {
+        if (messageBuffer.length) {
+          messageGroups.push(messageBuffer);
+          messageBuffer = [];
+        }
+      })
+      .catch((err) => {
+        if (err instanceof StorySessionAbortError) {
+          return;
+        }
+        throw err;
+      });
+  }
 
   // Scroll to latest scene + play cover animation when scenes change
   $effect(() => {
@@ -49,29 +86,17 @@
   });
 
   $effect(() => {
-    const timer = setTimeout(() => {
-      if (resolver) {
-        resolver({ type: "end" });
-        resolver = null;
-      }
+    const data = savedData;
 
-      session = story.session();
-      session.play(prompt, { adapter: "html", debug: options.debug }).then(() => {
-        if (messageBuffer.length) {
-          messageGroups.push(messageBuffer);
-          messageBuffer = [];
-        }
-      });
+    const timer = setTimeout(() => {
+      startSession(data ?? undefined);
       document.addEventListener("keydown", handleDocumentKeyDown);
     }, 200);
 
     return () => {
       clearTimeout(timer);
       document.removeEventListener("keydown", handleDocumentKeyDown);
-      if (resolver) {
-        resolver({ type: "end" });
-        resolver = null;
-      }
+      abortSession();
     };
   });
 
@@ -81,7 +106,7 @@
         messageBuffer.push(message);
       }
 
-      resolver = null;
+      promptControls = null;
       return { type: "continue" };
     }
 
@@ -89,16 +114,16 @@
     messageGroups.push(messageBuffer);
     messageBuffer = [];
 
-    return new Promise<PromptResult>((resolve) => {
-      resolver = resolve;
+    return new Promise<PromptResult>((resolve, reject) => {
+      promptControls = { resolve, reject };
     });
   };
 
   function resolveForm(form: HTMLFormElement, submitter?: HTMLElement | null) {
-    if (resolver) {
+    if (promptControls) {
       const formData = new FormData(form, submitter);
-      resolver({ type: "continue", data: formData });
-      resolver = null;
+      promptControls.resolve({ type: "continue", data: formData });
+      promptControls = null;
     }
   }
 
@@ -141,7 +166,7 @@
   }
 
   export function load(data: any) {
-    session?.load(data);
+    savedData = data;
   }
 </script>
 

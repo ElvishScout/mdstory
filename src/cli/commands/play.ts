@@ -1,8 +1,8 @@
 import readline from "node:readline";
 import { input, confirm as confirmPrompt, number, select } from "@inquirer/prompts";
 import type MarkdownIt from "markdown-it";
-import type { StoryPrompt, Scope } from "../../index.js";
-import { fromPath } from "../../index.js";
+import type { StoryPrompt, Scope, StorySession } from "../../index.js";
+import { fromPath, StorySessionAbortError } from "../../index.js";
 import { createMarkdownRenderer } from "../markdown.js";
 import { GameMenu } from "../menu.js";
 
@@ -68,10 +68,44 @@ function createPrompt(md: MarkdownIt): StoryPrompt {
 export async function playCommand(storyPath: string, options: PlayOptions): Promise<void> {
   const story = await fromPath(storyPath);
   const md = createMarkdownRenderer();
-  const session = story.session();
-  const menu = new GameMenu(session);
+
+  let savedData: any | null = null;
+  let session: StorySession | null = null;
+
+  const menu = new GameMenu({
+    save() {
+      return session?.save();
+    },
+    load(data) {
+      savedData = data;
+    },
+  });
 
   const prompt = createPrompt(md);
+
+  const wrappedPrompt: StoryPrompt = async (props) => {
+    while (true) {
+      try {
+        return await prompt(props);
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortPromptError") {
+          // @inquirer/prompts internal readline cleanup may still be
+          // in-flight when the AbortPromptError is caught. Deferring by
+          // one event-loop tick lets rl.close() / setRawMode(false) finish,
+          // then we resume stdin for the next prompt.
+          await new Promise((r) => setImmediate(r));
+          process.stdin.resume();
+          const action = await menu.prompt();
+          const restart = await menu.handle(action);
+          if (restart) {
+            throw new StorySessionAbortError("restart");
+          }
+          continue;
+        }
+        throw err;
+      }
+    }
+  };
 
   // Monitor ESC key to cancel the active inquirer prompt.
   if (process.stdin.isTTY) {
@@ -89,36 +123,18 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
 
   // Outer loop — restarts the session when the player loads a save.
   while (true) {
-    let restart = false;
-
-    const wrappedPrompt: StoryPrompt = async (props) => {
-      while (true) {
-        try {
-          return await prompt(props);
-        } catch (err) {
-          if (err instanceof Error && err.name === "AbortPromptError") {
-            // @inquirer/prompts internal readline cleanup may still be
-            // in-flight when the AbortPromptError is caught. Deferring by
-            // one event-loop tick lets rl.close() / setRawMode(false) finish,
-            // then we resume stdin for the next prompt.
-            await new Promise((r) => setImmediate(r));
-            process.stdin.resume();
-            const action = await menu.prompt();
-            restart = await menu.handle(action);
-            if (restart) {
-              return { type: "end" };
-            }
-            continue;
-          }
-          throw err;
+    session = story.session(savedData ?? undefined);
+    try {
+      await session.play(wrappedPrompt, { adapter: "markdown", debug: options.debug });
+    } catch (err) {
+      if (err instanceof StorySessionAbortError) {
+        if (err.reason === "restart") {
+          continue;
         }
       }
-    };
-
-    await session.play(wrappedPrompt, { adapter: "markdown", debug: options.debug });
-
-    if (!restart) {
-      break;
+      throw err;
     }
+
+    break;
   }
 }

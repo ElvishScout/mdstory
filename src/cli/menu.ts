@@ -36,9 +36,9 @@ function toChoices(items: MenuItem[]): { name: string; value: string }[] {
 /** Session operations the menu delegates to its owner (the play loop). */
 export interface GameMenuActions {
   /** Returns the active session's wrapped save data. */
-  save(): any;
+  save(): any | Promise<any>;
   /** Prepares a replacement session from loaded save data. */
-  load(data: any): void;
+  load(data: any): void | Promise<void>;
 }
 
 /**
@@ -132,7 +132,7 @@ export class GameMenu {
     if (!path) {
       return false;
     }
-    const data = this.actions.save();
+    const data = await this.actions.save();
     fs.writeFileSync(path, JSON.stringify(data, null, 2), "utf-8");
     console.log("Progress saved.");
     return false;
@@ -150,7 +150,7 @@ export class GameMenu {
     try {
       const raw = fs.readFileSync(path, "utf-8");
       const data = JSON.parse(raw);
-      this.actions.load(data);
+      await this.actions.load(data);
       console.log("Progress loaded.");
       return true;
     } catch {

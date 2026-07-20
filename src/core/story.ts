@@ -4,6 +4,7 @@ import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
 import { normalizePath } from "./utils.js";
 import { PlayOptions, StoryPrompt, StorySession } from "./session.js";
+import { unwrap } from "./serde.js";
 
 /**
  * Story runtime containing core playback logic.
@@ -100,8 +101,8 @@ export class Story {
   }
 
   /** Creates and returns a new {@link StorySession} for this story. */
-  session(): StorySession {
-    return new StorySession(this);
+  session(savedData?: any): StorySession {
+    return new StorySession(this, savedData ? unwrap(structuredClone(savedData)) : undefined);
   }
 
   /**
