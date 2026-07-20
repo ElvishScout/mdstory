@@ -4,6 +4,7 @@ import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
 import { normalizePath } from "./utils.js";
 import { PlayOptions, StoryPrompt, StorySession } from "./session.js";
+import type { StorySessionSavedData } from "./session.js";
 import { unwrap } from "./serde.js";
 
 /**
@@ -101,7 +102,7 @@ export class Story {
   }
 
   /** Creates and returns a new {@link StorySession} for this story. */
-  session(savedData?: any): StorySession {
+  session(savedData?: StorySessionSavedData): StorySession {
     return new StorySession(this, savedData ? unwrap(structuredClone(savedData)) : undefined);
   }
 

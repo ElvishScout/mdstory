@@ -1,7 +1,7 @@
 import readline from "node:readline";
 import { input, confirm as confirmPrompt, number, select } from "@inquirer/prompts";
 import type MarkdownIt from "markdown-it";
-import type { StoryPrompt, Scope, StorySession } from "../../index.js";
+import type { StoryPrompt, Scope, StorySession, StorySessionSavedData } from "../../index.js";
 import { fromPath, StorySessionAbortError } from "../../index.js";
 import { createMarkdownRenderer } from "../markdown.js";
 import { GameMenu } from "../menu.js";
@@ -69,12 +69,12 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
   const story = await fromPath(storyPath);
   const md = createMarkdownRenderer();
 
-  let savedData: any | null = null;
+  let savedData: StorySessionSavedData | null = null;
   let session: StorySession | null = null;
 
   const menu = new GameMenu({
     save() {
-      return session?.save();
+      return session!.save();
     },
     load(data) {
       savedData = data;

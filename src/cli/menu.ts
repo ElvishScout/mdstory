@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { select, input } from "@inquirer/prompts";
+import type { StorySessionSavedData } from "../core/session.js";
 
 // ── types ───────────────────────────────────────────────────────────
 
@@ -36,9 +37,9 @@ function toChoices(items: MenuItem[]): { name: string; value: string }[] {
 /** Session operations the menu delegates to its owner (the play loop). */
 export interface GameMenuActions {
   /** Returns the active session's wrapped save data. */
-  save(): any | Promise<any>;
+  save(): StorySessionSavedData | Promise<StorySessionSavedData>;
   /** Prepares a replacement session from loaded save data. */
-  load(data: any): void | Promise<void>;
+  load(data: StorySessionSavedData): void | Promise<void>;
 }
 
 /**

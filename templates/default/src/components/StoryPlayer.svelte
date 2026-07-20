@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import type { PromptProps, PromptResult, Section, Story, StoryPrompt, StorySession } from "../../../../src";
+  import type { PromptProps, PromptResult, Section, Story, StoryPrompt, StorySession, StorySessionSavedData } from "../../../../src";
   import { StorySessionAbortError } from "../../../../src";
   import "./FcInput.svelte";
   import { processHtml } from "../lib/utils";
@@ -30,7 +30,7 @@
   } | null = null;
 
   // Saved session data used to restart the session on load().
-  let savedData: any = $state(null);
+  let savedData: StorySessionSavedData | null = $state(null);
 
   function abortSession() {
     if (promptControls) {
@@ -157,11 +157,11 @@
     resolveForm(ev.currentTarget as HTMLFormElement, ev.submitter);
   }
 
-  export function save() {
+  export function save(): StorySessionSavedData | null {
     return session?.save() ?? null;
   }
 
-  export function load(data: any) {
+  export function load(data: StorySessionSavedData) {
     savedData = data;
   }
 </script>

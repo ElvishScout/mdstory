@@ -1,3 +1,9 @@
+/** JSON types */
+export type JsonPrimitive = number | string | boolean | null;
+export type JsonArray = JsonValue[];
+export type JsonObject = { [key: string]: JsonValue };
+export type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+
 /** An object of variable values by their names. */
 export type Scope = Record<string, any>;
 

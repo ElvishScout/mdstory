@@ -1,4 +1,4 @@
-import type { Scope } from "./definitions.js";
+import type { JsonValue, Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
@@ -20,6 +20,14 @@ export interface StorySessionData {
   scopes: Record<string, Scope>;
   /** `null` = nowhere (session not started / finished); `""` = root; `"a.b"` = nested section. */
   currentPath: string | null;
+}
+
+/**
+ * Serialized session data as returned by {@link StorySession.save}.
+ * Safe to pass to `JSON.stringify` and to `Story.session()` / `StorySession`.
+ */
+export interface StorySessionSavedData extends StorySessionData {
+  scopes: Record<string, Record<string, JsonValue>>;
 }
 
 export interface PromptProps extends RenderResult {
@@ -391,7 +399,7 @@ export class StorySession {
   }
 
   /** Saves session data to wrapped object */
-  save(): any {
+  save(): StorySessionSavedData {
     return structuredClone(serde.wrap(this.data));
   }
 }
