@@ -185,7 +185,7 @@
     {@const enabled = i === messageGroups.length - 1}
     <div
       class="scene relative px-2 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden
-        {options.showHeader ? 'pt-12 not-md:first:pt-8' : 'pt-8 not-md:first:pt-4'}
+        {options.showHeader ? 'pt-12' : 'pt-8 not-md:first:pt-4'}
         {!enabled ? 'opacity-50' : ''}"
       bind:this={lastSceneRef}
     >
