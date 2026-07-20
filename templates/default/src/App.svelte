@@ -1,8 +1,7 @@
 <script lang="ts">
   import { type Story, fromParsed } from "../../../src";
-  import { parseKeyValuePairs } from "../../../src/core/utils";
+  import { parseKeyValuePairs } from "../../../src/utils/object";
   import StoryPlayer from "./components/StoryPlayer.svelte";
-  import { deepMerge } from "./lib/utils";
   import type { TemplateOptions } from "./types";
 
   let story: Story | undefined = $state();
@@ -17,9 +16,8 @@
     const originalTitle = document.title;
     const searchParams = new URLSearchParams(location.search);
 
-    const paramOptions = parseKeyValuePairs(searchParams.entries());
     const templateOptions = typeof window.TEMPLATE_OPTIONS === "string" ? {} : window.TEMPLATE_OPTIONS;
-    options = deepMerge(templateOptions, paramOptions);
+    options = parseKeyValuePairs(searchParams.entries(), structuredClone(templateOptions));
 
     const parsedStory = typeof window.PARSED_STORY === "string" ? window.PLACEHOLDER_STORY : window.PARSED_STORY;
     fromParsed(parsedStory).then((s) => {

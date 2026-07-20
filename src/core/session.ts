@@ -2,7 +2,7 @@ import type { JsonValue, Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
-import * as serde from "./serde.js";
+import * as serde from "../utils/serde.js";
 
 export type StorySessionAbortReason = "restart";
 

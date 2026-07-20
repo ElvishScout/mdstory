@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { parseKeyValuePairs, StableIdGenerator } from "../src/core/utils.js";
+import { parseKeyValuePairs } from "../src/utils/object.js";
+import { StableIdGenerator } from "../src/utils/id.js";
 
 // ---------------------------------------------------------------------------
 // StableIdGenerator unit tests

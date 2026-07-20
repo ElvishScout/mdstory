@@ -1,11 +1,13 @@
-import { escapeHtml } from "./utils.js";
-
 /** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";
 
 type HtmlAttrs = Record<string, string | boolean | undefined>;
 
-const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => {
+function escapeHtml(text: string) {
+  return text.replace(/[<>&'"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+}
+
+function createElementHtml(tag: string, attrs: HtmlAttrs, children?: string) {
   // prettier-ignore
   const voidTags = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
@@ -34,9 +36,9 @@ const createElementHtml = (tag: string, attrs: HtmlAttrs, children?: string) => 
     return `<${tag} ${attrText}>`;
   }
   return `<${tag} ${attrText}>${children ?? ""}</${tag}>`;
-};
+}
 
-const createInputHtml = ({ name, type, value }: { name: string; type: InputType; value: any }) => {
+function createInputHtml({ name, type, value }: { name: string; type: InputType; value: any }) {
   const inputType = type === "boolean" ? "checkbox" : "text";
   const inputAttrs: HtmlAttrs = {
     name,
@@ -47,16 +49,16 @@ const createInputHtml = ({ name, type, value }: { name: string; type: InputType;
   };
 
   return createElementHtml("input", inputAttrs);
-};
+}
 
-const createSubmitButtonHtml = ({ target, children }: { target: string; children: string }) => {
+function createSubmitButtonHtml({ target, children }: { target: string; children: string }) {
   const buttonAttrs: HtmlAttrs = {
     name: "@target",
     type: "submit",
     value: target,
   };
   return createElementHtml("button", buttonAttrs, children);
-};
+}
 
 /** Custom render adapter for generating output in different formats. */
 export interface RenderAdapter {

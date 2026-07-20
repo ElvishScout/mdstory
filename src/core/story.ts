@@ -2,10 +2,10 @@ import type { Metadata } from "./definitions.js";
 import { Section } from "./section.js";
 import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
-import { normalizePath } from "./utils.js";
+import { normalizePath } from "../utils/path.js";
 import { PlayOptions, StoryPrompt, StorySession } from "./session.js";
 import type { StorySessionSavedData } from "./session.js";
-import { unwrap } from "./serde.js";
+import { unwrap } from "../utils/serde.js";
 
 /**
  * Story runtime containing core playback logic.

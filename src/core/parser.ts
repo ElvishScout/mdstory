@@ -5,7 +5,10 @@ import pluginAttrs from "markdown-it-attrs";
 
 import { MetadataSchema, SectionHooksSchema } from "./schema.js";
 import type { Metadata } from "./definitions.js";
-import { loadSource, mergeScripts, normalizePath, StableIdGenerator } from "./utils.js";
+import { loadSource } from "../utils/path.js";
+import { mergeScripts } from "../utils/script.js";
+import { normalizePath } from "../utils/path.js";
+import { StableIdGenerator } from "../utils/id.js";
 
 interface Heading {
   depth: number;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { wrap, unwrap } from "../src/core/serde.js";
+import { wrap, unwrap } from "../src/utils/serde.js";
 
 /** Full round-trip: wrap → JSON.stringify → JSON.parse → unwrap */
 function roundTrip(value: any) {
