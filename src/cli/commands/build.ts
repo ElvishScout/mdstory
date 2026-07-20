@@ -66,7 +66,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
     .replace('"__TEMPLATE_OPTIONS__"', JSON.stringify(templateOptions));
 
   // Write the output file
-  const outputPath = options.output ?? resolvedPath.replace(/\.[^.]+$/, "") + ".html";
+  const outputPath = options.output ? path.resolve(options.output) : resolvedPath.replace(/\.[^.]+$/, "") + ".html";
   await fs.writeFile(outputPath, html, "utf-8");
   console.log(`Generated: ${outputPath}`);
 
