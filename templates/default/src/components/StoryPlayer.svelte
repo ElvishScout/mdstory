@@ -86,7 +86,7 @@
   });
 
   $effect(() => {
-    const data = savedData;
+    const data = $state.snapshot(savedData);
 
     const timer = setTimeout(() => {
       startSession(data ?? undefined);
