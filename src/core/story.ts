@@ -2,7 +2,7 @@ import type { Metadata } from "./definitions.js";
 import { Section } from "./section.js";
 import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
-import { normalizePath, unwrap } from "../utils/index.js";
+import { normalizePath } from "../utils/index.js";
 import { PlayOptions, StoryPrompt, StorySession } from "./session.js";
 import type { StorySessionSavedData } from "./session.js";
 
@@ -102,7 +102,7 @@ export class Story {
 
   /** Creates and returns a new {@link StorySession} for this story. */
   session(savedData?: StorySessionSavedData): StorySession {
-    return new StorySession(this, savedData ? unwrap(structuredClone(savedData)) : undefined);
+    return savedData ? StorySession.fromSaved(this, savedData) : new StorySession(this);
   }
 
   /**

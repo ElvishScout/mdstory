@@ -2,7 +2,7 @@ import type { JsonValue, Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
-import { wrap } from "../utils/index.js";
+import { unwrap, wrap } from "../utils/index.js";
 
 export type StorySessionAbortReason = "restart";
 
@@ -138,6 +138,11 @@ export class StorySession {
         currentPath: null,
       };
     }
+  }
+
+  /** Creates a session restored from previously {@link StorySession.save saved} data. */
+  static fromSaved(story: Story, savedData: StorySessionSavedData): StorySession {
+    return new StorySession(story, unwrap(structuredClone(savedData)));
   }
 
   /** Collects scope layers from root to the given path. */
