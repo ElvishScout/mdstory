@@ -141,4 +141,17 @@ describe("parseKeyValuePairs", () => {
       navItems: [{ label: "Home", href: "/" }, { label: "About" }],
     });
   });
+
+  it("merges into an optional target object", () => {
+    const target = { existing: "value" };
+    const result = parseKeyValuePairs([["newKey", "newValue"]], target);
+    expect(result).toBe(target);
+    expect(result).toEqual({ existing: "value", newKey: "newValue" });
+  });
+
+  it("extends nested objects in the target", () => {
+    const target = { ui: { theme: "light" } };
+    const result = parseKeyValuePairs([["ui.fontSize", "14"]], target);
+    expect(result).toEqual({ ui: { theme: "light", fontSize: 14 } });
+  });
 });
