@@ -166,7 +166,7 @@ scope:
 
 无 `{{#nav}}` 的 Section 自动按深度优先前进到下一节。选中当前 Section 会先离开再重进（"刷新"）。
 
-### 输入与变量
+### 输入
 
 `input` 不会暂停故事；离开 Section 时所有输入与导航目标一并提交。变量自动写入拥有该 key 的最近 scope 层：
 
@@ -222,6 +222,32 @@ export default {
 你找到了 50 枚金币！
 {{/if}}
 ```
+
+## 作用域与变量
+
+MdStory 的变量存储在 **scope** 中。每个 Section 拥有一层 scope，文件根 Section 的 scope 来自 frontmatter；子 Section 的 scope 在每次进入时由 `data()` 初始化。
+
+从根到当前 Section 的 scope 形成层级。读取变量时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层，若找不到则写入当前 Section 自己的层。
+
+```markdown
+## 地下城 {#dungeon}
+
+<script>
+export default {
+  data() {
+    return { difficulty: 3 };
+  },
+  onEnter({ scope }) {
+    // 写入当前层
+    scope.entered = true;
+    // 向上查找并修改 root scope 中的 flags
+    scope.flags.dungeon = true;
+  },
+};
+</script>
+```
+
+> **注意**：scope 中不要包含名为 `$type` 的 key。MdStory 在存档/读档时内部使用 `$type` 标记特殊类型。
 
 ## 更多资源
 

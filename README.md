@@ -166,7 +166,7 @@ Multi-segment paths (containing `.`) are resolved: absolute from root → relati
 
 Sections with no `{{#nav}}` auto-advance depth-first. Selecting the current Section re-enters it (leave → parent → re-enter).
 
-### Input & Variables
+### Inputs
 
 Inputs are submitted together when leaving a Section. Values are written to the nearest scope layer that owns the key:
 
@@ -222,6 +222,32 @@ The chest is empty.
 You found 50 gold pieces!
 {{/if}}
 ```
+
+## Scope & Variables
+
+Variables in MdStory live in **scope**. Every Section has its own scope layer: the root Section's scope comes from frontmatter, and child Sections initialize their layer via `data()` on each entry.
+
+Scopes form a stack from root to the current Section. Reads walk up the stack and return the nearest matching key. Writes modify the layer that already owns the key, or the current Section's own layer if the key is not found.
+
+```markdown
+## The Dungeon {#dungeon}
+
+<script>
+export default {
+  data() {
+    return { difficulty: 3 };
+  },
+  onEnter({ scope }) {
+    // Write to the current layer
+    scope.entered = true;
+    // Look up and modify flags in the root scope
+    scope.flags.dungeon = true;
+  },
+};
+</script>
+```
+
+> **Note**: Do not use `$type` as a key in scope. MdStory reserves `$type` internally for save/load serialization of special types.
 
 ## More Resources
 
