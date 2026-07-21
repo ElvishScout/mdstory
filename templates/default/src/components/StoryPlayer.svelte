@@ -47,8 +47,17 @@
     }
   }
 
-  function startSession(data?: any) {
-    abortSession();
+  async function startSession(data?: StorySessionSavedData) {
+    if (session) {
+      abortSession();
+      // Wait for the previous play loop to finish before starting a new one,
+      // so that two sessions never race over shared DOM refs / state.
+      try {
+        await session.promise;
+      } catch {
+        // The previous session's error is already logged by its own catch.
+      }
+    }
 
     messageGroups = [];
     messageBuffer = [];
@@ -66,7 +75,7 @@
         if (err instanceof StorySessionAbortError) {
           return;
         }
-        throw err;
+        console.error("Story session failed:", err);
       });
   }
 

@@ -23,6 +23,11 @@ describe("StorySessionAbortError", () => {
     expect(err.reason).toBe("restart");
   });
 
+  it("supports the load abort reason", () => {
+    const err = new StorySessionAbortError("load");
+    expect(err.reason).toBe("load");
+  });
+
   it("reason defaults to undefined", () => {
     const err = new StorySessionAbortError();
     expect(err.reason).toBeUndefined();
@@ -44,6 +49,13 @@ async function makeStory(src: string) {
 }
 
 const SCRIPT = "<script>\nexport default {};\n</script>";
+const SCOPE_SCRIPT = `<script>
+export default {
+  data() {
+    return { count: 0 };
+  }
+};
+</script>`;
 
 describe("StorySession save / restore", () => {
   it("save() returns JSON-stringifiable data", async () => {
@@ -88,5 +100,47 @@ Some content.
 
     expect(saved2.scopes).toEqual(saved.scopes);
     expect(saved2.currentPath).toBe(saved.currentPath);
+  });
+
+  it("restored session is isolated from the original session", async () => {
+    const story = await makeStory(`\
+# Start
+${SCOPE_SCRIPT}
+
+Some content.
+`);
+    const session1 = story.session();
+    let calls = 0;
+    const prompt1 = async () => {
+      calls++;
+      if (calls === 1) {
+        return { type: "continue" as const, data: { inputs: { count: 42 } } };
+      }
+      return { type: "end" as const };
+    };
+    await session1.play(prompt1, { adapter: "markdown" });
+    const saved = session1.save();
+    expect(saved.scopes[""].count).toBe(42);
+
+    const session2 = story.session(saved);
+    const prompt2 = async () => ({ type: "continue" as const, data: { inputs: { count: 99 } } });
+    await session2.play(prompt2, { adapter: "markdown" });
+
+    expect(session2.save().scopes.Start.count).toBe(99);
+    expect(session1.save().scopes[""].count).toBe(42);
+    expect(session1.save().scopes.Start.count).toBe(0);
+  });
+
+  it("rejects play() when the prompt aborts", async () => {
+    const story = await makeStory(`\
+# Start
+${SCRIPT}
+
+Some content.
+`);
+    const session = story.session();
+    const prompt = async () => ({ type: "abort" as const, reason: "restart" as const });
+    await expect(session.play(prompt, { adapter: "markdown" })).rejects.toThrow(StorySessionAbortError);
+    expect(session.promise).toBeNull();
   });
 });

@@ -164,4 +164,31 @@ describe("parseKeyValuePairs", () => {
     const result = parseKeyValuePairs([["count", "0"] as [string, string]]);
     expect(result).toEqual({ count: 0 });
   });
+
+  it("treats keys with leading zeros as object properties, not array indices", () => {
+    const result = parseKeyValuePairs([
+      ["a.01", "first"],
+      ["a.02", "second"],
+    ]);
+    expect(result).toEqual({ a: { "01": "first", "02": "second" } });
+  });
+
+  it("skips prototype-polluting keys", () => {
+    const result = parseKeyValuePairs([
+      ["__proto__", "polluted"],
+      ["constructor", "polluted"],
+      ["prototype", "polluted"],
+      ["nested.__proto__.foo", "polluted"],
+      ["safe", "value"],
+    ]);
+    expect((result as any).__proto__).not.toBe("polluted");
+    expect((result as any).constructor).not.toBe("polluted");
+    expect((result as any).prototype).toBeUndefined();
+    expect(result).toEqual({ safe: "value" });
+  });
+
+  it("returns a null-prototype object when no target is provided", () => {
+    const result = parseKeyValuePairs([["foo", "bar"]]);
+    expect(Object.getPrototypeOf(result)).toBe(null);
+  });
 });

@@ -96,9 +96,9 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
           await new Promise((r) => setImmediate(r));
           process.stdin.resume();
           const action = await menu.prompt();
-          const restart = await menu.handle(action);
-          if (restart) {
-            return { type: "abort", reason: "restart" };
+          const shouldRecreate = await menu.handle(action);
+          if (shouldRecreate) {
+            return { type: "abort", reason: "load" };
           }
           continue;
         }
@@ -128,7 +128,11 @@ export async function playCommand(storyPath: string, options: PlayOptions): Prom
       await session.play(wrappedPrompt, { adapter: "markdown", debug: options.debug });
     } catch (err) {
       if (err instanceof StorySessionAbortError) {
+        if (err.reason === "load") {
+          continue;
+        }
         if (err.reason === "restart") {
+          savedData = null;
           continue;
         }
       }

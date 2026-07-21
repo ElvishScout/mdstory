@@ -3,8 +3,8 @@ import { Section } from "./section.js";
 import type { ParsedStory, ParseStoryOptions } from "./parser.js";
 import { parseStorySource, resolveParseOptions } from "./parser.js";
 import { normalizePath } from "../utils/index.js";
-import { PlayOptions, StoryPrompt, StorySession } from "./session.js";
-import type { StorySessionSavedData } from "./session.js";
+import { StorySession } from "./session.js";
+import type { PlayOptions, StoryPrompt, StorySessionSavedData } from "./session.js";
 
 /**
  * Story runtime containing core playback logic.

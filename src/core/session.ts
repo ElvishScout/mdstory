@@ -4,7 +4,7 @@ import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 import { unwrap, wrap } from "../utils/index.js";
 
-export type StorySessionAbortReason = "restart";
+export type StorySessionAbortReason = "restart" | "load";
 
 export class StorySessionAbortError extends Error {
   reason?: StorySessionAbortReason;

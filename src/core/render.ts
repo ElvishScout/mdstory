@@ -5,7 +5,7 @@ import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";
 
 import type { Scope } from "./definitions.js";
-import { htmlAdapter, markdownAdapter, RenderAdapter, type InputType } from "./adapter.js";
+import { htmlAdapter, markdownAdapter, type RenderAdapter, type InputType } from "./adapter.js";
 
 /** Rendering options. */
 export interface RenderOptions {
