@@ -1,5 +1,5 @@
 function toCamelCase(str: string): string {
-  return str.replace(/[-_]([a-zA-Z])/g, (_, char: string) => char.toUpperCase());
+  return str.replace(/[-_](\p{L})/gu, (_, char: string) => char.toUpperCase());
 }
 
 function coerceValue(value: string): string | number | boolean {

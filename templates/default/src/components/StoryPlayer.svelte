@@ -1,6 +1,14 @@
 <script lang="ts">
   import { tick } from "svelte";
-  import type { PromptProps, PromptResult, Section, Story, StoryPrompt, StorySession, StorySessionSavedData } from "../../../../src";
+  import type {
+    PromptProps,
+    PromptResult,
+    Section,
+    Story,
+    StoryPrompt,
+    StorySession,
+    StorySessionSavedData,
+  } from "../../../../src";
   import { StorySessionAbortError } from "../../../../src";
   import "./FcInput.svelte";
   import { processHtml } from "../lib/utils";
@@ -34,7 +42,7 @@
 
   function abortSession() {
     if (promptControls) {
-      promptControls.resolve({ type: "abort", reason: "restart" });
+      promptControls.resolve({ type: "abort" });
       promptControls = null;
     }
   }
@@ -81,13 +89,18 @@
     });
   });
 
+  // Delay session start by one animation frame so the browser has time to
+  // paint the initial DOM (empty state) before we begin rendering scenes.
+  // This avoids a flash of unstyled content in slower runtimes.
+  const SESSION_START_DELAY_MS = 200;
+
   $effect(() => {
     const data = $state.snapshot(savedData);
 
     const timer = setTimeout(() => {
       startSession(data ?? undefined);
       document.addEventListener("keydown", handleDocumentKeyDown);
-    }, 200);
+    }, SESSION_START_DELAY_MS);
 
     return () => {
       clearTimeout(timer);

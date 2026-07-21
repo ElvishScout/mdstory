@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { type Story, fromParsed } from "../../../src";
-  import { parseKeyValuePairs } from "../../../src/utils/object";
+  import { type Story, fromParsed, parseKeyValuePairs } from "../../../src";
   import StoryPlayer from "./components/StoryPlayer.svelte";
   import type { TemplateOptions } from "./types";
 

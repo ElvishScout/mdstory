@@ -154,4 +154,14 @@ describe("parseKeyValuePairs", () => {
     const result = parseKeyValuePairs([["ui.fontSize", "14"]], target);
     expect(result).toEqual({ ui: { theme: "light", fontSize: 14 } });
   });
+
+  it("preserves leading-zero strings as strings (not numbers)", () => {
+    const result = parseKeyValuePairs([["zip", "042"] as [string, string]]);
+    expect(result).toEqual({ zip: "042" });
+  });
+
+  it("coerces '0' to number 0", () => {
+    const result = parseKeyValuePairs([["count", "0"] as [string, string]]);
+    expect(result).toEqual({ count: 0 });
+  });
 });

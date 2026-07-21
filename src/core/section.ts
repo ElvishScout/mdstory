@@ -2,7 +2,7 @@ import type { Scope } from "./definitions.js";
 import { renderTemplate } from "./render.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 import type { ParsedSection } from "./parser.js";
-import { mergeScripts } from "../utils/script.js";
+import { mergeScripts } from "../utils/index.js";
 
 export type { ParsedSection } from "./parser.js";
 

@@ -2,7 +2,7 @@ import type { JsonValue, Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
-import * as serde from "../utils/serde.js";
+import { wrap } from "../utils/index.js";
 
 export type StorySessionAbortReason = "restart";
 
@@ -11,7 +11,7 @@ export class StorySessionAbortError extends Error {
 
   constructor(reason?: StorySessionAbortReason, message?: string) {
     super(message);
-    this.name = "SessionAbortError";
+    this.name = "StorySessionAbortError";
     this.reason = reason;
   }
 }
@@ -389,7 +389,10 @@ export class StorySession {
    * Plays the story interactively.
    *
    * At most one play loop may be running at a time — re-entrant calls return
-   * the in-flight promise.
+   * the in-flight promise rather than starting a second loop. This means if
+   * the running loop is aborted (via {@link StorySessionAbortError}), any
+   * waiter that joined mid-flight will also receive the abort rejection.
+   * Callers that intend to restart should create a fresh session instead.
    */
   async play(prompt: StoryPrompt, options: PlayOptions): Promise<void> {
     this.promise ??= this.runLoop(prompt, options).finally(() => {
@@ -398,8 +401,13 @@ export class StorySession {
     return this.promise;
   }
 
-  /** Saves session data to wrapped object */
+  /**
+   * Saves session data to a JSON-safe object.
+   *
+   * The returned value can be passed directly to `JSON.stringify` and later
+   * restored via `Story.session(savedData)` or the `StorySession` constructor.
+   */
   save(): StorySessionSavedData {
-    return structuredClone(serde.wrap(this.data));
+    return structuredClone(wrap(this.data));
   }
 }
