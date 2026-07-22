@@ -5,7 +5,7 @@ import pluginAttrs from "markdown-it-attrs";
 import pluginMark from "markdown-it-mark";
 
 import type { Scope } from "./definitions.js";
-import { htmlAdapter, markdownAdapter, type RenderAdapter, type InputType } from "./adapter.js";
+import { htmlAdapter, markdownAdapter, type RenderAdapter, type InputType, HelperParam } from "./adapter.js";
 
 /** Rendering options. */
 export interface RenderOptions {
@@ -19,28 +19,54 @@ export interface RenderResult {
   navs: { text: string; target: string | null }[];
 }
 
-function useHelper({ inputs, navs }: Pick<RenderResult, "inputs" | "navs">, adapter: RenderAdapter): HelperDeclareSpec {
-  return {
-    input(type: InputType, opt: HelperOptions) {
-      for (const name in opt.hash) {
-        const value = opt.hash[name];
-        inputs.push({ name, type, value });
-        const result = adapter.input?.({ name, type, value }) ?? "";
-        return new Handlebars.SafeString(result);
+function useHelpers(
+  { inputs, navs }: Pick<RenderResult, "inputs" | "navs">,
+  adapter: RenderAdapter,
+): HelperDeclareSpec {
+  const helpers: HelperDeclareSpec = {};
+
+  /** Collect structured data from built-in helpers for session state. */
+  const onHelperCall = (name: string, param: HelperParam) => {
+    switch (name) {
+      case "input": {
+        // Expected call shape: {{input type name=value}}
+        const type = (param.args[0] as InputType | undefined) ?? "string";
+        const option = Object.entries(param.options)[0];
+        if (!option) {
+          break;
+        }
+        const [inputName, value] = option;
+        inputs.push({ name: inputName, type, value });
+        break;
       }
-      return "";
-    },
-    nav(target: string | null, opt: HelperOptions) {
-      const text = opt.fn(this).trim();
-      navs.push({ text, target });
-      const result = adapter.nav?.({ target, children: text }) ?? "";
-      return new Handlebars.SafeString(result);
-    },
-    linebreak(n?: number) {
-      const result = adapter.linebreak?.({ n }) ?? "";
-      return new Handlebars.SafeString(result);
-    },
+      case "nav": {
+        // Expected call shape: {{#nav target}}label{{/nav}}
+        const target = (param.args[0] as string | undefined) ?? null;
+        const text = param.children ?? "";
+        navs.push({ target, text });
+        break;
+      }
+    }
   };
+
+  // Register every helper exposed by the adapter. Handlebars passes positional
+  // arguments followed by an options object containing `hash` and, for block
+  // helpers, `fn`. We normalize that into a `HelperParam` and invoke the adapter.
+  for (const [name, handler] of Object.entries(adapter.helpers)) {
+    helpers[name] = function (...rawArgs) {
+      const args = rawArgs.slice(0, rawArgs.length - 1);
+      const opt = rawArgs[rawArgs.length - 1] as HelperOptions;
+      const options = opt.hash;
+      const children = opt.fn?.(this).trim();
+      const param = { args, options, children };
+      const result = handler(param);
+
+      onHelperCall(name, param);
+      return new Handlebars.SafeString(result);
+    };
+  }
+
+  return helpers;
 }
 
 /** Cache compiled Handlebars templates to avoid re-parsing on every render. */
@@ -64,7 +90,7 @@ export function renderTemplate(template: string, scope: Scope, options: RenderOp
   }
 
   const fields: Pick<RenderResult, "inputs" | "navs"> = { inputs: [], navs: [] };
-  const helpers = useHelper(fields, resolvedAdapter);
+  const helpers = useHelpers(fields, resolvedAdapter);
 
   // Compile lazily, cache on first use.  The cache key includes the format
   // because markdown disables HTML escaping while html relies on it.
