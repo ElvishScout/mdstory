@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { parseKeyValuePairs } from "../src/utils/object.js";
 import { StableIdGenerator } from "../src/utils/id.js";
+import { mergeScripts } from "../src/utils/script.js";
 
 // ---------------------------------------------------------------------------
 // StableIdGenerator unit tests
@@ -190,5 +191,56 @@ describe("parseKeyValuePairs", () => {
   it("returns a null-prototype object when no target is provided", () => {
     const result = parseKeyValuePairs([["foo", "bar"]]);
     expect(Object.getPrototypeOf(result)).toBe(null);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// mergeScripts unit tests
+// ---------------------------------------------------------------------------
+
+describe("mergeScripts", () => {
+  it("returns an empty object for an empty script list", async () => {
+    const result = await mergeScripts([]);
+    expect(result).toEqual({});
+  });
+
+  it("returns an empty object when all scripts are whitespace only", async () => {
+    const result = await mergeScripts(["  ", "\n\t", ""]);
+    expect(result).toEqual({});
+  });
+
+  it("merges default exports from multiple scripts", async () => {
+    const result = (await mergeScripts([
+      "export default { a: 1 };",
+      "export default { b: 2 };",
+    ])) as Record<string, unknown>;
+    expect(result).toEqual({ a: 1, b: 2 });
+  });
+
+  it("does not share state between identical scripts with different module ids", async () => {
+    const script = `
+      let count = 0;
+      export default {
+        inc: () => ++count,
+        get: () => count,
+      };
+    `;
+    const first = (await mergeScripts([script], ["chapter", "1"])) as {
+      inc: () => void;
+      get: () => number;
+    };
+    const second = (await mergeScripts([script], ["chapter", "2"])) as {
+      inc: () => void;
+      get: () => number;
+    };
+
+    first.inc();
+    expect(first.get()).toBe(1);
+    expect(second.get()).toBe(0);
+
+    second.inc();
+    second.inc();
+    expect(second.get()).toBe(2);
+    expect(first.get()).toBe(1);
   });
 });
