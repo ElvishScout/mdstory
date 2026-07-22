@@ -249,6 +249,46 @@ export default {
 
 > **Note**: Do not use `$type` as a key in scope. MdStory reserves `$type` internally for save/load serialization of special types.
 
+## Custom Adapters
+
+MdStory renders stories through a pluggable adapter. The built-in `markdownAdapter` and `htmlAdapter` cover the CLI and default web output, but you can pass a custom `RenderAdapter` through `PlayOptions` when using the library API to change how helpers are rendered or add new Handlebars helpers.
+
+```ts
+import { fromSource, htmlAdapter, type RenderAdapter, type StoryPrompt } from "@elvishscout/mdstory";
+
+const story = await fromSource(source);
+
+const spoilerAdapter: RenderAdapter = {
+  format: "html",
+  helpers: {
+    ...htmlAdapter.helpers,
+    spoiler({ children }) {
+      return `<span class="spoiler">${children}</span>`;
+    },
+  },
+};
+
+const prompt: StoryPrompt = async (props) => {
+  // Render props.text, collect FormData, return { type: "continue", data }
+};
+
+await story.play(prompt, { adapter: spoilerAdapter });
+```
+
+Every helper receives a `HelperParam` object:
+
+| Property   | Type                  | Description                                                      |
+| ---------- | --------------------- | ---------------------------------------------------------------- |
+| `args`     | `any[]`               | Positional arguments from the template (e.g. input type).        |
+| `options`  | `Record<string, any>` | Named arguments from the template hash (e.g. `name="Alice"`).    |
+| `children` | `string \| undefined` | Trimmed block content for block helpers; `undefined` for inline. |
+
+Use custom helpers in templates just like built-ins:
+
+```markdown
+{{#spoiler}}The butler did it.{{/spoiler}}
+```
+
 ## More Resources
 
 - [Examples](./examples/) — full working stories

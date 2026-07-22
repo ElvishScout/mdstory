@@ -249,6 +249,46 @@ export default {
 
 > **注意**：scope 中不要包含名为 `$type` 的 key。MdStory 在存档/读档时内部使用 `$type` 标记特殊类型。
 
+## 自定义 Adapter
+
+MdStory 通过可插拔的 adapter 渲染故事。内置的 `markdownAdapter` 与 `htmlAdapter` 已覆盖 CLI 与默认网页输出；当你使用库 API 时，可以通过 `PlayOptions` 传入自定义 `RenderAdapter`，以改变现有 helper 的渲染方式或新增 Handlebars helper。
+
+```ts
+import { fromSource, htmlAdapter, type RenderAdapter, type StoryPrompt } from "@elvishscout/mdstory";
+
+const story = await fromSource(source);
+
+const spoilerAdapter: RenderAdapter = {
+  format: "html",
+  helpers: {
+    ...htmlAdapter.helpers,
+    spoiler({ children }) {
+      return `<span class="spoiler">${children}</span>`;
+    },
+  },
+};
+
+const prompt: StoryPrompt = async (props) => {
+  // 渲染 props.text，收集 FormData，返回 { type: "continue", data }
+};
+
+await story.play(prompt, { adapter: spoilerAdapter });
+```
+
+每个 helper 都会收到一个 `HelperParam` 对象：
+
+| 属性       | 类型                  | 说明                                                   |
+| ---------- | --------------------- | ------------------------------------------------------ |
+| `args`     | `any[]`               | 模板传入的位置参数（例如 input 类型）。                |
+| `options`  | `Record<string, any>` | 模板传入的命名参数（例如 `name="Alice"`）。            |
+| `children` | `string \| undefined` | block helper 的已修剪块内容；inline 时为 `undefined`。 |
+
+在模板中使用自定义 helper 与内置 helper 一样：
+
+```markdown
+{{#spoiler}}凶手是管家。{{/spoiler}}
+```
+
 ## 更多资源
 
 - [Examples](./examples/) — 完整故事示例
