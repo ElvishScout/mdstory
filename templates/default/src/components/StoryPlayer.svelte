@@ -13,6 +13,7 @@
   import "./FcInput.svelte";
   import { processHtml } from "../lib/utils";
   import type { TemplateOptions } from "../types";
+  import { customAdapter } from "../lib/adapter";
 
   function collectStyles(section: Section): string {
     return section.stylesheets.join("") + section.children.map(collectStyles).join("");
@@ -64,7 +65,7 @@
 
     session = story.session(data ?? undefined);
     session
-      .play(prompt, { adapter: "html", debug: options.debug })
+      .play(prompt, { adapter: customAdapter, debug: options.debug })
       .then(() => {
         if (messageBuffer.length) {
           messageGroups.push(messageBuffer);

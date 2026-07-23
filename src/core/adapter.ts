@@ -1,42 +1,7 @@
+import { createElementHtml, type HtmlAttrs } from "../utils/html";
+
 /** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";
-
-type HtmlAttrs = Record<string, string | boolean | undefined>;
-
-function escapeHtml(text: string) {
-  return text.replace(/[<>&'"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
-}
-
-function createElementHtml(tag: string, attrs: HtmlAttrs, children?: string) {
-  // prettier-ignore
-  const voidTags = [
-    "area", "base", "br", "col", "embed", "hr", "img", "input",
-    "link", "meta", "param", "source", "track", "wbr",
-  ];
-
-  const attrText = Object.entries(attrs)
-    .map(([name, value]) => {
-      if (typeof value === "boolean") {
-        value = value ? "" : undefined;
-      }
-      if (value === undefined) {
-        return null;
-      }
-      if (value) {
-        const escapedValue = escapeHtml(value ?? "");
-        return `${name}="${escapedValue}"`;
-      } else {
-        return name;
-      }
-    })
-    .filter((attr): attr is string => attr !== null)
-    .join(" ");
-
-  if (voidTags.includes(tag)) {
-    return `<${tag} ${attrText}>`;
-  }
-  return `<${tag} ${attrText}>${children ?? ""}</${tag}>`;
-}
 
 function createInputHtml({ name, type, value }: { name: string; type: InputType; value: any }) {
   const inputType = type === "boolean" ? "checkbox" : "text";
