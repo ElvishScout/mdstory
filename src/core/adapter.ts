@@ -1,4 +1,4 @@
-import { createElementHtml, type HtmlAttrs } from "../utils/html";
+import { createElementHtml, type HtmlAttrs } from "../utils/html.js";
 
 /** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";
