@@ -76,7 +76,7 @@
         if (err instanceof StorySessionAbortError) {
           return;
         }
-        console.error("Story session failed:", err);
+        throw err;
       });
   }
 
