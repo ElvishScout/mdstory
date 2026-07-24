@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import open, { apps } from "open";
 import { parseStorySource, resolveParseOptions, TemplateOptions } from "../../index.js";
 import { parseKeyValuePairs } from "../../utils/index.js";
+import { injectTemplateData } from "../../utils/template.js";
 
 export interface BuildOptions {
   output?: string;
@@ -61,9 +62,7 @@ export async function buildCommand(storyPath: string, options: BuildOptions): Pr
   const template = await fs.readFile(templatePath, "utf-8");
 
   // Inject the parsed story JSON and template options into the template
-  const html = template
-    .replace('"__PARSED_STORY__"', JSON.stringify(parsedStory))
-    .replace('"__TEMPLATE_OPTIONS__"', JSON.stringify(templateOptions));
+  const html = injectTemplateData(template, parsedStory, templateOptions);
 
   // Write the output file
   const outputPath = options.output ? path.resolve(options.output) : resolvedPath.replace(/\.[^.]+$/, "") + ".html";
