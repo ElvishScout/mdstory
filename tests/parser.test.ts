@@ -432,6 +432,12 @@ describe("parseStorySource", () => {
       const r = await parse("# Story\n<script></script>\n\n## Chapter 1");
       expect(r.root.children[0].scripts).toEqual([]);
     });
+
+    it("removes empty script blocks from templates", async () => {
+      const r = await parse("# Story\n<script></script>\n\n## Chapter 1");
+      expect(r.root.children[0].template).not.toContain("<script>");
+      expect(r.root.children[0].template).not.toContain("</script>");
+    });
   });
 
   // -- stylesheets -----------------------------------------------------------
@@ -461,6 +467,12 @@ describe("parseStorySource", () => {
       const ch1 = story.children[0];
       expect(ch1.stylesheets).toHaveLength(1);
       expect(ch1.stylesheets[0]).toContain(".chapter { color: red; }");
+    });
+
+    it("removes empty style blocks from templates", async () => {
+      const r = await parse("# Story\n<style></style>\n\n## Chapter 1");
+      expect(r.root.children[0].template).not.toContain("<style>");
+      expect(r.root.children[0].template).not.toContain("</style>");
     });
 
     it("root section collects styles before first heading", async () => {

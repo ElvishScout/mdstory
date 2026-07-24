@@ -169,16 +169,12 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
       const matchScript = /^[\s]*<script>(.*)<\/script>[\s]*$/s.exec(token.content);
       if (matchScript) {
         const content = matchScript[1].trim();
-        if (content) {
-          scripts.push({ from: token.map[0], to: token.map[1], content });
-        }
+        scripts.push({ from: token.map[0], to: token.map[1], content });
       } else {
         const matchStyle = /^[\s]*<style>(.*)<\/style>[\s]*$/s.exec(token.content);
         if (matchStyle) {
           const content = matchStyle[1].trim();
-          if (content) {
-            styleBlocks.push({ from: token.map[0], to: token.map[1], content });
-          }
+          styleBlocks.push({ from: token.map[0], to: token.map[1], content });
         }
       }
     }
@@ -325,5 +321,7 @@ function getBlocksInScope(
   scopeStart: number,
   scopeEnd: number,
 ): string[] {
-  return blocks.filter((block) => block.from >= scopeStart && block.to <= scopeEnd).map((block) => block.content);
+  return blocks
+    .filter((block) => block.from >= scopeStart && block.to <= scopeEnd && block.content)
+    .map((block) => block.content);
 }
