@@ -4,3 +4,4 @@ export * from "./object.js";
 export * from "./path.js";
 export * from "./script.js";
 export * from "./serde.js";
+export * from "./template.js";

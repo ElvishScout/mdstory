@@ -3,8 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import open, { apps } from "open";
 import { parseStorySource, resolveParseOptions, TemplateOptions } from "../../index.js";
-import { parseKeyValuePairs } from "../../utils/index.js";
-import { injectTemplateData } from "../../utils/template.js";
+import { parseKeyValuePairs, injectTemplateData } from "../../utils/index.js";
 
 export interface BuildOptions {
   output?: string;
