@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { contentType } from "mime-types";
+import mime from "mime/lite";
 
 import type { SectionHooks } from "./section.js";
 
@@ -13,7 +13,7 @@ const AssetObjectSchema = z.object({
 export const AssetSchema = z.union([
   z.string().transform((url) => {
     const extension = url.match(/\.[^./\\?#]*(?=[?#]|$)/)?.[0] ?? "";
-    return AssetObjectSchema.parse({ url, mime: contentType(extension) || undefined });
+    return AssetObjectSchema.parse({ url, mime: mime.getType(extension) || undefined });
   }),
   AssetObjectSchema,
 ]);
