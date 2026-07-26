@@ -1,47 +1,84 @@
-# Svelte + TS + Vite
+# MdStory 默认模板
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+MdStory 内置的默认网页播放器模板，基于 Svelte 5 + TypeScript + Vite + Tailwind CSS 构建。
 
-## Recommended IDE Setup
+## 模板选项
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+通过 `mdstory build` 的 `-O key=value` 传递：
 
-## Need an official Svelte framework?
+| 选项         | 类型      | 说明                                            |
+| ------------ | --------- | ----------------------------------------------- |
+| `showHeader` | `boolean` | 是否显示顶部标题栏（含故事标题、保存/加载按钮） |
+| `debug`      | `boolean` | 启用调试输出                                    |
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
-
-## Technical considerations
-
-**Why use this over SvelteKit?**
-
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+npx mdstory build story.md -O showHeader=true -O debug=true
 ```
+
+## 额外的 Handlebars helper
+
+默认模板在 MdStory 内置 helper 之外，还提供了：
+
+### `{{embed}}`
+
+嵌入外部资源，渲染为 `<object>` 元素。可用作行内 helper：
+
+```markdown
+{{embed "image.png"}}
+
+{{embed "chart.svg" width=400 height=300 label="流程图"}}
+
+{{embed url="https://example.com/file.pdf" mime="application/pdf"}}
+```
+
+参数说明：
+
+| 参数               | 说明                                                |
+| ------------------ | --------------------------------------------------- |
+| 第一个位置参数     | 资源 URL 或 scope 中的 Asset 对象                   |
+| `url`              | 资源地址，可覆盖位置参数                            |
+| `mime`             | MIME 类型                                           |
+| `width` / `height` | 尺寸                                                |
+| `label`            | 若提供，则包装在 `<figure>` 中并显示 `<figcaption>` |
+
+## 本地开发
+
+开发模板本身时，使用占位故事启动 Vite：
+
+```bash
+cd templates/default
+npm install
+npm run dev
+```
+
+修改 `placeholder.md` 或 `src/` 下的源码，Vite 会热更新。
+
+构建产物（`mdstory build` 实际使用的模板）：
+
+```bash
+npm run build
+```
+
+产物输出到 `dist/index.html`，CSS/JS 会被内联为单文件。
+
+## 文件结构
+
+```
+templates/default/
+├── index.html              # HTML 入口，保留 __PARSED_STORY__ 和 __TEMPLATE_OPTIONS__ 占位符
+├── placeholder.md          # 本地开发时的占位故事
+├── src/
+│   ├── main.ts             # 读取 window.PARSED_STORY 并挂载应用
+│   ├── App.svelte          # 顶层布局：标题栏、保存/加载
+│   ├── components/
+│   │   └── StoryPlayer.svelte  # 场景渲染与交互
+│   ├── lib/
+│   │   ├── adapter.ts      # MdStory 渲染适配器
+│   │   └── utils.ts        # HTML 处理工具
+│   ├── types.ts            # 本模板扩展的选项类型
+│   ├── app.css             # Tailwind CSS 与场景样式
+│   └── global.d.ts         # window 全局变量声明
+└── vite.config.ts          # 解析 placeholder.md 并打包为单文件
+```
+
+关于 MdStory 的故事语法与 CLI 用法，请参阅项目根目录的文档。
