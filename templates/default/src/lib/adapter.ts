@@ -9,17 +9,17 @@ export const customAdapter: RenderAdapter = {
       args: [asset],
       options,
     }: {
-      args: [Asset?, ...any[]];
-      options: { width?: string | number; height?: string | number; label?: string };
+      args: [(Asset | string)?, ...any[]];
+      options: { url?: string; mime?: string; width?: string | number; height?: string | number; label?: string };
     }) {
-      if (!asset) {
-        return "";
+      if (typeof asset === "string") {
+        asset = { url: asset };
       }
       const attrs: HtmlAttrs = {
         width: options.width,
         height: options.height,
-        type: asset.mime,
-        data: asset.url,
+        data: options.url ?? asset?.url,
+        type: options.mime ?? asset?.mime,
       };
       const html = createElementHtml("object", attrs);
       if (options.label !== undefined) {
