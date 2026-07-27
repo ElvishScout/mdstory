@@ -4,6 +4,8 @@
   import StoryPlayer from "./components/StoryPlayer.svelte";
   import type { TemplateOptions } from "./types";
 
+  import placeholderStory from "virtual:placeholder-story";
+
   let story: Story | undefined = $state();
   let options: TemplateOptions | undefined = $state();
   let headerVisible: boolean = $state(true);
@@ -19,7 +21,7 @@
     const templateOptions = typeof window.TEMPLATE_OPTIONS === "string" ? {} : window.TEMPLATE_OPTIONS;
     options = parseKeyValuePairs(searchParams.entries(), structuredClone(templateOptions));
 
-    const parsedStory = typeof window.PARSED_STORY === "string" ? window.PLACEHOLDER_STORY : window.PARSED_STORY;
+    const parsedStory = typeof window.PARSED_STORY === "string" ? placeholderStory : window.PARSED_STORY;
     fromParsed(parsedStory).then((s) => {
       document.title = s.title;
       story = s;
