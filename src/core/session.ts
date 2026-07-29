@@ -1,7 +1,7 @@
 import type { JsonValue, Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
-import type { RenderOptions, RenderResult } from "./render.js";
+import type { RenderOptions, RenderResult } from "./renderer.js";
 import { unwrap, wrap } from "../utils/index.js";
 
 /** Reason a play loop was aborted. */

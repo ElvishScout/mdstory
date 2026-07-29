@@ -1,6 +1,6 @@
 import type { Scope } from "./definitions.js";
-import { renderTemplate } from "./render.js";
-import type { RenderOptions, RenderResult } from "./render.js";
+import { renderTemplate } from "./renderer.js";
+import type { RenderOptions, RenderResult } from "./renderer.js";
 import type { ParsedSection } from "./parser.js";
 import { mergeScripts } from "../utils/index.js";
 
