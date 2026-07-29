@@ -135,7 +135,7 @@ export async function parseStorySource(source: string, options?: Partial<ParseSt
   let placeholderIndex = 0;
 
   source = await expandIncludes(source, parseOptions);
-  source = source.replace(/^﻿/, "").replace(/\r\n?/g, "\n");
+  source = source.replace(/^\ufeff/, "").replace(/\r\n?/g, "\n");
 
   const md = new MarkdownIt({ html: true }).use(pluginAttrs).use(pluginFrontMatter, () => {});
   const tokens = md.parse(source, {});
