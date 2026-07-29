@@ -2,6 +2,7 @@
   import { type Story, fromParsed } from "../../../src";
   import { parseKeyValuePairs } from "../../../src/utils";
   import StoryPlayer from "./components/StoryPlayer.svelte";
+  import { dataUrlToBlob } from "./lib/utils";
   import type { TemplateOptions } from "./types";
 
   import placeholderStory from "virtual:placeholder-story";
@@ -21,7 +22,19 @@
     const templateOptions = typeof window.TEMPLATE_OPTIONS === "string" ? {} : window.TEMPLATE_OPTIONS;
     options = parseKeyValuePairs(searchParams.entries(), structuredClone(templateOptions));
 
-    const parsedStory = typeof window.PARSED_STORY === "string" ? placeholderStory : window.PARSED_STORY;
+    const parsedStory = structuredClone(
+      typeof window.PARSED_STORY === "string" ? placeholderStory : window.PARSED_STORY,
+    );
+
+    const assetUrls: string[] = [];
+    for (const asset of Object.values(parsedStory.metadata.assets ?? {})) {
+      if (asset.url.startsWith("data:")) {
+        const objectUrl = URL.createObjectURL(dataUrlToBlob(asset.url));
+        assetUrls.push(objectUrl);
+        asset.url = objectUrl;
+      }
+    }
+
     fromParsed(parsedStory).then((s) => {
       document.title = s.title;
       story = s;
@@ -31,6 +44,9 @@
 
     return () => {
       document.title = originalTitle;
+      for (const url of assetUrls) {
+        URL.revokeObjectURL(url);
+      }
       window.removeEventListener("scroll", handleWindowScroll);
     };
   });
