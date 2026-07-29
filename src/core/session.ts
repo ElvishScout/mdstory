@@ -1,4 +1,4 @@
-import type { JsonValue, Scope } from "./definitions.js";
+import type { Env, JsonValue, Scope } from "./definitions.js";
 import type { InputType } from "./adapter.js";
 import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./renderer.js";
@@ -60,6 +60,11 @@ export type StoryPrompt = (props: PromptProps) => Promise<PromptResult>;
 
 /** Options for interactive playback. */
 export interface PlayOptions extends RenderOptions {
+  /**
+   * Arbitrary host-provided objects made available to every section hook as
+   * {@link HookParam.env}. Defaults to an empty object.
+   */
+  env?: Env;
   /** Log the current path and merged scope before each render. */
   debug?: boolean;
 }
@@ -314,7 +319,7 @@ export class StorySession {
    * Init a section: reset scope, data(), onEnter.  No render.
    * Called on every entry — whether first visit or re-visit.
    */
-  private async initSection(path: string[]): Promise<void> {
+  private async initSection(path: string[], env: Env): Promise<void> {
     const pathKey = path.join(".");
     const section = this.story.root.walk(path);
     if (!section) {
@@ -328,14 +333,14 @@ export class StorySession {
 
     if (section.hooks.data) {
       const dataScope = this.buildScope(path);
-      const result = await section.hooks.data({ scope: dataScope });
+      const result = await section.hooks.data({ scope: dataScope, env });
       if (result) {
         Object.assign(this.data.scopes[pathKey], result);
       }
     }
 
     if (section.hooks.onEnter) {
-      await section.hooks.onEnter({ scope: this.buildScope(path) });
+      await section.hooks.onEnter({ scope: this.buildScope(path), env });
     }
   }
 
@@ -361,12 +366,13 @@ export class StorySession {
   }
 
   /** Fire onLeave for a single section. */
-  private async leaveSection(path: string[], targetPath: string[] | null): Promise<void> {
+  private async leaveSection(path: string[], targetPath: string[] | null, env: Env): Promise<void> {
     const section = this.story.root.walk(path);
     if (section?.hooks.onLeave) {
       await section.hooks.onLeave({
         scope: this.buildScope(path),
         target: targetPath ? targetPath.join(".") : null,
+        env,
       });
     }
   }
@@ -376,6 +382,7 @@ export class StorySession {
     // Resume from saved position: start at the parent of the recorded path so
     // the first iteration enters the saved section through normal enter logic.
     // `null` → enter root; `""` → enter root; `"a"` → enter "a" from root.
+    const env = options.env ?? {};
     const savedKey = this.data.currentPath;
     const savedPath: string[] | null = savedKey !== null ? keyToPath(savedKey) : null;
     let currentPath: string[] | null = savedPath && savedPath.length > 0 ? savedPath.slice(0, -1) : null;
@@ -397,7 +404,7 @@ export class StorySession {
         if (resuming) {
           resuming = false;
         } else {
-          await this.initSection(nextPath);
+          await this.initSection(nextPath, env);
         }
         const destination = await this.renderSection(nextPath, prompt, options);
         currentPath = nextPath;
@@ -405,7 +412,7 @@ export class StorySession {
       } else if (currentPath) {
         // ── Leave: step back one section, deepest first ──
         // Handles both cross-branch jumps and story ending (targetPath === null).
-        await this.leaveSection(currentPath, targetPath);
+        await this.leaveSection(currentPath, targetPath, env);
         currentPath = currentPath.length > 0 ? currentPath.slice(0, -1) : null;
       } else {
         // currentPath is null and targetPath is null — nowhere to go

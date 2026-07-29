@@ -1,4 +1,4 @@
-import type { Scope } from "./definitions.js";
+import type { Env, Scope } from "./definitions.js";
 import { renderTemplate } from "./renderer.js";
 import type { RenderOptions, RenderResult } from "./renderer.js";
 import type { ParsedSection } from "./parser.js";
@@ -8,14 +8,19 @@ export type { ParsedSection } from "./parser.js";
 
 type HookResult<T = void> = T | Promise<T>;
 
-/** Context passed to section lifecycle hooks. */
-export interface HookContext {
+/** Parameters passed to section lifecycle hooks. */
+export interface HookParam {
   /** Layered scope for the current section (reads cascade up to ancestors). */
   scope: Scope;
+  /**
+   * Host-provided environment objects (from {@link PlayOptions.env}), shared
+   * by all hooks for the duration of a play loop.
+   */
+  env: Env;
 }
 
-/** Context passed to the `onLeave` hook. */
-export interface LeaveHookContext extends HookContext {
+/** Parameters passed to the `onLeave` hook. */
+export interface LeaveHookParam extends HookParam {
   /** Dot-separated path of the navigation target, or `null` if the story is ending. */
   target: string | null;
 }
@@ -23,11 +28,11 @@ export interface LeaveHookContext extends HookContext {
 /** Section-level lifecycle hooks — unified, no globals/locals distinction. */
 export interface SectionHooks {
   /** Returns variables that take effect within this section's scope and cascade to descendants. */
-  data?: (context: HookContext) => HookResult<Scope | undefined>;
+  data?: (param: HookParam) => HookResult<Scope | undefined>;
   /** Called when the section is entered, after `data` has been applied. */
-  onEnter?: (context: HookContext) => HookResult;
+  onEnter?: (param: HookParam) => HookResult;
   /** Called when the section is left, before navigating to `target`. */
-  onLeave?: (context: LeaveHookContext) => HookResult;
+  onLeave?: (param: LeaveHookParam) => HookResult;
 }
 
 /** Structured representation of a section for runtime construction. */
