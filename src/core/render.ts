@@ -23,35 +23,13 @@ export interface RenderResult {
   navs: { text: string; target: string | null }[];
 }
 
-function useHelpers(
-  { inputs, navs }: Pick<RenderResult, "inputs" | "navs">,
-  adapter: RenderAdapter,
-): HelperDeclareSpec {
+/**
+ * Builds a Handlebars helper spec from the adapter's helpers. The `callback`
+ * is invoked with the normalized parameters after every helper call, letting
+ * the caller collect structured data (inputs, navs) from built-in helpers.
+ */
+function useHelpers(adapter: RenderAdapter, callback: (name: string, param: HelperParam) => any): HelperDeclareSpec {
   const helpers: HelperDeclareSpec = {};
-
-  /** Collect structured data from built-in helpers for session state. */
-  const onHelperCall = (name: string, param: HelperParam) => {
-    switch (name) {
-      case "input": {
-        // Expected call shape: {{input type name=value}}
-        const type = (param.args[0] as InputType | undefined) ?? "string";
-        const option = Object.entries(param.options)[0];
-        if (!option) {
-          break;
-        }
-        const [inputName, value] = option;
-        inputs.push({ name: inputName, type, value });
-        break;
-      }
-      case "nav": {
-        // Expected call shape: {{#nav target}}label{{/nav}}
-        const target = (param.args[0] as string | undefined) ?? null;
-        const text = param.children ?? "";
-        navs.push({ target, text });
-        break;
-      }
-    }
-  };
 
   // Register every helper exposed by the adapter. Handlebars passes positional
   // arguments followed by an options object containing `hash` and, for block
@@ -65,7 +43,7 @@ function useHelpers(
       const param = { args, options, children };
       const result = handler(param);
 
-      onHelperCall(name, param);
+      callback(name, param);
       return new Handlebars.SafeString(result);
     };
   }
@@ -93,8 +71,32 @@ export function renderTemplate(template: string, scope: Scope, options: RenderOp
     resolvedAdapter = options.adapter;
   }
 
-  const fields: Pick<RenderResult, "inputs" | "navs"> = { inputs: [], navs: [] };
-  const helpers = useHelpers(fields, resolvedAdapter);
+  const inputs: RenderResult["inputs"] = [];
+  const navs: RenderResult["navs"] = [];
+
+  // Collect structured data from built-in helpers for session state.
+  const helpers = useHelpers(resolvedAdapter, (name, param) => {
+    switch (name) {
+      case "input": {
+        // Expected call shape: {{input type name=value}}
+        const type = (param.args[0] as InputType | undefined) ?? "string";
+        const option = Object.entries(param.options)[0];
+        if (!option) {
+          break;
+        }
+        const [inputName, value] = option;
+        inputs.push({ name: inputName, type, value });
+        break;
+      }
+      case "nav": {
+        // Expected call shape: {{#nav target}}label{{/nav}}
+        const target = (param.args[0] as string | undefined) ?? null;
+        const text = param.children ?? "";
+        navs.push({ target, text });
+        break;
+      }
+    }
+  });
 
   // Compile lazily, cache on first use.  The cache key includes the format
   // because markdown disables HTML escaping while html relies on it.
@@ -110,5 +112,5 @@ export function renderTemplate(template: string, scope: Scope, options: RenderOp
     text = mdHtml.render(text);
   }
 
-  return { text, ...fields };
+  return { text, inputs, navs };
 }
