@@ -37,8 +37,8 @@ export interface StorySessionSavedData extends StorySessionData {
 
 /** Props passed to the prompt function for each rendered section. */
 export interface PromptProps extends RenderResult {
-  /** Discriminant — currently always `"section"`. */
-  type: "section";
+  /** Path to the rendered section. */
+  path: string[];
 }
 
 /** Raw result data accepted from a prompt: explicit fields or form data. */
@@ -356,7 +356,7 @@ export class StorySession {
     }
 
     const renderResult = section.render({ ...this.story.assets, ...this.buildRenderScope(path) }, options);
-    const promptResult = await prompt({ ...renderResult, type: "section" });
+    const promptResult = await prompt({ ...renderResult, path });
     return this.ingestPrompt(promptResult, renderResult, path);
   }
 
