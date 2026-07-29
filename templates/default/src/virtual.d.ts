@@ -1,5 +1,4 @@
 declare module "virtual:placeholder-story" {
-  import type { ParsedStory } from "../../../types";
-  const story: ParsedStory;
+  const story: import("../../../types").ParsedStory;
   export default story;
 }
