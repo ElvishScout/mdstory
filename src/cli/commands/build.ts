@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import open, { apps } from "open";
-import { parseStorySource, resolveParseOptions, TemplateOptions } from "../../index.js";
+import { parseStorySource, TemplateOptions } from "../../index.js";
 import { parseKeyValuePairs, injectTemplateData } from "../../utils/index.js";
 
 export interface BuildOptions {
@@ -16,9 +16,8 @@ export interface BuildOptions {
 export async function buildCommand(storyPath: string, options: BuildOptions): Promise<void> {
   // Parse the story to a serializable structure
   const resolvedPath = path.resolve(storyPath);
-  const parseOptions = await resolveParseOptions({ base: resolvedPath });
   const source = await fs.readFile(resolvedPath, "utf-8");
-  const parsedStory = await parseStorySource(source, parseOptions);
+  const parsedStory = await parseStorySource(source, { base: resolvedPath });
 
   // Build template options
   const templateOptions: TemplateOptions = {

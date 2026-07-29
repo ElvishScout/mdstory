@@ -8,11 +8,15 @@ export type { ParsedSection } from "./parser.js";
 
 type HookResult<T = void> = T | Promise<T>;
 
+/** Context passed to section lifecycle hooks. */
 export interface HookContext {
+  /** Layered scope for the current section (reads cascade up to ancestors). */
   scope: Scope;
 }
 
+/** Context passed to the `onLeave` hook. */
 export interface LeaveHookContext extends HookContext {
+  /** Dot-separated path of the navigation target, or `null` if the story is ending. */
   target: string | null;
 }
 
@@ -20,28 +24,43 @@ export interface LeaveHookContext extends HookContext {
 export interface SectionHooks {
   /** Returns variables that take effect within this section's scope and cascade to descendants. */
   data?: (context: HookContext) => HookResult<Scope | undefined>;
+  /** Called when the section is entered, after `data` has been applied. */
   onEnter?: (context: HookContext) => HookResult;
+  /** Called when the section is left, before navigating to `target`. */
   onLeave?: (context: LeaveHookContext) => HookResult;
 }
 
 /** Structured representation of a section for runtime construction. */
 export interface SectionInit {
+  /** Unique section identifier within its parent. */
   id: string;
+  /** Heading title text. */
   title?: string;
+  /** Raw Markdown/Handlebars template body of the section. */
   template?: string;
+  /** Stylesheets scoped to this section. */
   stylesheets?: string[];
+  /** Lifecycle hooks for this section. */
   hooks?: SectionHooks;
+  /** Nested child sections. */
   children: Section[];
 }
 
 /** A recursive section node — the core unit of an MdStory. */
 export class Section {
+  /** Unique section identifier within its parent. */
   id: string;
+  /** Heading title text (empty for the root section). */
   title: string;
+  /** Raw Markdown/Handlebars template body of the section. */
   template: string;
+  /** Stylesheets scoped to this section. */
   stylesheets: string[];
+  /** Lifecycle hooks for this section. */
   hooks: SectionHooks;
+  /** Nested child sections. */
   children: Section[];
+  /** Parent section, or `null` for the root. */
   parent: Section | null;
 
   constructor({ id, title, template, stylesheets, hooks, children }: SectionInit, parent?: Section | null) {

@@ -9,13 +9,17 @@ import { htmlAdapter, markdownAdapter, type RenderAdapter, type InputType, Helpe
 
 /** Rendering options. */
 export interface RenderOptions {
+  /** Output adapter: a built-in format name or a custom adapter. */
   adapter: "markdown" | "html" | RenderAdapter;
 }
 
 /** The rendering result containing rendered text and extracted fields. */
 export interface RenderResult {
+  /** Rendered output text (Markdown or HTML, depending on the adapter). */
   text: string;
+  /** Input fields collected from `{{input}}` helper calls, in order. */
   inputs: { name: string; type: InputType; value: any }[];
+  /** Navigation controls collected from `{{nav}}` helper calls, in order. */
   navs: { text: string; target: string | null }[];
 }
 

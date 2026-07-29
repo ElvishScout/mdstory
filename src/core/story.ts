@@ -1,8 +1,8 @@
 import type { Metadata } from "./definitions.js";
 import { Section } from "./section.js";
 import type { ParsedStory, ParseStoryOptions } from "./parser.js";
-import { parseStorySource, resolveParseOptions } from "./parser.js";
-import { normalizePath } from "../utils/index.js";
+import { parseStorySource } from "./parser.js";
+import { loadSource, normalizePath } from "../utils/index.js";
 import { StorySession } from "./session.js";
 import type { PlayOptions, StoryPrompt, StorySessionSavedData } from "./session.js";
 
@@ -12,10 +12,14 @@ import type { PlayOptions, StoryPrompt, StorySessionSavedData } from "./session.
  * `fromPath(path)`, `fromParsed(parsedStory)`, or manually.
  */
 export class Story {
+  /** Story metadata collected from front-matter. */
   metadata: Metadata;
+  /** Root section of the section tree. */
   root: Section;
+  /** Named assets from metadata, spread into the render scope. */
   assets: Record<string, { url: string; mime?: string }>;
 
+  /** Story title from metadata, falling back to the root section title. */
   get title(): string {
     return this.metadata.title ?? this.root.title;
   }
@@ -124,16 +128,14 @@ export async function fromParsed(parsed: ParsedStory): Promise<Story> {
 
 /** Parses a story source string and creates a Story instance. */
 export async function fromSource(source: string, options?: Partial<ParseStoryOptions>): Promise<Story> {
-  const parseOptions = await resolveParseOptions(options);
-  const parsedStory = await parseStorySource(source, parseOptions);
+  const parsedStory = await parseStorySource(source, options);
   return fromParsed(parsedStory);
 }
 
 /** Loads a story from a path or URL and resolves includes relative to each containing resource. */
 export async function fromPath(path: string, options?: Partial<ParseStoryOptions>): Promise<Story> {
   const normalizedPath = await normalizePath(path, options?.base);
-  const parseOptions = await resolveParseOptions({ ...options, base: normalizedPath });
-  const source = await parseOptions.resolveInclude(normalizedPath);
-  const parsedStory = await parseStorySource(source, parseOptions);
+  const source = await (options?.resolveInclude ?? loadSource)(normalizedPath);
+  const parsedStory = await parseStorySource(source, { ...options, base: normalizedPath });
   return fromParsed(parsedStory);
 }

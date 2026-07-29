@@ -4,9 +4,12 @@ import type { Story } from "./story.js";
 import type { RenderOptions, RenderResult } from "./render.js";
 import { unwrap, wrap } from "../utils/index.js";
 
+/** Reason a play loop was aborted. */
 export type StorySessionAbortReason = "restart" | "load";
 
+/** Error thrown when a running play loop is aborted (e.g. on restart or load). */
 export class StorySessionAbortError extends Error {
+  /** Why the loop was aborted, if a reason was supplied. */
   reason?: StorySessionAbortReason;
 
   constructor(reason?: StorySessionAbortReason, message?: string) {
@@ -16,7 +19,9 @@ export class StorySessionAbortError extends Error {
   }
 }
 
+/** Mutable state of a play session. */
 export interface StorySessionData {
+  /** Scope layers keyed by dot-separated section path (`""` is the root scope). */
   scopes: Record<string, Scope>;
   /** `null` = nowhere (session not started / finished); `""` = root; `"a.b"` = nested section. */
   currentPath: string | null;
@@ -30,10 +35,13 @@ export interface StorySessionSavedData extends StorySessionData {
   scopes: Record<string, Record<string, JsonValue>>;
 }
 
+/** Props passed to the prompt function for each rendered section. */
 export interface PromptProps extends RenderResult {
+  /** Discriminant — currently always `"section"`. */
   type: "section";
 }
 
+/** Raw result data accepted from a prompt: explicit fields or form data. */
 export type PromptResultData = { target?: string | null; inputs?: Scope } | FormData;
 
 /**
@@ -44,9 +52,15 @@ export type PromptResult =
   | { type: "continue"; data?: PromptResultData }
   | { type: "abort"; reason?: StorySessionAbortReason };
 
+/**
+ * Callback invoked after each section render. Receives the rendered output and
+ * extracted fields, and resolves with the user's navigation decision.
+ */
 export type StoryPrompt = (props: PromptProps) => Promise<PromptResult>;
 
+/** Options for interactive playback. */
 export interface PlayOptions extends RenderOptions {
+  /** Log the current path and merged scope before each render. */
   debug?: boolean;
 }
 
@@ -121,9 +135,19 @@ function writeToLayer(layers: Scope[], key: string, value: any): void {
   }
 }
 
+/**
+ * Interactive play session for a {@link Story}.
+ *
+ * Holds the mutable playback state (scope layers + current position) and drives
+ * the enter/render/prompt/leave loop. Create via `new StorySession(story)`,
+ * `Story.session()`, or restore a saved session via {@link StorySession.fromSaved}.
+ */
 export class StorySession {
+  /** The story being played. */
   story: Story;
+  /** Mutable session state (scope layers and current position). */
   data: StorySessionData;
+  /** In-flight play loop promise, or `null` when no loop is running. */
   promise: Promise<void> | null;
 
   constructor(story: Story, data?: StorySessionData) {

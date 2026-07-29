@@ -63,6 +63,7 @@ export interface RenderAdapter {
   helpers: BuiltinHelpers & Record<string, (param: HelperParam) => string>;
 }
 
+/** Adapter that renders plain Markdown with underlined text placeholders. */
 export const markdownAdapter: RenderAdapter = {
   format: "markdown",
   helpers: {
@@ -83,6 +84,7 @@ export const markdownAdapter: RenderAdapter = {
   },
 };
 
+/** Adapter that renders HTML form controls (`<input>`, `<button>`). */
 export const htmlAdapter: RenderAdapter = {
   format: "html",
   helpers: {

@@ -24,25 +24,37 @@ interface StyleBlock {
   content: string;
 }
 
+/** Resolves an `!include()` target path into story source text. */
 export type IncludeResolver = (path: string) => string | Promise<string>;
+/** Options controlling how a story source is parsed. */
 export interface ParseStoryOptions {
+  /** Base path or URL that relative `!include()` targets are resolved against. */
   base: string;
+  /** Loader used to fetch `!include()` targets and other referenced sources. */
   resolveInclude: IncludeResolver;
 }
 
 /** A parsed section node — recursive, mirrors the heading hierarchy. */
 export interface ParsedSection {
+  /** Unique section identifier within its parent (heading id, or generated). */
   id: string;
+  /** Heading title text (empty for the root section). */
   title: string;
+  /** Raw Markdown/Handlebars template body of the section. */
   template: string;
+  /** Contents of `<style>` blocks scoped to this section. */
   stylesheets: string[];
+  /** Contents of `<script>` blocks scoped to this section. */
   scripts: string[];
+  /** Nested child sections. */
   children: ParsedSection[];
 }
 
 /** Top-level parse result. */
 export interface ParsedStory {
+  /** Story metadata collected from front-matter blocks. */
   metadata: Metadata;
+  /** Root section holding all top-level (h1) sections. */
   root: ParsedSection;
 }
 
@@ -73,7 +85,8 @@ async function expandIncludes(source: string, options: ParseStoryOptions, stack:
   return expanded.join("\n");
 }
 
-export async function resolveParseOptions(options?: Partial<ParseStoryOptions>): Promise<ParseStoryOptions> {
+/** Fills in missing parse options with defaults (cwd base, file/URL loader). */
+async function resolveParseOptions(options?: Partial<ParseStoryOptions>): Promise<ParseStoryOptions> {
   return {
     base: options?.base ?? (await normalizePath("./")),
     resolveInclude: options?.resolveInclude ?? ((path) => loadSource(path)),
