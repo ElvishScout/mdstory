@@ -6,7 +6,8 @@ import { mergeScripts } from "../utils/index.js";
 
 export type { ParsedSection } from "./parser.js";
 
-type HookResult<T = void> = T | Promise<T>;
+/** Return type of section lifecycle hooks: a value or a promise of it. */
+export type HookResult<T = void> = T | Promise<T>;
 
 /** Parameters passed to section lifecycle hooks. */
 export interface HookParam {

@@ -1,0 +1,15 @@
+[**@elvishscout/mdstory**](../README.md)
+
+***
+
+[@elvishscout/mdstory](../README.md) / JsonObject
+
+# Interface: JsonObject
+
+Defined in: [src/core/definitions.ts:6](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L6)
+
+JSON object type.
+
+## Indexable
+
+> \[`key`: `string`\]: [`JsonValue`](../type-aliases/JsonValue.md)

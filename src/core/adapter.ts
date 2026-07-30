@@ -36,7 +36,7 @@ export interface HelperParam {
 }
 
 /** Built-in helpers every adapter must provide. */
-interface BuiltinHelpers {
+export interface BuiltinHelpers {
   /**
    * Render an input placeholder.
    * Expected `args[0]` is the input type (defaults to `"string"`);
