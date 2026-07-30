@@ -3,7 +3,7 @@ import { createElementHtml, type HtmlAttrs } from "../utils/html.js";
 /** Type indicator for input fields. */
 export type InputType = "string" | "number" | "boolean";
 
-function createInputHtml({ name, type, value }: { name: string; type: InputType; value: any }) {
+function createInputHtml({ name, type, value }: { name: string; type: InputType; value: unknown }) {
   const inputType = type === "boolean" ? "checkbox" : "text";
   const inputAttrs: HtmlAttrs = {
     name,

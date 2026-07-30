@@ -131,7 +131,7 @@ function keyToPath(key: string): string[] {
 }
 
 /** Write `value` to the nearest layer that owns `key`, or to the leaf layer. */
-function writeToLayer(layers: Scope[], key: string, value: any): void {
+function writeToLayer(layers: Scope[], key: string, value: unknown): void {
   const idx = findOwningLayerIndex(layers, key);
   if (idx !== -1) {
     layers[idx][key] = value;

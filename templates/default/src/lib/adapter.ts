@@ -9,7 +9,7 @@ export const customAdapter: RenderAdapter = {
       args: [asset],
       options,
     }: {
-      args: [(Asset | string)?, ...any[]];
+      args: [(Asset | string)?, ...unknown[]];
       options: { url?: string; mime?: string; width?: string | number; height?: string | number; label?: string };
     }) {
       if (typeof asset === "string") {

@@ -28,7 +28,7 @@ export interface RenderResult {
  * is invoked with the normalized parameters after every helper call, letting
  * the caller collect structured data (inputs, navs) from built-in helpers.
  */
-function useHelpers(adapter: RenderAdapter, callback: (name: string, param: HelperParam) => any): HelperDeclareSpec {
+function useHelpers(adapter: RenderAdapter, callback: (name: string, param: HelperParam) => void): HelperDeclareSpec {
   const helpers: HelperDeclareSpec = {};
 
   // Register every helper exposed by the adapter. Handlebars passes positional
