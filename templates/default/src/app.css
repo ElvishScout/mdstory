@@ -2,7 +2,7 @@
 
 @layer custom {
   :root {
-    @apply text-[14px] md:text-[16px];
+    @apply text-[14px] sm:text-[16px];
   }
 
   * {

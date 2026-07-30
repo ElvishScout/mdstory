@@ -107,12 +107,12 @@
 
 <div class="relative min-h-screen pb-[33vh] flex flex-col *:grow">
   {#if story}
-    <div class="px-2 md:px-12">
+    <div class="px-2 sm:px-12">
       <StoryPlayer {story} {options} bind:this={playerRef} />
     </div>
     {#if options?.showHeader}
       <div
-        class="fixed flex px-4 md:px-14 py-2 left-0 right-0 top-0 bg-white border-b-2 border-red-700 z-20 transition-transform
+        class="fixed flex px-4 sm:px-14 py-2 left-0 right-0 top-0 bg-white border-b-2 border-red-700 z-20 transition-transform
           {!headerVisible ? '-translate-y-full' : ''}"
       >
         <p class="text-xl mr-auto text-nowrap overflow-hidden text-ellipsis">{story.title}</p>
