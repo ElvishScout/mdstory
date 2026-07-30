@@ -1,4 +1,4 @@
-**English** | [中文](README.zh-CN.md) | [Writing Guide](WRITING_GUIDE.zh-CN.md)
+**English** | [中文](README.zh-CN.md) | [Docs](docs/)
 
 # MdStory
 
@@ -292,5 +292,5 @@ Use custom helpers in templates just like built-ins:
 ## More Resources
 
 - [Examples](./examples/) — full working stories
-- [Writing Guide](WRITING_GUIDE.zh-CN.md) — in-depth authoring reference
+- [Docs](./docs/) — [Writing Guide](docs/WRITING_GUIDE.md) and [API Reference](docs/api/README.md)
 - [Online Demo](https://mdstory.elvish.cc)

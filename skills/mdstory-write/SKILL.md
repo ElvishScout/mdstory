@@ -166,4 +166,4 @@ node !#PACKAGE_ROOT/dist/cli/index.js overview story.md --ids --words -d 1
 
 详细的写作规范、模板语法、Hooks 最佳实践、状态分层、导航/输入/Script/Include 规范、命名约定、资源与样式、常见反模式和推荐模板，请参考：
 
-@!#PACKAGE_ROOT/WRITING_GUIDE.zh-CN.md
+@!#PACKAGE_ROOT/docs/WRITING_GUIDE.md

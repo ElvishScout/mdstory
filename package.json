@@ -19,7 +19,7 @@
     "./examples/compact",
     "./templates/*/dist/*",
     "./README*.md",
-    "./WRITING_GUIDE*.md"
+    "./docs/WRITING_GUIDE*.md"
   ],
   "bin": {
     "mdstory": "dist/cli/index.js"

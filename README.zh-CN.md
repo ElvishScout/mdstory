@@ -1,4 +1,4 @@
-[English](README.md) | **中文** | [写作规范](WRITING_GUIDE.zh-CN.md)
+[English](README.md) | **中文** | [文档](docs/)
 
 # MdStory
 
@@ -292,5 +292,5 @@ await story.play(prompt, { adapter: spoilerAdapter });
 ## 更多资源
 
 - [Examples](./examples/) — 完整故事示例
-- [写作规范](WRITING_GUIDE.zh-CN.md) — 深入写作参考
+- [文档](./docs/) — [写作规范](docs/WRITING_GUIDE.md) 与 [API 参考](docs/api/README.md)
 - [在线演示](https://mdstory.elvish.cc)
