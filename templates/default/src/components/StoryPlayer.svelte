@@ -222,7 +222,7 @@
       </form>
       {#if isLastScene}
         <div
-          class="absolute left-0 right-0 top-full h-[200%] bg-linear-to-b from-transparent via-white to-white z-10"
+          class="absolute left-0 right-0 top-full h-[200%] pointer-events-none bg-linear-to-b from-transparent via-white to-white z-10"
           bind:this={lastCoverRef}
         ></div>
       {/if}

@@ -34,8 +34,10 @@
   const isDisabled = $derived(toBool(disabled));
 </script>
 
-{#if type === "checkbox"}
-  <span class="inline-block mx-1">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<span class="inline-block mx-1" onclick={(ev) => ev.stopPropagation()}>
+  {#if type === "checkbox"}
     <label class="group p-0.5 -m-0.5 {!isDisabled && 'cursor-pointer'}">
       <input type="checkbox" class="sr-only" {name} {value} checked={isChecked} disabled={isDisabled} />
       <span
@@ -48,20 +50,20 @@
         />
       </span>
     </label>
-  </span>
-{:else}
-  <span class="inline-block relative mx-1 w-fit">
-    <span class="inline-block px-2 min-w-16 max-w-64 invisible whitespace-pre">{textValue}</span>
-    <input
-      class="absolute left-0 right-0 text-center bg-transparent border-b-2 border-red-700 disabled:bg-red-100"
-      {type}
-      {name}
-      value={textValue}
-      disabled={isDisabled}
-      oninput={(e) => (textValue = e.currentTarget.value)}
-    />
-  </span>
-{/if}
+  {:else}
+    <span class="relative">
+      <span class="inline-block px-2 min-w-16 max-w-64 invisible whitespace-pre">{textValue}</span>
+      <input
+        class="absolute left-0 right-0 text-center bg-transparent border-b-2 border-red-700 disabled:bg-red-100"
+        {type}
+        {name}
+        value={textValue}
+        disabled={isDisabled}
+        oninput={(e) => (textValue = e.currentTarget.value)}
+      />
+    </span>
+  {/if}
+</span>
 
 <style>
   :global(fc-input) {
