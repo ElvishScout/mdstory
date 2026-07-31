@@ -29,11 +29,11 @@
   let messageGroups: PromptProps[][] = $state([]);
   let messageBuffer: PromptProps[] = [];
 
+  let session: StorySession | null = $state(null);
   let lastSceneRef: HTMLDivElement | null = $state(null);
   let lastFormRef: HTMLFormElement | null = $state(null);
   let lastCoverRef: HTMLDivElement | null = $state(null);
 
-  let session: StorySession | null = null;
   let promptControls: {
     resolve: (result: PromptResult) => void;
   } | null = null;
@@ -77,6 +77,9 @@
           return;
         }
         throw err;
+      })
+      .finally(() => {
+        session = null;
       });
   }
 
@@ -175,9 +178,11 @@
     }
   }
 
-  function handleFormSubmit(ev: SubmitEvent) {
+  function handleFormSubmit(ev: SubmitEvent, enabled: boolean) {
     ev.preventDefault();
-    resolveForm(ev.currentTarget as HTMLFormElement, ev.submitter);
+    if (enabled) {
+      resolveForm(ev.currentTarget as HTMLFormElement, ev.submitter);
+    }
   }
 
   export function save(): StorySessionSavedData | null {
@@ -201,24 +206,21 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div onclick={handlePlayerClick}>
   {#each messageGroups as group, i}
-    {@const enabled = i === messageGroups.length - 1}
+    {@const enabled = session !== null && i === messageGroups.length - 1}
+    {@const isLastScene = i === messageGroups.length - 1}
     <div
       class="scene relative px-2 pb-8 first:mt-0 border-b-2 border-red-700 last:border-none overflow-hidden
         {options.showHeader ? 'pt-12' : 'pt-8 not-sm:first:pt-4'}
-        {!enabled ? 'opacity-50' : ''}"
+        {!isLastScene ? 'opacity-50' : ''}"
       bind:this={lastSceneRef}
     >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <form
-        bind:this={lastFormRef}
-        onkeydown={handleFormKeyDown}
-        onsubmit={enabled ? handleFormSubmit : (ev) => ev.preventDefault()}
-      >
+      <form bind:this={lastFormRef} onkeydown={handleFormKeyDown} onsubmit={(ev) => handleFormSubmit(ev, enabled)}>
         {#each group as message}
           {@html processHtml(message.text, !enabled)}
         {/each}
       </form>
-      {#if enabled}
+      {#if isLastScene}
         <div
           class="absolute left-0 right-0 top-full h-[200%] bg-linear-to-b from-transparent via-white to-white z-10"
           bind:this={lastCoverRef}
