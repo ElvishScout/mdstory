@@ -2,9 +2,9 @@
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        moraleOk: scope.crewMorale >= 50,
+        moraleOk: this.crewMorale >= 50,
       };
     },
   };
@@ -51,8 +51,8 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
+    onEnter() {
+      this.knowledge += 1;
     },
   };
 </script>
@@ -83,9 +83,9 @@ _第一章 · 深空中的呼唤_
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        highKnowledge: scope.knowledge >= 1,
+        highKnowledge: this.knowledge >= 1,
       };
     },
   };

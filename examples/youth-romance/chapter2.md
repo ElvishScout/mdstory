@@ -342,9 +342,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("护身符")) {
-        scope.inventory.push("护身符");
+    onEnter() {
+      if (!this.inventory.includes("护身符")) {
+        this.inventory.push("护身符");
       }
     },
   };
@@ -506,8 +506,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasCharm: inv.includes("护身符"),
       };

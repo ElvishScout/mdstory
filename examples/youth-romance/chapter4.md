@@ -114,9 +114,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.gaveChristmasGift = true;
-      scope.affection += 1;
+    onEnter() {
+      this.flags.gaveChristmasGift = true;
+      this.affection += 1;
     },
   };
 </script>
@@ -155,8 +155,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.gaveChristmasGift = false;
+    onEnter() {
+      this.flags.gaveChristmasGift = false;
     },
   };
 </script>
@@ -175,9 +175,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("樱花书签")) {
-        scope.inventory.push("樱花书签");
+    onEnter() {
+      if (!this.inventory.includes("樱花书签")) {
+        this.inventory.push("樱花书签");
       }
     },
   };
@@ -282,8 +282,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>

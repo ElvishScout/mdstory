@@ -37,10 +37,10 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.foughtAtSect = true;
-      scope.reputation += 1;
-      scope.qi = Math.max(0, scope.qi - 20);
+    onEnter() {
+      this.flags.foughtAtSect = true;
+      this.reputation += 1;
+      this.qi = Math.max(0, this.qi - 20);
     },
   };
 </script>
@@ -81,8 +81,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.foughtAtSect = false;
+    onEnter() {
+      this.flags.foughtAtSect = false;
     },
   };
 </script>
@@ -125,9 +125,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("青云心法")) {
-        scope.inventory.push("青云心法");
+    onEnter() {
+      if (!this.inventory.includes("青云心法")) {
+        this.inventory.push("青云心法");
       }
     },
   };

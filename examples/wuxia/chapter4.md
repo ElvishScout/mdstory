@@ -90,9 +90,9 @@
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        canGoodEnding: scope.martialLevel >= 3 || scope.reputation >= 3,
+        canGoodEnding: this.martialLevel >= 3 || this.reputation >= 3,
       };
     },
   };

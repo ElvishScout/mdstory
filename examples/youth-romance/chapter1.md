@@ -122,9 +122,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.acceptedTour = true;
-      scope.affection += 1;
+    onEnter() {
+      this.flags.acceptedTour = true;
+      this.affection += 1;
     },
   };
 </script>
@@ -159,8 +159,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.acceptedTour = false;
+    onEnter() {
+      this.flags.acceptedTour = false;
     },
   };
 </script>
@@ -340,8 +340,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>
@@ -471,9 +471,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("旧照片")) {
-        scope.inventory.push("旧照片");
+    onEnter() {
+      if (!this.inventory.includes("旧照片")) {
+        this.inventory.push("旧照片");
       }
     },
   };
@@ -528,8 +528,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>
@@ -658,8 +658,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasPhoto: inv.includes("旧照片"),
       };

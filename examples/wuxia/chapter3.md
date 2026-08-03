@@ -71,11 +71,11 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.masteredUltimate = true;
-      scope.martialLevel += 2;
-      if (!scope.inventory.includes("剑意")) {
-        scope.inventory.push("剑意");
+    onEnter() {
+      this.flags.masteredUltimate = true;
+      this.martialLevel += 2;
+      if (!this.inventory.includes("剑意")) {
+        this.inventory.push("剑意");
       }
     },
   };
@@ -101,9 +101,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.masteredUltimate = false;
-      scope.martialLevel += 1;
+    onEnter() {
+      this.flags.masteredUltimate = false;
+      this.martialLevel += 1;
     },
   };
 </script>

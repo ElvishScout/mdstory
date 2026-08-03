@@ -8,9 +8,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.clues.includes("cigarette-ash")) {
-        scope.clues.push("cigarette-ash");
+    onEnter() {
+      if (!this.clues.includes("cigarette-ash")) {
+        this.clues.push("cigarette-ash");
       }
     },
   };
@@ -51,9 +51,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.clues.includes("secret-letters")) {
-        scope.clues.push("secret-letters");
+    onEnter() {
+      if (!this.clues.includes("secret-letters")) {
+        this.clues.push("secret-letters");
       }
     },
   };
@@ -109,9 +109,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.clues.includes("vase-weapon")) {
-        scope.clues.push("vase-weapon");
+    onEnter() {
+      if (!this.clues.includes("vase-weapon")) {
+        this.clues.push("vase-weapon");
       }
     },
   };
@@ -131,9 +131,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.clues.includes("mud-shoes")) {
-        scope.clues.push("mud-shoes");
+    onEnter() {
+      if (!this.clues.includes("mud-shoes")) {
+        this.clues.push("mud-shoes");
       }
     },
   };
@@ -289,8 +289,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const clues = scope.clues;
+    data() {
+      const clues = this.clues;
       return {
         hasPawnTicket: clues.includes("pawn-ticket"),
         hasHiddenPassage: clues.includes("hidden-passage"),

@@ -4,9 +4,9 @@
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        repHigh: scope.reputation >= 3,
+        repHigh: this.reputation >= 3,
       };
     },
   };

@@ -164,9 +164,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.clues.includes("pawn-ticket")) {
-        scope.clues.push("pawn-ticket");
+    onEnter() {
+      if (!this.clues.includes("pawn-ticket")) {
+        this.clues.push("pawn-ticket");
       }
     },
   };
@@ -200,12 +200,12 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.clues.includes("hidden-passage")) {
-        scope.clues.push("hidden-passage");
+    onEnter() {
+      if (!this.clues.includes("hidden-passage")) {
+        this.clues.push("hidden-passage");
       }
-      if (!scope.clues.includes("cufflink")) {
-        scope.clues.push("cufflink");
+      if (!this.clues.includes("cufflink")) {
+        this.clues.push("cufflink");
       }
     },
   };

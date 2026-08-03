@@ -77,8 +77,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>
@@ -134,11 +134,11 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         canTrueEnding: inv.includes("旧照片") && inv.includes("樱花书签"),
-        canGoodEnding: scope.affection >= 3,
+        canGoodEnding: this.affection >= 3,
       };
     },
   };

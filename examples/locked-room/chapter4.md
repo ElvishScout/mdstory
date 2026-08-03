@@ -2,8 +2,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const clues = scope.clues;
+    data() {
+      const clues = this.clues;
       const keyClues = ["hidden-passage", "cufflink", "cigarette-ash", "vase-weapon", "mud-shoes", "secret-letters", "butler-testimony"];
       const foundKey = keyClues.filter(c => clues.includes(c)).length;
       return {
@@ -61,8 +61,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.accusation = "zhao";
+    onEnter() {
+      this.accusation = "zhao";
     },
   };
 </script>
@@ -151,8 +151,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.accusation = "wife";
+    onEnter() {
+      this.accusation = "wife";
     },
   };
 </script>
@@ -197,8 +197,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.accusation = "butler";
+    onEnter() {
+      this.accusation = "butler";
     },
   };
 </script>

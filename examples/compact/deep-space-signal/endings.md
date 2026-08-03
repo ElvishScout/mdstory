@@ -5,8 +5,8 @@ _结局_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.crewMorale = 100;
+    onEnter() {
+      this.crewMorale = 100;
     },
   };
 </script>
@@ -43,13 +43,13 @@ _结局_
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        hasHighKnowledge: scope.knowledge >= 3,
+        hasHighKnowledge: this.knowledge >= 3,
       };
     },
-    onEnter({ scope }) {
-      scope.crewMorale = Math.min(100, scope.crewMorale + 20);
+    onEnter() {
+      this.crewMorale = Math.min(100, this.crewMorale + 20);
     },
   };
 </script>
@@ -80,8 +80,8 @@ _结局_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.crewMorale = 0;
+    onEnter() {
+      this.crewMorale = 0;
     },
   };
 </script>

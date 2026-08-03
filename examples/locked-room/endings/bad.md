@@ -4,11 +4,11 @@
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        accusedWife: scope.accusation === "wife",
-        accusedButler: scope.accusation === "butler",
-        accusedZhaoNoEvidence: scope.accusation === "zhao",
+        accusedWife: this.accusation === "wife",
+        accusedButler: this.accusation === "butler",
+        accusedZhaoNoEvidence: this.accusation === "zhao",
       };
     },
   };

@@ -28,13 +28,13 @@ _"找到楼陀罗的人，可以许一个愿望。但记住——城里的东西
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        hasWater: scope.inventory.includes("水袋"),
+        hasWater: this.inventory.includes("水袋"),
       };
     },
-    onEnter({ scope }) {
-      scope.flags.suppliesPicked = 0;
+    onEnter() {
+      this.flags.suppliesPicked = 0;
     },
   };
 </script>
@@ -66,14 +66,14 @@ _你腰间已经挂着水袋了。_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
         hasRope: inv.includes("麻绳"),
         hasKnife: inv.includes("短刀"),
-        canPick: scope.flags.suppliesPicked < 2,
+        canPick: this.flags.suppliesPicked < 2,
       };
     },
   };
@@ -111,11 +111,11 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("水袋")) {
-        scope.inventory.push("水袋");
+    onEnter() {
+      if (!this.inventory.includes("水袋")) {
+        this.inventory.push("水袋");
       }
-      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
+      this.flags.suppliesPicked = this.flags.suppliesPicked + 1;
     },
   };
 </script>
@@ -133,11 +133,11 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("星盘")) {
-        scope.inventory.push("星盘");
+    onEnter() {
+      if (!this.inventory.includes("星盘")) {
+        this.inventory.push("星盘");
       }
-      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
+      this.flags.suppliesPicked = this.flags.suppliesPicked + 1;
     },
   };
 </script>
@@ -155,11 +155,11 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("麻绳")) {
-        scope.inventory.push("麻绳");
+    onEnter() {
+      if (!this.inventory.includes("麻绳")) {
+        this.inventory.push("麻绳");
       }
-      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
+      this.flags.suppliesPicked = this.flags.suppliesPicked + 1;
     },
   };
 </script>
@@ -177,11 +177,11 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      if (!scope.inventory.includes("短刀")) {
-        scope.inventory.push("短刀");
+    onEnter() {
+      if (!this.inventory.includes("短刀")) {
+        this.inventory.push("短刀");
       }
-      scope.flags.suppliesPicked = scope.flags.suppliesPicked + 1;
+      this.flags.suppliesPicked = this.flags.suppliesPicked + 1;
     },
   };
 </script>
@@ -199,8 +199,8 @@ _你已经挑够两件了。_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasWater: inv.includes("水袋"),
         hasCompass: inv.includes("星盘"),
@@ -251,8 +251,8 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasKnife: inv.includes("短刀"),
       };
@@ -288,18 +288,18 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasRope: inv.includes("麻绳"),
       };
     },
-    onEnter({ scope }) {
-      const inv = scope.inventory;
+    onEnter() {
+      const inv = this.inventory;
       if (inv.includes("麻绳")) {
-        scope.health = Math.max(0, scope.health - 5);
+        this.health = Math.max(0, this.health - 5);
       } else {
-        scope.health = Math.max(0, scope.health - 20);
+        this.health = Math.max(0, this.health - 20);
       }
     },
   };
@@ -325,8 +325,8 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.health = Math.max(0, scope.health - 30);
+    onEnter() {
+      this.health = Math.max(0, this.health - 30);
     },
   };
 </script>
@@ -349,14 +349,14 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasKnife: inv.includes("短刀"),
       };
     },
-    onEnter({ scope }) {
-      scope.knowledge += 1;
+    onEnter() {
+      this.knowledge += 1;
     },
   };
 </script>
@@ -387,9 +387,9 @@ _第二章 · 地下迷宫_
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        highKnowledge: scope.knowledge >= 2,
+        highKnowledge: this.knowledge >= 2,
       };
     },
   };
@@ -418,14 +418,14 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasWater: inv.includes("水袋"),
       };
     },
-    onEnter({ scope }) {
-      scope.knowledge += 1;
+    onEnter() {
+      this.knowledge += 1;
     },
   };
 </script>
@@ -451,8 +451,8 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.skippedBox = true;
+    onEnter() {
+      this.flags.skippedBox = true;
     },
   };
 </script>
@@ -469,16 +469,16 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasKnife: inv.includes("短刀"),
       };
     },
-    onEnter({ scope }) {
-      scope.flags.choseRightPath = true;
-      scope.knowledge += 2;
-      const inv = scope.inventory;
+    onEnter() {
+      this.flags.choseRightPath = true;
+      this.knowledge += 2;
+      const inv = this.inventory;
       if (inv.includes("短刀")) {
         if (!inv.includes("赤珠")) {
           inv.push("赤珠");
@@ -506,9 +506,9 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
-      const knowledge = scope.knowledge;
+    data() {
+      const inv = this.inventory;
+      const knowledge = this.knowledge;
       return {
         highKnowledge: knowledge >= 3,
         hasRedPearl: inv.includes("赤珠"),
@@ -551,11 +551,11 @@ _第三章 · 遗迹核心_
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
-        canTrueEnding: scope.knowledge >= 4 && inv.length >= 3,
-        canGoodEnding: scope.health >= 50 && scope.knowledge >= 1,
+        canTrueEnding: this.knowledge >= 4 && inv.length >= 3,
+        canGoodEnding: this.health >= 50 && this.knowledge >= 1,
       };
     },
   };
@@ -636,9 +636,9 @@ _结局_
 
 <script>
   export default {
-    data({ scope }) {
+    data() {
       return {
-        hasCompass: scope.inventory.includes("星盘"),
+        hasCompass: this.inventory.includes("星盘"),
       };
     },
   };

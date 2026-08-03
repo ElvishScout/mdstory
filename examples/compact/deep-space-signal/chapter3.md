@@ -6,8 +6,8 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
+    onEnter() {
+      this.knowledge += 1;
     },
   };
 </script>
@@ -38,8 +38,8 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
+    onEnter() {
+      this.knowledge += 1;
     },
   };
 </script>
@@ -62,8 +62,8 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.knowledge += 1;
+    onEnter() {
+      this.knowledge += 1;
     },
   };
 </script>
@@ -103,11 +103,11 @@ _第三章 · 两百年后的答案_
 
 <script>
   export default {
-    data({ scope }) {
-      const boarded = scope.flags.boardedShip;
+    data() {
+      const boarded = this.flags.boardedShip;
       return {
-        canTrueEnding: scope.knowledge >= 4 && boarded,
-        canGoodEnding: scope.knowledge >= 2,
+        canTrueEnding: this.knowledge >= 4 && boarded,
+        canGoodEnding: this.knowledge >= 2,
       };
     },
   };

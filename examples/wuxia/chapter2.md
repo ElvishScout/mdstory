@@ -34,9 +34,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.metLiuruyan = true;
-      scope.reputation += 1;
+    onEnter() {
+      this.flags.metLiuruyan = true;
+      this.reputation += 1;
     },
   };
 </script>
@@ -85,9 +85,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.revealedToLiuruyan = true;
-      scope.reputation += 1;
+    onEnter() {
+      this.flags.revealedToLiuruyan = true;
+      this.reputation += 1;
     },
   };
 </script>
@@ -124,8 +124,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.revealedToLiuruyan = false;
+    onEnter() {
+      this.flags.revealedToLiuruyan = false;
     },
   };
 </script>
@@ -189,9 +189,9 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.travelWithRuyan = true;
-      scope.reputation += 1;
+    onEnter() {
+      this.flags.travelWithRuyan = true;
+      this.reputation += 1;
     },
   };
 </script>
@@ -212,8 +212,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.travelWithRuyan = false;
+    onEnter() {
+      this.flags.travelWithRuyan = false;
     },
   };
 </script>

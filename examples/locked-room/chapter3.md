@@ -4,8 +4,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.interrogatedZhao = true;
+    onEnter() {
+      this.flags.interrogatedZhao = true;
     },
   };
 </script>
@@ -56,8 +56,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.interrogatedWife = true;
+    onEnter() {
+      this.flags.interrogatedWife = true;
     },
   };
 </script>
@@ -128,10 +128,10 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.interrogatedButler = true;
-      if (!scope.clues.includes("butler-testimony")) {
-        scope.clues.push("butler-testimony");
+    onEnter() {
+      this.flags.interrogatedButler = true;
+      if (!this.clues.includes("butler-testimony")) {
+        this.clues.push("butler-testimony");
       }
     },
   };
@@ -183,8 +183,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const flags = scope.flags;
+    data() {
+      const flags = this.flags;
       return {
         allInterrogated: flags.interrogatedZhao && flags.interrogatedWife && flags.interrogatedButler,
       };

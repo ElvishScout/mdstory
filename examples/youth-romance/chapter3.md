@@ -32,8 +32,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.festivalProject = "鬼屋";
+    onEnter() {
+      this.flags.festivalProject = "鬼屋";
     },
   };
 </script>
@@ -58,8 +58,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.festivalProject = "舞台剧";
+    onEnter() {
+      this.flags.festivalProject = "舞台剧";
     },
   };
 </script>
@@ -80,8 +80,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.flags.festivalProject = "女仆咖啡厅";
+    onEnter() {
+      this.flags.festivalProject = "女仆咖啡厅";
     },
   };
 </script>
@@ -223,8 +223,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const project = scope.flags.festivalProject || "女仆咖啡厅";
+    data() {
+      const project = this.flags.festivalProject || "女仆咖啡厅";
       return {
         isCafe: project === "女仆咖啡厅",
       };
@@ -290,8 +290,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>
@@ -371,8 +371,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>
@@ -403,8 +403,8 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
+    onEnter() {
+      this.affection += 1;
     },
   };
 </script>
@@ -481,10 +481,10 @@
 
 <script>
   export default {
-    onEnter({ scope }) {
-      scope.affection += 1;
-      if (!scope.inventory.includes("手写信")) {
-        scope.inventory.push("手写信");
+    onEnter() {
+      this.affection += 1;
+      if (!this.inventory.includes("手写信")) {
+        this.inventory.push("手写信");
       }
     },
   };

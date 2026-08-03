@@ -4,8 +4,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const clues = scope.clues;
+    data() {
+      const clues = this.clues;
       return {
         hasLetters: clues.includes("secret-letters"),
         hasPawnTicket: clues.includes("pawn-ticket"),

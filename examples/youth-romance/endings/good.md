@@ -2,8 +2,8 @@
 
 <script>
   export default {
-    data({ scope }) {
-      const inv = scope.inventory;
+    data() {
+      const inv = this.inventory;
       return {
         hasCharm: inv.includes("护身符"),
       };
