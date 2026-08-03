@@ -12,10 +12,16 @@ export type HookResult<T = void> = T | Promise<T>;
 /**
  * Parameters passed to section lifecycle hooks.
  *
- * The layered scope for the current section is not part of this object — it
- * is bound as the hook's `this` (see {@link SectionHooks}).
+ * The layered scope for the current section is available both as
+ * {@link HookParam.scope} and as the hook's `this` (see {@link SectionHooks})
+ * — both refer to the same object.
  */
 export interface HookParam {
+  /**
+   * Layered scope for the current section (reads cascade up to ancestors).
+   * Kept for compatibility — identical to the hook's `this`.
+   */
+  scope: Scope;
   /**
    * Host-provided environment objects (from {@link PlayOptions.env}), shared
    * by all hooks for the duration of a play loop.
@@ -35,6 +41,8 @@ export interface LeaveHookParam extends HookParam {
  * Each hook is invoked with the section's layered scope bound as `this`
  * (reads cascade up to ancestors; writes go to the owning layer), so hooks
  * declared with `function` or method shorthand can use `this` directly.
+ * The same scope is also passed as {@link HookParam.scope} for hooks that
+ * prefer destructuring the parameter (e.g. arrow functions).
  */
 export interface SectionHooks {
   /** Returns variables that take effect within this section's scope and cascade to descendants. */

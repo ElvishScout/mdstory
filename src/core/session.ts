@@ -320,16 +320,18 @@ export class StorySession {
   }
 
   /**
-   * Invokes a section hook with the section's layered scope bound as `this`
-   * and the session env merged into its param.
+   * Invokes a section hook with the section's layered scope bound as `this`,
+   * and the same scope plus the session env merged into its param.
    */
   private invokeHook<P extends HookParam, R>(
     path: string[],
     hook: (this: Scope, param: P) => R,
-    param: Omit<P, "env">,
+    param: Omit<P, "env" | "scope">,
   ): R {
     const scope = this.buildScope(path);
-    return hook.call(scope, { ...param, env: this.env } as P);
+    // TypeScript can't verify the merged object against generic P, but `param`
+    // already carries every other field of P, so the runtime shape is exact.
+    return hook.call(scope, { ...param, scope, env: this.env } as P);
   }
 
   /**
