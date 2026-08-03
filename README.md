@@ -182,13 +182,13 @@ Reference variables with `{{name}}`.
 
 Hooks are JavaScript functions exported from `<script>` tags. They run on every entry, with the section's layered scope bound as `this`:
 
-| Hook      | Signature           | When                            |
-| --------- | ------------------- | ------------------------------- |
-| `data`    | `({ env })`         | Every entry (scope reset first) |
-| `onEnter` | `({ env })`         | After `data()` returns          |
-| `onLeave` | `({ target, env })` | Leaving Section / story end     |
+| Hook      | Signature                  | When                            |
+| --------- | -------------------------- | ------------------------------- |
+| `data`    | `({ scope, env })`         | Every entry (scope reset first) |
+| `onEnter` | `({ scope, env })`         | After `data()` returns          |
+| `onLeave` | `({ scope, target, env })` | Leaving Section / story end     |
 
-`this` is a Proxy over the scope layers — reads walk up layers to find the nearest key; writes modify the owning layer. Both `this.flags.x = true` and `this.health = 50` persist correctly. Arrow functions can't receive the `this` binding — use method shorthand or `function` when the hook needs scope access.
+`this` is a Proxy over the scope layers — reads walk up layers to find the nearest key; writes modify the owning layer. Both `this.flags.x = true` and `this.health = 50` persist correctly. The `scope` parameter is the same object as `this`, kept for compatibility — arrow functions can't receive the `this` binding, but can destructure `scope` from the parameter instead.
 
 `env` holds host-provided objects (from `PlayOptions.env` in the library API), shared by all hooks for the duration of a play loop. `target` is the dot-separated path of the navigation destination, or `null` if the story is ending.
 

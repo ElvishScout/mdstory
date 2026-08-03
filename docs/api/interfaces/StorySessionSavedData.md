@@ -6,7 +6,7 @@
 
 # Interface: StorySessionSavedData
 
-Defined in: [src/core/session.ts:35](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L35)
+Defined in: [src/core/session.ts:35](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L35)
 
 Serialized session data as returned by [StorySession.save](../classes/StorySession.md#save).
 Safe to pass to `JSON.stringify` and to `Story.session()` / `StorySession`.
@@ -21,7 +21,7 @@ Safe to pass to `JSON.stringify` and to `Story.session()` / `StorySession`.
 
 > **currentPath**: `string` \| `null`
 
-Defined in: [src/core/session.ts:28](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L28)
+Defined in: [src/core/session.ts:28](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L28)
 
 `null` = nowhere (session not started / finished); `""` = root; `"a.b"` = nested section.
 
@@ -35,7 +35,7 @@ Defined in: [src/core/session.ts:28](https://github.com/ElvishScout/mdstory/blob
 
 > **scopes**: `Record`\<`string`, `Record`\<`string`, [`JsonValue`](../type-aliases/JsonValue.md)\>\>
 
-Defined in: [src/core/session.ts:36](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L36)
+Defined in: [src/core/session.ts:36](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L36)
 
 Scope layers keyed by dot-separated section path (`""` is the root scope).
 

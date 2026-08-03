@@ -6,13 +6,15 @@
 
 # Interface: SectionHooks
 
-Defined in: [src/core/section.ts:39](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L39)
+Defined in: [src/core/section.ts:47](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L47)
 
 Section-level lifecycle hooks — unified, no globals/locals distinction.
 
 Each hook is invoked with the section's layered scope bound as `this`
 (reads cascade up to ancestors; writes go to the owning layer), so hooks
 declared with `function` or method shorthand can use `this` directly.
+The same scope is also passed as [HookParam.scope](HookParam.md#scope) for hooks that
+prefer destructuring the parameter (e.g. arrow functions).
 
 ## Properties
 
@@ -20,7 +22,7 @@ declared with `function` or method shorthand can use `this` directly.
 
 > `optional` **data?**: (`this`, `param`) => [`HookResult`](../type-aliases/HookResult.md)\<[`Scope`](../type-aliases/Scope.md) \| `undefined`\>
 
-Defined in: [src/core/section.ts:41](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L41)
+Defined in: [src/core/section.ts:49](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L49)
 
 Returns variables that take effect within this section's scope and cascade to descendants.
 
@@ -44,7 +46,7 @@ Returns variables that take effect within this section's scope and cascade to de
 
 > `optional` **onEnter?**: (`this`, `param`) => [`HookResult`](../type-aliases/HookResult.md)
 
-Defined in: [src/core/section.ts:43](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L43)
+Defined in: [src/core/section.ts:51](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L51)
 
 Called when the section is entered, after `data` has been applied.
 
@@ -68,7 +70,7 @@ Called when the section is entered, after `data` has been applied.
 
 > `optional` **onLeave?**: (`this`, `param`) => [`HookResult`](../type-aliases/HookResult.md)
 
-Defined in: [src/core/section.ts:45](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L45)
+Defined in: [src/core/section.ts:53](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L53)
 
 Called when the section is left, before navigating to `target`.
 

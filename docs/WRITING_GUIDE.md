@@ -97,7 +97,7 @@ A Section's `<script>` may export three hooks:
 
 Every time a Section is entered, its scope is cleared, then `data()` → `onEnter()` runs again. If you leave and come back, previous local state is not preserved. State that must persist across multiple entries should live in an ancestor Section or the root scope.
 
-Hooks run with the Section's layered scope bound as `this`, and receive a single parameter object: `{ env }` for `data`/`onEnter`, `{ target, env }` for `onLeave`. `env` holds host-provided objects shared by all hooks during a play loop; `target` is the dot-separated navigation destination, or `null` when the story ends. Arrow functions can't receive the `this` binding — use method shorthand or `function` when a hook needs scope access.
+Hooks run with the Section's layered scope bound as `this`, and receive a single parameter object: `{ scope, env }` for `data`/`onEnter`, `{ scope, target, env }` for `onLeave`. `scope` is the same object as `this`, kept for compatibility — arrow functions can't receive the `this` binding, but can destructure `scope` from the parameter instead. `env` holds host-provided objects shared by all hooks during a play loop; `target` is the dot-separated navigation destination, or `null` when the story ends.
 
 ```markdown
 ## Dungeon {#dungeon}

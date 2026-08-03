@@ -8,7 +8,7 @@
 
 > **parseStorySource**(`source`, `options?`): `Promise`\<[`ParsedStory`](../interfaces/ParsedStory.md)\>
 
-Defined in: [src/core/parser.ts:130](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/parser.ts#L130)
+Defined in: [src/core/parser.ts:130](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L130)
 
 Parses a Markdown-formatted story source into a recursive Section tree.
 

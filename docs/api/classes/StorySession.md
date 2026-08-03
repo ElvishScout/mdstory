@@ -6,7 +6,7 @@
 
 # Class: StorySession
 
-Defined in: [src/core/session.ts:151](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L151)
+Defined in: [src/core/session.ts:151](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L151)
 
 Interactive play session for a [Story](Story.md).
 
@@ -20,7 +20,7 @@ the enter/render/prompt/leave loop. Create via `new StorySession(story)`,
 
 > **new StorySession**(`story`, `data?`): `StorySession`
 
-Defined in: [src/core/session.ts:161](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L161)
+Defined in: [src/core/session.ts:161](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L161)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [src/core/session.ts:161](https://github.com/ElvishScout/mdstory/blo
 
 > **data**: [`StorySessionData`](../interfaces/StorySessionData.md)
 
-Defined in: [src/core/session.ts:155](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L155)
+Defined in: [src/core/session.ts:155](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L155)
 
 Mutable session state (scope layers and current position).
 
@@ -52,7 +52,7 @@ Mutable session state (scope layers and current position).
 
 > **env**: [`Env`](../type-aliases/Env.md)
 
-Defined in: [src/core/session.ts:157](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L157)
+Defined in: [src/core/session.ts:157](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L157)
 
 Host-provided environment shared by all hooks during the current play loop (empty when idle).
 
@@ -62,7 +62,7 @@ Host-provided environment shared by all hooks during the current play loop (empt
 
 > **promise**: `Promise`\<`void`\> \| `null`
 
-Defined in: [src/core/session.ts:159](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L159)
+Defined in: [src/core/session.ts:159](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L159)
 
 In-flight play loop promise, or `null` when no loop is running.
 
@@ -72,7 +72,7 @@ In-flight play loop promise, or `null` when no loop is running.
 
 > **story**: [`Story`](Story.md)
 
-Defined in: [src/core/session.ts:153](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L153)
+Defined in: [src/core/session.ts:153](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L153)
 
 The story being played.
 
@@ -82,7 +82,7 @@ The story being played.
 
 > **play**(`prompt`, `options`): `Promise`\<`void`\>
 
-Defined in: [src/core/session.ts:443](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L443)
+Defined in: [src/core/session.ts:447](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L447)
 
 Plays the story interactively.
 
@@ -112,7 +112,7 @@ Callers that intend to restart should create a fresh session instead.
 
 > **save**(): [`StorySessionSavedData`](../interfaces/StorySessionSavedData.md)
 
-Defined in: [src/core/session.ts:457](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L457)
+Defined in: [src/core/session.ts:461](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L461)
 
 Saves session data to a JSON-safe object.
 
@@ -129,7 +129,7 @@ restored via `Story.session(savedData)` or the `StorySession` constructor.
 
 > `static` **fromSaved**(`story`, `savedData`): `StorySession`
 
-Defined in: [src/core/session.ts:177](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L177)
+Defined in: [src/core/session.ts:177](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L177)
 
 Creates a session restored from previously [saved](#save) data.
 

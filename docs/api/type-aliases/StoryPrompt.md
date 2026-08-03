@@ -8,7 +8,7 @@
 
 > **StoryPrompt** = (`props`) => `Promise`\<[`PromptResult`](PromptResult.md)\>
 
-Defined in: [src/core/session.ts:60](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L60)
+Defined in: [src/core/session.ts:60](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L60)
 
 Callback invoked after each section render. Receives the rendered output and
 extracted fields, and resolves with the user's navigation decision.

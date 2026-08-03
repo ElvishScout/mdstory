@@ -6,7 +6,7 @@
 
 # Interface: PromptProps
 
-Defined in: [src/core/session.ts:40](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L40)
+Defined in: [src/core/session.ts:40](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L40)
 
 Props passed to the prompt function for each rendered section.
 
@@ -20,7 +20,7 @@ Props passed to the prompt function for each rendered section.
 
 > **inputs**: `object`[]
 
-Defined in: [src/core/renderer.ts:21](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/renderer.ts#L21)
+Defined in: [src/core/renderer.ts:21](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L21)
 
 Input fields collected from `{{input}}` helper calls, in order.
 
@@ -46,7 +46,7 @@ Input fields collected from `{{input}}` helper calls, in order.
 
 > **navs**: `object`[]
 
-Defined in: [src/core/renderer.ts:23](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/renderer.ts#L23)
+Defined in: [src/core/renderer.ts:23](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L23)
 
 Navigation controls collected from `{{nav}}` helper calls, in order.
 
@@ -68,7 +68,7 @@ Navigation controls collected from `{{nav}}` helper calls, in order.
 
 > **path**: `string`[]
 
-Defined in: [src/core/session.ts:42](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L42)
+Defined in: [src/core/session.ts:42](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L42)
 
 Path to the rendered section.
 
@@ -78,7 +78,7 @@ Path to the rendered section.
 
 > **text**: `string`
 
-Defined in: [src/core/renderer.ts:19](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/renderer.ts#L19)
+Defined in: [src/core/renderer.ts:19](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L19)
 
 Rendered output text (Markdown or HTML, depending on the adapter).
 

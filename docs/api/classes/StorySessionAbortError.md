@@ -6,7 +6,7 @@
 
 # Class: StorySessionAbortError
 
-Defined in: [src/core/session.ts:12](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L12)
+Defined in: [src/core/session.ts:12](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L12)
 
 Error thrown when a running play loop is aborted (e.g. on restart or load).
 
@@ -20,7 +20,7 @@ Error thrown when a running play loop is aborted (e.g. on restart or load).
 
 > **new StorySessionAbortError**(`reason?`, `message?`): `StorySessionAbortError`
 
-Defined in: [src/core/session.ts:16](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L16)
+Defined in: [src/core/session.ts:16](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L16)
 
 #### Parameters
 
@@ -70,7 +70,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `optional` **reason?**: [`StorySessionAbortReason`](../type-aliases/StorySessionAbortReason.md)
 
-Defined in: [src/core/session.ts:14](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L14)
+Defined in: [src/core/session.ts:14](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/session.ts#L14)
 
 Why the loop was aborted, if a reason was supplied.
 
