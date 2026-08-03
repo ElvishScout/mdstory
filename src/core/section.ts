@@ -9,10 +9,13 @@ export type { ParsedSection } from "./parser.js";
 /** Return type of section lifecycle hooks: a value or a promise of it. */
 export type HookResult<T = void> = T | Promise<T>;
 
-/** Parameters passed to section lifecycle hooks. */
+/**
+ * Parameters passed to section lifecycle hooks.
+ *
+ * The layered scope for the current section is not part of this object — it
+ * is bound as the hook's `this` (see {@link SectionHooks}).
+ */
 export interface HookParam {
-  /** Layered scope for the current section (reads cascade up to ancestors). */
-  scope: Scope;
   /**
    * Host-provided environment objects (from {@link PlayOptions.env}), shared
    * by all hooks for the duration of a play loop.
@@ -26,14 +29,20 @@ export interface LeaveHookParam extends HookParam {
   target: string | null;
 }
 
-/** Section-level lifecycle hooks — unified, no globals/locals distinction. */
+/**
+ * Section-level lifecycle hooks — unified, no globals/locals distinction.
+ *
+ * Each hook is invoked with the section's layered scope bound as `this`
+ * (reads cascade up to ancestors; writes go to the owning layer), so hooks
+ * declared with `function` or method shorthand can use `this` directly.
+ */
 export interface SectionHooks {
   /** Returns variables that take effect within this section's scope and cascade to descendants. */
-  data?: (param: HookParam) => HookResult<Scope | undefined>;
+  data?: (this: Scope, param: HookParam) => HookResult<Scope | undefined>;
   /** Called when the section is entered, after `data` has been applied. */
-  onEnter?: (param: HookParam) => HookResult;
+  onEnter?: (this: Scope, param: HookParam) => HookResult;
   /** Called when the section is left, before navigating to `target`. */
-  onLeave?: (param: LeaveHookParam) => HookResult;
+  onLeave?: (this: Scope, param: LeaveHookParam) => HookResult;
 }
 
 /** Structured representation of a section for runtime construction. */
