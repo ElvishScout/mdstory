@@ -6,7 +6,7 @@
 
 # Interface: SectionInit
 
-Defined in: [src/core/section.ts:57](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L57)
+Defined in: [src/core/section.ts:58](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L58)
 
 Structured representation of a section for runtime construction.
 
@@ -16,7 +16,7 @@ Structured representation of a section for runtime construction.
 
 > **children**: [`Section`](../classes/Section.md)[]
 
-Defined in: [src/core/section.ts:69](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L69)
+Defined in: [src/core/section.ts:70](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L70)
 
 Nested child sections.
 
@@ -26,7 +26,7 @@ Nested child sections.
 
 > `optional` **hooks?**: [`SectionHooks`](SectionHooks.md)
 
-Defined in: [src/core/section.ts:67](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L67)
+Defined in: [src/core/section.ts:68](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L68)
 
 Lifecycle hooks for this section.
 
@@ -36,7 +36,7 @@ Lifecycle hooks for this section.
 
 > **id**: `string`
 
-Defined in: [src/core/section.ts:59](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L59)
+Defined in: [src/core/section.ts:60](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L60)
 
 Unique section identifier within its parent.
 
@@ -46,7 +46,7 @@ Unique section identifier within its parent.
 
 > `optional` **stylesheets?**: `string`[]
 
-Defined in: [src/core/section.ts:65](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L65)
+Defined in: [src/core/section.ts:66](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L66)
 
 Stylesheets scoped to this section.
 
@@ -56,7 +56,7 @@ Stylesheets scoped to this section.
 
 > `optional` **template?**: `string`
 
-Defined in: [src/core/section.ts:63](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L63)
+Defined in: [src/core/section.ts:64](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L64)
 
 Raw Markdown/Handlebars template body of the section.
 
@@ -66,6 +66,6 @@ Raw Markdown/Handlebars template body of the section.
 
 > `optional` **title?**: `string`
 
-Defined in: [src/core/section.ts:61](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L61)
+Defined in: [src/core/section.ts:62](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L62)
 
 Heading title text.

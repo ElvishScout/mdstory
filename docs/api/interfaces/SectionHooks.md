@@ -6,7 +6,7 @@
 
 # Interface: SectionHooks
 
-Defined in: [src/core/section.ts:47](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L47)
+Defined in: [src/core/section.ts:48](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L48)
 
 Section-level lifecycle hooks — unified, no globals/locals distinction.
 
@@ -22,7 +22,7 @@ prefer destructuring the parameter (e.g. arrow functions).
 
 > `optional` **data?**: (`this`, `param`) => [`HookResult`](../type-aliases/HookResult.md)\<[`Scope`](../type-aliases/Scope.md) \| `undefined`\>
 
-Defined in: [src/core/section.ts:49](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L49)
+Defined in: [src/core/section.ts:50](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L50)
 
 Returns variables that take effect within this section's scope and cascade to descendants.
 
@@ -46,7 +46,7 @@ Returns variables that take effect within this section's scope and cascade to de
 
 > `optional` **onEnter?**: (`this`, `param`) => [`HookResult`](../type-aliases/HookResult.md)
 
-Defined in: [src/core/section.ts:51](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L51)
+Defined in: [src/core/section.ts:52](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L52)
 
 Called when the section is entered, after `data` has been applied.
 
@@ -70,7 +70,7 @@ Called when the section is entered, after `data` has been applied.
 
 > `optional` **onLeave?**: (`this`, `param`) => [`HookResult`](../type-aliases/HookResult.md)
 
-Defined in: [src/core/section.ts:53](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L53)
+Defined in: [src/core/section.ts:54](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L54)
 
 Called when the section is left, before navigating to `target`.
 

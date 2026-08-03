@@ -190,7 +190,7 @@ Hook 是从 `<script>` 标签导出的 JavaScript 函数。每次进入 Section 
 
 `this` 是一个包裹各 scope 层的 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。`this.flags.x = true`、`this.health = 50` 都能正确持久化。参数中的 `scope` 与 `this` 是同一个对象，为兼容性保留——箭头函数无法接收 `this` 绑定，但可以从参数中解构 `scope`。
 
-`env` 是宿主提供的对象（库 API 中来自 `PlayOptions.env`），在一次 play 循环期间被所有 hook 共享。`target` 是导航目标的点分路径，故事结束时为 `null`。
+`env` 是宿主应用提供的对象（库 API 中来自 `PlayOptions.env`），在一次 play 循环期间被所有 hook 共享。它在每次 play 时由宿主重新提供，**不会**被 save/load 保存——不要用 `env` 保存故事状态，故事状态请放在 scope 变量中。`target` 是导航目标的点分路径，故事结束时为 `null`。
 
 **示例**：
 

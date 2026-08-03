@@ -190,7 +190,7 @@ Hooks are JavaScript functions exported from `<script>` tags. They run on every 
 
 `this` is a Proxy over the scope layers — reads walk up layers to find the nearest key; writes modify the owning layer. Both `this.flags.x = true` and `this.health = 50` persist correctly. The `scope` parameter is the same object as `this`, kept for compatibility — arrow functions can't receive the `this` binding, but can destructure `scope` from the parameter instead.
 
-`env` holds host-provided objects (from `PlayOptions.env` in the library API), shared by all hooks for the duration of a play loop. `target` is the dot-separated path of the navigation destination, or `null` if the story is ending.
+`env` holds host-provided objects (from `PlayOptions.env` in the library API), shared by all hooks for the duration of a play loop. It is re-supplied by the host on every play and is NOT included in save/load — never store story state in `env`; use scope variables instead. `target` is the dot-separated path of the navigation destination, or `null` if the story is ending.
 
 **Example**:
 

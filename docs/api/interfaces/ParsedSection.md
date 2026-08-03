@@ -6,7 +6,7 @@
 
 # Interface: ParsedSection
 
-Defined in: [src/core/parser.ts:38](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L38)
+Defined in: [src/core/parser.ts:38](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L38)
 
 A parsed section node — recursive, mirrors the heading hierarchy.
 
@@ -16,7 +16,7 @@ A parsed section node — recursive, mirrors the heading hierarchy.
 
 > **children**: `ParsedSection`[]
 
-Defined in: [src/core/parser.ts:50](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L50)
+Defined in: [src/core/parser.ts:50](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L50)
 
 Nested child sections.
 
@@ -26,7 +26,7 @@ Nested child sections.
 
 > **id**: `string`
 
-Defined in: [src/core/parser.ts:40](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L40)
+Defined in: [src/core/parser.ts:40](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L40)
 
 Unique section identifier within its parent (heading id, or generated).
 
@@ -36,7 +36,7 @@ Unique section identifier within its parent (heading id, or generated).
 
 > **scripts**: `string`[]
 
-Defined in: [src/core/parser.ts:48](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L48)
+Defined in: [src/core/parser.ts:48](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L48)
 
 Contents of `<script>` blocks scoped to this section.
 
@@ -46,7 +46,7 @@ Contents of `<script>` blocks scoped to this section.
 
 > **stylesheets**: `string`[]
 
-Defined in: [src/core/parser.ts:46](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L46)
+Defined in: [src/core/parser.ts:46](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L46)
 
 Contents of `<style>` blocks scoped to this section.
 
@@ -56,7 +56,7 @@ Contents of `<style>` blocks scoped to this section.
 
 > **template**: `string`
 
-Defined in: [src/core/parser.ts:44](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L44)
+Defined in: [src/core/parser.ts:44](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L44)
 
 Raw Markdown/Handlebars template body of the section.
 
@@ -66,6 +66,6 @@ Raw Markdown/Handlebars template body of the section.
 
 > **title**: `string`
 
-Defined in: [src/core/parser.ts:42](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/parser.ts#L42)
+Defined in: [src/core/parser.ts:42](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/parser.ts#L42)
 
 Heading title text (empty for the root section).

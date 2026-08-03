@@ -15,7 +15,11 @@ export type Scope = Record<string, any>;
 /**
  * Host-provided environment objects made available to section hooks during
  * playback. Supplied via `PlayOptions.env`; hooks may read and mutate it
- * freely, e.g. to access player services or attach external state.
+ * freely, e.g. to access player services.
+ *
+ * `env` is provided by the host application on each play loop and is NOT
+ * included in save/load — never use it to store story state; use scope
+ * variables instead.
  */
 export type Env = Record<string, any>;
 

@@ -6,7 +6,7 @@
 
 # Class: Section
 
-Defined in: [src/core/section.ts:73](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L73)
+Defined in: [src/core/section.ts:74](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L74)
 
 A recursive section node — the core unit of an MdStory.
 
@@ -16,7 +16,7 @@ A recursive section node — the core unit of an MdStory.
 
 > **new Section**(`__namedParameters`, `parent?`): `Section`
 
-Defined in: [src/core/section.ts:89](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L89)
+Defined in: [src/core/section.ts:90](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L90)
 
 #### Parameters
 
@@ -38,7 +38,7 @@ Defined in: [src/core/section.ts:89](https://github.com/ElvishScout/mdstory/blob
 
 > **children**: `Section`[]
 
-Defined in: [src/core/section.ts:85](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L85)
+Defined in: [src/core/section.ts:86](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L86)
 
 Nested child sections.
 
@@ -48,7 +48,7 @@ Nested child sections.
 
 > **hooks**: [`SectionHooks`](../interfaces/SectionHooks.md)
 
-Defined in: [src/core/section.ts:83](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L83)
+Defined in: [src/core/section.ts:84](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L84)
 
 Lifecycle hooks for this section.
 
@@ -58,7 +58,7 @@ Lifecycle hooks for this section.
 
 > **id**: `string`
 
-Defined in: [src/core/section.ts:75](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L75)
+Defined in: [src/core/section.ts:76](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L76)
 
 Unique section identifier within its parent.
 
@@ -68,7 +68,7 @@ Unique section identifier within its parent.
 
 > **parent**: `Section` \| `null`
 
-Defined in: [src/core/section.ts:87](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L87)
+Defined in: [src/core/section.ts:88](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L88)
 
 Parent section, or `null` for the root.
 
@@ -78,7 +78,7 @@ Parent section, or `null` for the root.
 
 > **stylesheets**: `string`[]
 
-Defined in: [src/core/section.ts:81](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L81)
+Defined in: [src/core/section.ts:82](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L82)
 
 Stylesheets scoped to this section.
 
@@ -88,7 +88,7 @@ Stylesheets scoped to this section.
 
 > **template**: `string`
 
-Defined in: [src/core/section.ts:79](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L79)
+Defined in: [src/core/section.ts:80](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L80)
 
 Raw Markdown/Handlebars template body of the section.
 
@@ -98,7 +98,7 @@ Raw Markdown/Handlebars template body of the section.
 
 > **title**: `string`
 
-Defined in: [src/core/section.ts:77](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L77)
+Defined in: [src/core/section.ts:78](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L78)
 
 Heading title text (empty for the root section).
 
@@ -108,7 +108,7 @@ Heading title text (empty for the root section).
 
 > **findById**(`id`): `Section` \| `null`
 
-Defined in: [src/core/section.ts:148](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L148)
+Defined in: [src/core/section.ts:149](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L149)
 
 Recursively find a section by id in the entire subtree (depth-first).
 
@@ -128,7 +128,7 @@ Recursively find a section by id in the entire subtree (depth-first).
 
 > **findNextInTree**(): `Section` \| `null`
 
-Defined in: [src/core/section.ts:189](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L189)
+Defined in: [src/core/section.ts:190](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L190)
 
 Find the next section in depth-first pre-order. Returns null if this is the
 last section in the entire tree.
@@ -143,7 +143,7 @@ last section in the entire tree.
 
 > **findNextSibling**(): `Section` \| `null`
 
-Defined in: [src/core/section.ts:174](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L174)
+Defined in: [src/core/section.ts:175](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L175)
 
 Find the next sibling in the parent's children array.
 
@@ -157,7 +157,7 @@ Find the next sibling in the parent's children array.
 
 > **getChild**(`id`): `Section` \| `null`
 
-Defined in: [src/core/section.ts:130](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L130)
+Defined in: [src/core/section.ts:131](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L131)
 
 Find a direct child by id.
 
@@ -177,7 +177,7 @@ Find a direct child by id.
 
 > **getPath**(): `string`[]
 
-Defined in: [src/core/section.ts:162](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L162)
+Defined in: [src/core/section.ts:163](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L163)
 
 Get the path from root to this section as an array of ids (root itself returns []).
 
@@ -191,7 +191,7 @@ Get the path from root to this section as an array of ids (root itself returns [
 
 > **render**(`scope`, `options`): [`RenderResult`](../interfaces/RenderResult.md)
 
-Defined in: [src/core/section.ts:125](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L125)
+Defined in: [src/core/section.ts:126](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L126)
 
 Renders the section template with the given scope and render options.
 
@@ -215,7 +215,7 @@ Renders the section template with the given scope and render options.
 
 > **walk**(`path`): `Section` \| `null`
 
-Defined in: [src/core/section.ts:135](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L135)
+Defined in: [src/core/section.ts:136](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L136)
 
 Walk a path array from this section, returning the section at the end (or null).
 
@@ -235,7 +235,7 @@ Walk a path array from this section, returning the section at the end (or null).
 
 > `static` **fromParsed**(`parsed`, `parentPath?`): `Promise`\<`Section`\>
 
-Defined in: [src/core/section.ts:105](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/section.ts#L105)
+Defined in: [src/core/section.ts:106](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/section.ts#L106)
 
 Construct a Section tree recursively from parser output.
 

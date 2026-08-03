@@ -153,7 +153,7 @@ export class StorySession {
   story: Story;
   /** Mutable session state (scope layers and current position). */
   data: StorySessionData;
-  /** Host-provided environment shared by all hooks during the current play loop (empty when idle). */
+  /** Host-provided environment shared by all hooks during the current play loop (empty when idle; not saved). */
   env: Env;
   /** In-flight play loop promise, or `null` when no loop is running. */
   promise: Promise<void> | null;

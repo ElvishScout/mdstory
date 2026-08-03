@@ -6,7 +6,7 @@
 
 # Interface: RenderResult
 
-Defined in: [src/core/renderer.ts:17](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L17)
+Defined in: [src/core/renderer.ts:17](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/renderer.ts#L17)
 
 The rendering result containing rendered text and extracted fields.
 
@@ -20,7 +20,7 @@ The rendering result containing rendered text and extracted fields.
 
 > **inputs**: `object`[]
 
-Defined in: [src/core/renderer.ts:21](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L21)
+Defined in: [src/core/renderer.ts:21](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/renderer.ts#L21)
 
 Input fields collected from `{{input}}` helper calls, in order.
 
@@ -42,7 +42,7 @@ Input fields collected from `{{input}}` helper calls, in order.
 
 > **navs**: `object`[]
 
-Defined in: [src/core/renderer.ts:23](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L23)
+Defined in: [src/core/renderer.ts:23](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/renderer.ts#L23)
 
 Navigation controls collected from `{{nav}}` helper calls, in order.
 
@@ -60,6 +60,6 @@ Navigation controls collected from `{{nav}}` helper calls, in order.
 
 > **text**: `string`
 
-Defined in: [src/core/renderer.ts:19](https://github.com/ElvishScout/mdstory/blob/156d2e91c8d8c2e651b5abecd3d9ca06cfb9f982/src/core/renderer.ts#L19)
+Defined in: [src/core/renderer.ts:19](https://github.com/ElvishScout/mdstory/blob/24cd3bf07a5aedf13937a1c919b190fdced75f34/src/core/renderer.ts#L19)
 
 Rendered output text (Markdown or HTML, depending on the adapter).

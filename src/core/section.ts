@@ -24,7 +24,8 @@ export interface HookParam {
   scope: Scope;
   /**
    * Host-provided environment objects (from {@link PlayOptions.env}), shared
-   * by all hooks for the duration of a play loop.
+   * by all hooks for the duration of a play loop. Not included in save/load —
+   * do not use it to store story state.
    */
   env: Env;
 }
