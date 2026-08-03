@@ -6,7 +6,7 @@
 
 # Interface: Metadata
 
-Defined in: [src/core/definitions.ts:31](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L31)
+Defined in: [src/core/definitions.ts:31](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L31)
 
 Story metadata (front-matter).
 
@@ -16,7 +16,7 @@ Story metadata (front-matter).
 
 > `optional` **assets?**: `Record`\<`string`, [`Asset`](Asset.md)\>
 
-Defined in: [src/core/definitions.ts:41](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L41)
+Defined in: [src/core/definitions.ts:41](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L41)
 
 Named assets available to templates during rendering.
 
@@ -26,7 +26,7 @@ Named assets available to templates during rendering.
 
 > `optional` **author?**: `string`
 
-Defined in: [src/core/definitions.ts:35](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L35)
+Defined in: [src/core/definitions.ts:35](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L35)
 
 Author name.
 
@@ -36,7 +36,7 @@ Author name.
 
 > `optional` **email?**: `string`
 
-Defined in: [src/core/definitions.ts:37](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L37)
+Defined in: [src/core/definitions.ts:37](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L37)
 
 Author contact email.
 
@@ -46,7 +46,7 @@ Author contact email.
 
 > `optional` **scope?**: [`Scope`](../type-aliases/Scope.md)
 
-Defined in: [src/core/definitions.ts:39](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L39)
+Defined in: [src/core/definitions.ts:39](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L39)
 
 Initial variables available in the root scope.
 
@@ -56,6 +56,6 @@ Initial variables available in the root scope.
 
 > `optional` **title?**: `string`
 
-Defined in: [src/core/definitions.ts:33](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L33)
+Defined in: [src/core/definitions.ts:33](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L33)
 
 Story title.

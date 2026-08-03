@@ -6,7 +6,7 @@
 
 # Interface: HelperParam
 
-Defined in: [src/core/adapter.ts:29](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L29)
+Defined in: [src/core/adapter.ts:29](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L29)
 
 Parameters passed to every adapter helper registered with Handlebars.
 
@@ -16,7 +16,7 @@ Parameters passed to every adapter helper registered with Handlebars.
 
 > **args**: `any`[]
 
-Defined in: [src/core/adapter.ts:31](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L31)
+Defined in: [src/core/adapter.ts:31](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L31)
 
 Positional arguments supplied by the template (e.g. the input type).
 
@@ -26,7 +26,7 @@ Positional arguments supplied by the template (e.g. the input type).
 
 > `optional` **children?**: `string`
 
-Defined in: [src/core/adapter.ts:35](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L35)
+Defined in: [src/core/adapter.ts:35](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L35)
 
 Trimmed block content for block helpers; undefined for inline helpers.
 
@@ -36,6 +36,6 @@ Trimmed block content for block helpers; undefined for inline helpers.
 
 > **options**: `Record`\<`string`, `any`\>
 
-Defined in: [src/core/adapter.ts:33](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L33)
+Defined in: [src/core/adapter.ts:33](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L33)
 
 Named arguments (hash) supplied by the template (e.g. `{ name: value }`).

@@ -180,15 +180,17 @@ scope:
 
 ### Hook
 
-Hook 是从 `<script>` 标签导出的 JavaScript 函数。每次进入 Section 时都会执行：
+Hook 是从 `<script>` 标签导出的 JavaScript 函数。每次进入 Section 时都会执行，Section 的分层 scope 绑定为函数的 `this`：
 
-| Hook      | 签名                  | 时机                       |
-| --------- | --------------------- | -------------------------- |
-| `data`    | `({ scope })`         | 每次进入时（scope 先重置） |
-| `onEnter` | `({ scope })`         | `data()` 返回后            |
-| `onLeave` | `({ scope, target })` | 离开 Section / 故事结束时  |
+| Hook      | 签名                | 时机                       |
+| --------- | ------------------- | -------------------------- |
+| `data`    | `({ env })`         | 每次进入时（scope 先重置） |
+| `onEnter` | `({ env })`         | `data()` 返回后            |
+| `onLeave` | `({ target, env })` | 离开 Section / 故事结束时  |
 
-`scope` 参数是一个 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。`scope.flags.x = true`、`scope.health = 50` 都能正确持久化。
+`this` 是一个包裹各 scope 层的 Proxy——读取时沿层级向上查找最近的 key；写入时修改拥有该 key 的那一层。`this.flags.x = true`、`this.health = 50` 都能正确持久化。箭头函数无法接收 `this` 绑定，需要访问 scope 时请使用方法简写或 `function`。
+
+`env` 是宿主提供的对象（库 API 中来自 `PlayOptions.env`），在一次 play 循环期间被所有 hook 共享。`target` 是导航目标的点分路径，故事结束时为 `null`。
 
 **示例**：
 
@@ -200,8 +202,8 @@ export default {
   data() {
     return { difficulty: 3 };
   },
-  onEnter({ scope }) {
-    scope.flags.entered = true;
+  onEnter() {
+    this.flags.entered = true;
   },
 };
 </script>
@@ -210,8 +212,8 @@ export default {
 
 <script>
 export default {
-  onLeave({ scope }) {
-    scope.chestOpened = true;
+  onLeave() {
+    this.chestOpened = true;
   },
 };
 </script>
@@ -237,11 +239,11 @@ export default {
   data() {
     return { difficulty: 3 };
   },
-  onEnter({ scope }) {
+  onEnter() {
     // 写入当前层
-    scope.entered = true;
+    this.entered = true;
     // 向上查找并修改 root scope 中的 flags
-    scope.flags.dungeon = true;
+    this.flags.dungeon = true;
   },
 };
 </script>

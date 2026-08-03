@@ -6,7 +6,7 @@
 
 # Class: StorySession
 
-Defined in: [src/core/session.ts:150](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L150)
+Defined in: [src/core/session.ts:151](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L151)
 
 Interactive play session for a [Story](Story.md).
 
@@ -20,7 +20,7 @@ the enter/render/prompt/leave loop. Create via `new StorySession(story)`,
 
 > **new StorySession**(`story`, `data?`): `StorySession`
 
-Defined in: [src/core/session.ts:158](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L158)
+Defined in: [src/core/session.ts:161](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L161)
 
 #### Parameters
 
@@ -42,9 +42,19 @@ Defined in: [src/core/session.ts:158](https://github.com/ElvishScout/mdstory/blo
 
 > **data**: [`StorySessionData`](../interfaces/StorySessionData.md)
 
-Defined in: [src/core/session.ts:154](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L154)
+Defined in: [src/core/session.ts:155](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L155)
 
 Mutable session state (scope layers and current position).
+
+***
+
+### env
+
+> **env**: [`Env`](../type-aliases/Env.md)
+
+Defined in: [src/core/session.ts:157](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L157)
+
+Host-provided environment shared by all hooks during the current play loop (empty when idle).
 
 ***
 
@@ -52,7 +62,7 @@ Mutable session state (scope layers and current position).
 
 > **promise**: `Promise`\<`void`\> \| `null`
 
-Defined in: [src/core/session.ts:156](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L156)
+Defined in: [src/core/session.ts:159](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L159)
 
 In-flight play loop promise, or `null` when no loop is running.
 
@@ -62,7 +72,7 @@ In-flight play loop promise, or `null` when no loop is running.
 
 > **story**: [`Story`](Story.md)
 
-Defined in: [src/core/session.ts:152](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L152)
+Defined in: [src/core/session.ts:153](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L153)
 
 The story being played.
 
@@ -72,7 +82,7 @@ The story being played.
 
 > **play**(`prompt`, `options`): `Promise`\<`void`\>
 
-Defined in: [src/core/session.ts:433](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L433)
+Defined in: [src/core/session.ts:443](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L443)
 
 Plays the story interactively.
 
@@ -102,7 +112,7 @@ Callers that intend to restart should create a fresh session instead.
 
 > **save**(): [`StorySessionSavedData`](../interfaces/StorySessionSavedData.md)
 
-Defined in: [src/core/session.ts:446](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L446)
+Defined in: [src/core/session.ts:457](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L457)
 
 Saves session data to a JSON-safe object.
 
@@ -119,7 +129,7 @@ restored via `Story.session(savedData)` or the `StorySession` constructor.
 
 > `static` **fromSaved**(`story`, `savedData`): `StorySession`
 
-Defined in: [src/core/session.ts:173](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L173)
+Defined in: [src/core/session.ts:177](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L177)
 
 Creates a session restored from previously [saved](#save) data.
 

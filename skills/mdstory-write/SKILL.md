@@ -33,7 +33,7 @@ MdStory 是基于 Markdown 和 Handlebars 的互动小说脚本格式。本技�
 | 4   | **模板变量已定义**       | 所有位置的变量都有定义——包括 `{{var}}` 插值、`{{#if var}}` 条件、`{{#each var}}` 迭代。每个变量必须在 frontmatter `scope`、`data()`、`assets` 或 `{{input}}` 中至少有一处定义 |
 | 5   | **条件块闭合**           | 每个 `{{#if}}`/`{{#each}}` 有对应的 `{{/if}}`/`{{/each}}`，嵌套层级正确                                                                                                       |
 | 6   | **input 类型正确**       | `{{input}}` 的 type 与默认值匹配（string→字符串、number→数字、boolean→true/false）                                                                                            |
-| 7   | **data() 不修改状态**    | `data()` 通过返回值初始化变量，不直接修改 `scope`；状态修改放在 `onEnter()` / `onLeave()`                                                                                     |
+| 7   | **data() 不修改状态**    | `data()` 通过返回值初始化变量，不直接修改 scope（`this`）；状态修改放在 `onEnter()` / `onLeave()`                                                                             |
 | 8   | **onEnter/onLeave 分离** | 进入时所需的状态修改在 `onEnter()`，离开时的结算在 `onLeave()`                                                                                                                |
 | 9   | **include 路径存在**     | 本文件内所有 `!include("...")` 引用的文件确实存在                                                                                                                             |
 

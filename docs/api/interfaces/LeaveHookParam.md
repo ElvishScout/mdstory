@@ -6,7 +6,7 @@
 
 # Interface: LeaveHookParam
 
-Defined in: [src/core/section.ts:24](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/section.ts#L24)
+Defined in: [src/core/section.ts:27](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L27)
 
 Parameters passed to the `onLeave` hook.
 
@@ -20,7 +20,7 @@ Parameters passed to the `onLeave` hook.
 
 > **env**: [`Env`](../type-aliases/Env.md)
 
-Defined in: [src/core/section.ts:20](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/section.ts#L20)
+Defined in: [src/core/section.ts:23](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L23)
 
 Host-provided environment objects (from [PlayOptions.env](PlayOptions.md#env)), shared
 by all hooks for the duration of a play loop.
@@ -31,24 +31,10 @@ by all hooks for the duration of a play loop.
 
 ***
 
-### scope
-
-> **scope**: [`Scope`](../type-aliases/Scope.md)
-
-Defined in: [src/core/section.ts:15](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/section.ts#L15)
-
-Layered scope for the current section (reads cascade up to ancestors).
-
-#### Inherited from
-
-[`HookParam`](HookParam.md).[`scope`](HookParam.md#scope)
-
-***
-
 ### target
 
 > **target**: `string` \| `null`
 
-Defined in: [src/core/section.ts:26](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/section.ts#L26)
+Defined in: [src/core/section.ts:29](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/section.ts#L29)
 
 Dot-separated path of the navigation target, or `null` if the story is ending.

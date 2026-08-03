@@ -6,7 +6,7 @@
 
 # Class: Story
 
-Defined in: [src/core/story.ts:14](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L14)
+Defined in: [src/core/story.ts:14](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L14)
 
 Story runtime containing core playback logic.
 Wraps a root Section tree. Construct via `fromSource(source)`,
@@ -18,7 +18,7 @@ Wraps a root Section tree. Construct via `fromSource(source)`,
 
 > **new Story**(`root`, `metadata?`): `Story`
 
-Defined in: [src/core/story.ts:27](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L27)
+Defined in: [src/core/story.ts:27](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L27)
 
 #### Parameters
 
@@ -40,7 +40,7 @@ Defined in: [src/core/story.ts:27](https://github.com/ElvishScout/mdstory/blob/2
 
 > **assets**: `Record`\<`string`, \{ `mime?`: `string`; `url`: `string`; \}\>
 
-Defined in: [src/core/story.ts:20](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L20)
+Defined in: [src/core/story.ts:20](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L20)
 
 Named assets from metadata, spread into the render scope.
 
@@ -50,7 +50,7 @@ Named assets from metadata, spread into the render scope.
 
 > **metadata**: [`Metadata`](../interfaces/Metadata.md)
 
-Defined in: [src/core/story.ts:16](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L16)
+Defined in: [src/core/story.ts:16](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L16)
 
 Story metadata collected from front-matter.
 
@@ -60,7 +60,7 @@ Story metadata collected from front-matter.
 
 > **root**: [`Section`](Section.md)
 
-Defined in: [src/core/story.ts:18](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L18)
+Defined in: [src/core/story.ts:18](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L18)
 
 Root section of the section tree.
 
@@ -72,7 +72,7 @@ Root section of the section tree.
 
 > **get** **title**(): `string`
 
-Defined in: [src/core/story.ts:23](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L23)
+Defined in: [src/core/story.ts:23](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L23)
 
 Story title from metadata, falling back to the root section title.
 
@@ -86,7 +86,7 @@ Story title from metadata, falling back to the root section title.
 
 > **play**(`prompt`, `options`): `Promise`\<`void`\>
 
-Defined in: [src/core/story.ts:118](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L118)
+Defined in: [src/core/story.ts:118](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L118)
 
 Plays the story interactively.
 
@@ -113,7 +113,7 @@ Returns a promise that resolves when playback completes.
 
 > **resolveTarget**(`target`, `currentPath`): `string`[] \| `null`
 
-Defined in: [src/core/story.ts:43](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L43)
+Defined in: [src/core/story.ts:43](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L43)
 
 Resolves a target string into a section path from root.
 
@@ -144,7 +144,7 @@ Returns the path array (from root) or null for end-of-story.
 
 > **session**(`savedData?`): [`StorySession`](StorySession.md)
 
-Defined in: [src/core/story.ts:108](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/story.ts#L108)
+Defined in: [src/core/story.ts:108](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/story.ts#L108)
 
 Creates and returns a new [StorySession](StorySession.md) for this story.
 

@@ -8,6 +8,6 @@
 
 > `const` **htmlAdapter**: [`RenderAdapter`](../interfaces/RenderAdapter.md)
 
-Defined in: [src/core/adapter.ts:88](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L88)
+Defined in: [src/core/adapter.ts:88](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L88)
 
 Adapter that renders HTML form controls (`<input>`, `<button>`).

@@ -6,7 +6,7 @@
 
 # Interface: BuiltinHelpers
 
-Defined in: [src/core/adapter.ts:39](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L39)
+Defined in: [src/core/adapter.ts:39](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L39)
 
 Built-in helpers every adapter must provide.
 
@@ -16,7 +16,7 @@ Built-in helpers every adapter must provide.
 
 > **input**(`param`): `string`
 
-Defined in: [src/core/adapter.ts:45](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L45)
+Defined in: [src/core/adapter.ts:45](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L45)
 
 Render an input placeholder.
 Expected `args[0]` is the input type (defaults to `"string"`);
@@ -38,7 +38,7 @@ Expected `args[0]` is the input type (defaults to `"string"`);
 
 > **linebreak**(`param`): `string`
 
-Defined in: [src/core/adapter.ts:55](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L55)
+Defined in: [src/core/adapter.ts:55](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L55)
 
 Render line breaks. Expected `args[0]` is the number of breaks (defaults to 1).
 
@@ -58,7 +58,7 @@ Render line breaks. Expected `args[0]` is the number of breaks (defaults to 1).
 
 > **nav**(`param`): `string`
 
-Defined in: [src/core/adapter.ts:52](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/adapter.ts#L52)
+Defined in: [src/core/adapter.ts:52](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/adapter.ts#L52)
 
 Render a navigation/submit control.
 Expected `args[0]` is the navigation target;

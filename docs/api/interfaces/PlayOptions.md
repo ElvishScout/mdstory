@@ -6,7 +6,7 @@
 
 # Interface: PlayOptions
 
-Defined in: [src/core/session.ts:62](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L62)
+Defined in: [src/core/session.ts:63](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L63)
 
 Options for interactive playback.
 
@@ -20,7 +20,7 @@ Options for interactive playback.
 
 > **adapter**: [`RenderAdapter`](RenderAdapter.md) \| `"markdown"` \| `"html"`
 
-Defined in: [src/core/renderer.ts:13](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/renderer.ts#L13)
+Defined in: [src/core/renderer.ts:13](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/renderer.ts#L13)
 
 Output adapter: a built-in format name or a custom adapter.
 
@@ -34,7 +34,7 @@ Output adapter: a built-in format name or a custom adapter.
 
 > `optional` **debug?**: `boolean`
 
-Defined in: [src/core/session.ts:69](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L69)
+Defined in: [src/core/session.ts:70](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L70)
 
 Log the current path and merged scope before each render.
 
@@ -44,7 +44,7 @@ Log the current path and merged scope before each render.
 
 > `optional` **env?**: [`Env`](../type-aliases/Env.md)
 
-Defined in: [src/core/session.ts:67](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/session.ts#L67)
+Defined in: [src/core/session.ts:68](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/session.ts#L68)
 
 Arbitrary host-provided objects made available to every section hook as
 [HookParam.env](HookParam.md#env). Defaults to an empty object.

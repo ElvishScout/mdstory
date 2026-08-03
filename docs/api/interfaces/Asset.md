@@ -6,7 +6,7 @@
 
 # Interface: Asset
 
-Defined in: [src/core/definitions.ts:23](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L23)
+Defined in: [src/core/definitions.ts:23](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L23)
 
 A referenceable resource file.
 
@@ -16,7 +16,7 @@ A referenceable resource file.
 
 > `optional` **mime?**: `string`
 
-Defined in: [src/core/definitions.ts:27](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L27)
+Defined in: [src/core/definitions.ts:27](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L27)
 
 MIME type of the resource, if known.
 
@@ -26,6 +26,6 @@ MIME type of the resource, if known.
 
 > **url**: `string`
 
-Defined in: [src/core/definitions.ts:25](https://github.com/ElvishScout/mdstory/blob/24013214167ccb2bff73a34e90d96326a7d3a658/src/core/definitions.ts#L25)
+Defined in: [src/core/definitions.ts:25](https://github.com/ElvishScout/mdstory/blob/83e21ff2aaea40630799b3c290a4d3b938995647/src/core/definitions.ts#L25)
 
 URL of the resource.

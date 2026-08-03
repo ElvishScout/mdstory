@@ -65,25 +65,25 @@ Each Section owns one scope layer. The scopes from the root down to the current 
 root scope → chapter scope → section scope
 ```
 
-When reading `scope.key`, the engine searches upward from the current Section and returns the first existing value.
+Inside hooks, the layered scope is bound as `this`. When reading `this.key`, the engine searches upward from the current Section and returns the first existing value.
 
-When writing `scope.key = value`, it also searches upward: if some layer already owns the key, that layer is modified; otherwise the value is written to the current Section's own layer.
+When writing `this.key = value`, it also searches upward: if some layer already owns the key, that layer is modified; otherwise the value is written to the current Section's own layer.
 
 ```js
 // root scope already has flags: {}
-scope.flags.started = true; // modifies root scope
-scope.localCount = 1; // written to the current Section's scope
+this.flags.started = true; // modifies root scope
+this.localCount = 1; // written to the current Section's scope
 ```
 
 ### 3.2 Scope Write Rules
 
 | Operation                     | Key exists in an ancestor                   | Key does not exist       |
 | ----------------------------- | ------------------------------------------- | ------------------------ |
-| `scope.key = value`           | Modifies the ancestor                       | Written to current layer |
+| `this.key = value`            | Modifies the ancestor                       | Written to current layer |
 | `{{input}}` submits `key`     | Modifies the ancestor                       | Written to current layer |
 | `data()` returns `{ key: v }` | Written to current layer (shadows ancestor) | Written to current layer |
 
-Note that `data()` behaves differently from writing `scope` directly: `data()`'s return value is always merged into the **current Section's scope**, even if an ancestor already defines the same key.
+Note that `data()` behaves differently from writing `this` directly: `data()`'s return value is always merged into the **current Section's scope**, even if an ancestor already defines the same key.
 
 ### 3.3 The Three Hooks
 
@@ -97,6 +97,8 @@ A Section's `<script>` may export three hooks:
 
 Every time a Section is entered, its scope is cleared, then `data()` → `onEnter()` runs again. If you leave and come back, previous local state is not preserved. State that must persist across multiple entries should live in an ancestor Section or the root scope.
 
+Hooks run with the Section's layered scope bound as `this`, and receive a single parameter object: `{ env }` for `data`/`onEnter`, `{ target, env }` for `onLeave`. `env` holds host-provided objects shared by all hooks during a play loop; `target` is the dot-separated navigation destination, or `null` when the story ends. Arrow functions can't receive the `this` binding — use method shorthand or `function` when a hook needs scope access.
+
 ```markdown
 ## Dungeon {#dungeon}
 
@@ -105,12 +107,12 @@ export default {
   data() {
     return { difficulty: 3 };
   },
-  onEnter({ scope }) {
-    scope.flags.entered = true;  // modifies flags in root scope
+  onEnter() {
+    this.flags.entered = true;  // modifies flags in root scope
   },
-  onLeave({ scope, target }) {
+  onLeave({ target }) {
     if (target === "dungeon.exit") {
-      scope.flags.cleared = true;
+      this.flags.cleared = true;
     }
   },
 };
@@ -161,7 +163,7 @@ For cross-branch jumps, prefer writing the full path. To end the story, use `nul
 {{input "boolean" brave=false}}
 ```
 
-Input values follow the same write rules as `scope.key = value`: the nearest scope layer owning the key is modified; if none exists, the value is written to the current layer.
+Input values follow the same write rules as `this.key = value`: the nearest scope layer owning the key is modified; if none exists, the value is written to the current layer.
 
 Submission order:
 
@@ -294,8 +296,8 @@ export default {
   data() {
     return { gold: 10 };
   },
-  onEnter({ scope }) {
-    scope.flags = { started: true };
+  onEnter() {
+    this.flags = { started: true };
   },
 };
 </script>
@@ -307,8 +309,8 @@ export default {
   data() {
     return { difficulty: 1 };
   },
-  onEnter({ scope }) {
-    scope.flags.lastChapter = "chapter1";
+  onEnter() {
+    this.flags.lastChapter = "chapter1";
   },
 };
 </script>
@@ -317,13 +319,13 @@ export default {
 
 <script>
 export default {
-  data({ scope }) {
+  data() {
     return {
-      greeting: scope.gold >= 10 ? "You look well prepared." : "You need more resources.",
+      greeting: this.gold >= 10 ? "You look well prepared." : "You need more resources.",
     };
   },
-  onLeave({ scope, target }) {
-    scope.flags.lastTarget = target;
+  onLeave({ target }) {
+    this.flags.lastTarget = target;
   },
 };
 </script>

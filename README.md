@@ -180,15 +180,17 @@ Reference variables with `{{name}}`.
 
 ### Hooks
 
-Hooks are JavaScript functions exported from `<script>` tags. They run on every entry:
+Hooks are JavaScript functions exported from `<script>` tags. They run on every entry, with the section's layered scope bound as `this`:
 
-| Hook      | Signature             | When                            |
-| --------- | --------------------- | ------------------------------- |
-| `data`    | `({ scope })`         | Every entry (scope reset first) |
-| `onEnter` | `({ scope })`         | After `data()` returns          |
-| `onLeave` | `({ scope, target })` | Leaving Section / story end     |
+| Hook      | Signature           | When                            |
+| --------- | ------------------- | ------------------------------- |
+| `data`    | `({ env })`         | Every entry (scope reset first) |
+| `onEnter` | `({ env })`         | After `data()` returns          |
+| `onLeave` | `({ target, env })` | Leaving Section / story end     |
 
-The `scope` parameter is a Proxy — reads walk up layers to find the nearest key; writes modify the owning layer. Both `scope.flags.x = true` and `scope.health = 50` persist correctly.
+`this` is a Proxy over the scope layers — reads walk up layers to find the nearest key; writes modify the owning layer. Both `this.flags.x = true` and `this.health = 50` persist correctly. Arrow functions can't receive the `this` binding — use method shorthand or `function` when the hook needs scope access.
+
+`env` holds host-provided objects (from `PlayOptions.env` in the library API), shared by all hooks for the duration of a play loop. `target` is the dot-separated path of the navigation destination, or `null` if the story is ending.
 
 **Example**:
 
@@ -200,8 +202,8 @@ export default {
   data() {
     return { difficulty: 3 };
   },
-  onEnter({ scope }) {
-    scope.flags.entered = true;
+  onEnter() {
+    this.flags.entered = true;
   },
 };
 </script>
@@ -210,8 +212,8 @@ export default {
 
 <script>
 export default {
-  onLeave({ scope }) {
-    scope.chestOpened = true;
+  onLeave() {
+    this.chestOpened = true;
   },
 };
 </script>
@@ -237,11 +239,11 @@ export default {
   data() {
     return { difficulty: 3 };
   },
-  onEnter({ scope }) {
+  onEnter() {
     // Write to the current layer
-    scope.entered = true;
+    this.entered = true;
     // Look up and modify flags in the root scope
-    scope.flags.dungeon = true;
+    this.flags.dungeon = true;
   },
 };
 </script>
