@@ -1,4 +1,4 @@
-**English** | [中文](README.zh-CN.md) | [Docs](docs/)
+**English** | [中文](README.zh-CN.md)
 
 # MdStory
 

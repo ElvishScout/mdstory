@@ -6,5 +6,6 @@
   "exclude": ["**/cli/**"],
   "excludePrivate": true,
   "excludeInternal": true,
-  "readme": "none"
+  "readme": "none",
+  "gitRevision": "main"
 }

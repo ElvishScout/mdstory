@@ -138,6 +138,9 @@ dist
 # typescript declarations
 types/
 
+# api docs
+docs/api/
+
 # Coding agents
 .claude/
 
